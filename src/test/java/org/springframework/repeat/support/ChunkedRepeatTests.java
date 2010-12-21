@@ -1,0 +1,210 @@
+/*
+ * Copyright 2006-2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.springframework.repeat.support;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
+import org.junit.Test;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.repeat.RepeatCallback;
+import org.springframework.repeat.RepeatContext;
+import org.springframework.repeat.RepeatStatus;
+import org.springframework.repeat.callback.NestedRepeatCallback;
+import org.springframework.repeat.policy.SimpleCompletionPolicy;
+
+/**
+ * Test various approaches to chunking of a batch. Not really a unit test, but
+ * it should be fast.
+ * 
+ * @author Dave Syer
+ * 
+ */
+public class ChunkedRepeatTests extends AbstractTradeBatchTests {
+
+	private int count = 0;
+	
+	public static class TradeRepeatCallback implements RepeatCallback {
+
+		private final TradeReader provider;
+		private final TradeWriter processor;
+
+		public TradeRepeatCallback(TradeReader provider, TradeWriter processor) {
+			this.provider = provider;
+			this.processor = processor;
+
+		}
+
+		public RepeatStatus doInIteration(RepeatContext context)
+				throws Exception {
+			Trade item = provider.read();
+			if (item == null) {
+				return RepeatStatus.FINISHED;
+			}
+			processor.write(Arrays.asList(item));
+			return RepeatStatus.CONTINUABLE;
+		}
+	}
+
+
+	/**
+	 * Chunking using a dedicated TerminationPolicy. Transactions would be laid
+	 * on at the level of chunkTemplate.execute() or the surrounding callback.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testChunkedBatchWithTerminationPolicy() throws Exception {
+
+		RepeatTemplate repeatTemplate = new RepeatTemplate();
+		final RepeatCallback callback = new TradeRepeatCallback(provider, processor);
+
+		final RepeatTemplate chunkTemplate = new RepeatTemplate();
+		// The policy is resettable so we only have to resolve this dependency
+		// once
+		chunkTemplate.setCompletionPolicy(new SimpleCompletionPolicy(2));
+
+		RepeatStatus result = repeatTemplate.iterate(new NestedRepeatCallback(chunkTemplate, callback) {
+
+			public RepeatStatus doInIteration(RepeatContext context) throws Exception {
+				count++; // for test assertion
+				return super.doInIteration(context);
+			}
+
+		});
+
+		assertEquals(NUMBER_OF_ITEMS, processor.count);
+		// The chunk executes 3 times because the last one
+		// returns false. We terminate the main batch when
+		// we encounter a partially empty chunk.
+		assertEquals(3, count);
+		assertFalse(result.isContinuable());
+
+	}
+
+	/**
+	 * Chunking with an asynchronous taskExecutor in the chunks. Transactions
+	 * have to be at the level of the business callback.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testAsynchronousChunkedBatchWithCompletionPolicy() throws Exception {
+
+		RepeatTemplate repeatTemplate = new RepeatTemplate();
+		final RepeatCallback callback = new TradeRepeatCallback(provider, processor);
+
+		final TaskExecutorRepeatTemplate chunkTemplate = new TaskExecutorRepeatTemplate();
+		// The policy is resettable so we only have to resolve this dependency
+		// once
+		chunkTemplate.setCompletionPolicy(new SimpleCompletionPolicy(2));
+		chunkTemplate.setTaskExecutor(new SimpleAsyncTaskExecutor());
+
+		RepeatStatus result = repeatTemplate.iterate(new NestedRepeatCallback(chunkTemplate, callback) {
+
+			public RepeatStatus doInIteration(RepeatContext context) throws Exception {
+				count++; // for test assertion
+				return super.doInIteration(context);
+			}
+
+		});
+
+		assertEquals(NUMBER_OF_ITEMS, processor.count);
+		assertFalse(result.isContinuable());
+		assertTrue("Expected at least 3 chunks but found: "+count, count>=3);
+
+	}
+
+	/**
+	 * Explicit chunking of input data. Transactions would be laid on at the
+	 * level of template.execute().
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testChunksWithTruncatedItemProvider() throws Exception {
+
+		RepeatTemplate template = new RepeatTemplate();
+
+		// This pattern would work with an asynchronous callback as well
+		// (but non-transactional in that case).
+
+		class Chunker {
+			boolean ready = false;
+
+			int count = 0;
+
+			void set() {
+				ready = true;
+			}
+
+			boolean ready() {
+				return ready;
+			}
+
+			boolean first() {
+				return count == 0;
+			}
+
+			void reset() {
+				count = 0;
+				ready = false;
+			}
+
+			void increment() {
+				count++;
+			}
+		}
+		;
+
+		final Chunker chunker = new Chunker();
+
+		while (!chunker.ready()) {
+
+			TradeReader truncated = new TradeReader() {
+				int count = 0;
+
+				public Trade read() {
+					if (count++ < 2)
+						return provider.read();
+					return null;
+				}
+			};
+			chunker.reset();
+			template.iterate(new TradeRepeatCallback(truncated, processor) {
+
+				public RepeatStatus doInIteration(RepeatContext context) throws Exception {
+					RepeatStatus result = super.doInIteration(context);
+					if (!result.isContinuable() && chunker.first()) {
+						chunker.set();
+					}
+					chunker.increment();
+					return result;
+				}
+
+			});
+
+		}
+
+		assertEquals(NUMBER_OF_ITEMS, processor.count);
+
+	}
+
+}
