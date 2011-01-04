@@ -29,9 +29,6 @@ import java.util.List;
 import org.junit.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.repeat.RepeatContext;
-import org.springframework.repeat.context.RepeatContextSupport;
-import org.springframework.repeat.support.RepeatSynchronizationManager;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -81,15 +78,6 @@ public class StatefulRecoveryRetryTests {
 		// still can't retry, even if policy is closed
 		// (not that this would happen in practice)...
 		assertFalse(retryPolicy.canRetry(context));
-	}
-
-	@Test
-	public void testRecoverWithParent() throws Exception {
-		RepeatContext parent = new RepeatContextSupport(null);
-		RepeatSynchronizationManager.register(new RepeatContextSupport(parent));
-		testRecover();
-		assertFalse(parent.isCompleteOnly());
-		RepeatSynchronizationManager.clear();
 	}
 
 	@Test

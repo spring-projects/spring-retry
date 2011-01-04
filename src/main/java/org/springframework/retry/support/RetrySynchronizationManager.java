@@ -16,7 +16,6 @@
 
 package org.springframework.retry.support;
 
-import org.springframework.repeat.RepeatOperations;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
@@ -52,7 +51,7 @@ public final class RetrySynchronizationManager {
 
 	/**
 	 * Method for registering a context - should only be used by
-	 * {@link RetryOperations} implementations to ensure that
+	 * {@link org.springframework.repeat.RepeatOperations} implementations to ensure that
 	 * {@link #getContext()} always returns the correct value.
 	 * 
 	 * @param context the new context to register

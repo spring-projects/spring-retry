@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.repeat.RepeatException;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -469,7 +468,7 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Re-throws the original throwable if it is unchecked, wraps checked
-	 * exceptions into {@link RepeatException}.
+	 * exceptions into {@link RetryException}.
 	 */
 	private static Exception wrapIfNecessary(Throwable throwable) {
 		if (throwable instanceof Error) {
