@@ -8,6 +8,16 @@
 	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<name>Spring Retry</name>
 	<url>http://www.springsource.org</url>
+	<organization>
+		<name>SpringSource</name>
+		<url>http://www.springsource.com</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
 	<packaging>jar</packaging>
 	<properties>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
@@ -45,6 +55,20 @@
 			</distributionManagement>
 		</profile>
 	</profiles>
+
+	<scm>
+		<url>http://github.com/SpringSource/spring-retry</url>
+		<connection>scm:git:git://github.com/SpringSource/spring-retry.git</connection>
+		<developerConnection>scm:git:git://github.com/SpringSource/spring-retry.git</developerConnection>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>dsyer</id>
+			<name>Dave Syer</name>
+			<email>david.syer@springsource.com</email>
+		</developer>
+	</developers>
 
 	<distributionManagement>
 		<!-- see 'staging' profile for dry-run deployment settings -->
@@ -113,6 +137,8 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.14</version>
+			<optional>true</optional>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
