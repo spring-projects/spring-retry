@@ -35,6 +35,7 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -243,6 +244,28 @@ public class RetryTemplateTests {
 		}
 		catch (Error e) {
 			assertEquals("Realllly bad!", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testFailedPolicy() throws Exception {
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(new NeverRetryPolicy() {
+			@Override
+			public void registerThrowable(RetryContext context, Throwable throwable) {
+				throw new RuntimeException("Planned");
+			}
+		});
+		try {
+			retryTemplate.execute(new RetryCallback<Object>() {
+				public Object doWithRetry(RetryContext context) throws Exception {
+					throw new RuntimeException("Realllly bad!");
+				}
+			});
+			fail("Expected Error");
+		}
+		catch (TerminatedRetryException e) {
+			assertEquals("Planned", e.getCause().getMessage());
 		}
 	}
 
