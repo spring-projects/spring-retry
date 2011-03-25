@@ -16,6 +16,7 @@
 
 package org.springframework.retry;
 
+@SuppressWarnings("serial")
 public class TerminatedRetryException extends RetryException {
 
 	public TerminatedRetryException(String msg, Throwable cause) {

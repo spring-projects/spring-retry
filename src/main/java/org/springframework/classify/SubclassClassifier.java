@@ -132,6 +132,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @author Dave Syer
 	 * 
 	 */
+	@SuppressWarnings("serial")
 	private static class ClassComparator implements Comparator<Class<?>>, Serializable {
 		/**
 		 * @return 1 if arg0 is assignable from arg1, -1 otherwise

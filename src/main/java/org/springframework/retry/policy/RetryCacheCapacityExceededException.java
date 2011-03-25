@@ -28,6 +28,7 @@ import org.springframework.retry.RetryException;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class RetryCacheCapacityExceededException extends RetryException {
 
 	/**

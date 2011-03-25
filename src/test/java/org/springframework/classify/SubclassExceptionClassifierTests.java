@@ -71,6 +71,7 @@ public class SubclassExceptionClassifierTests {
 		assertEquals(classifier.getDefault(), classifier.classify(new RuntimeException("Foo")));
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyAncestorMatch() {
 		classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {

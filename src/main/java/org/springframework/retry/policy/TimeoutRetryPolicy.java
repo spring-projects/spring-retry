@@ -75,6 +75,7 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 		// otherwise no-op - we only time out, otherwise retry everything...
 	}
 
+	@SuppressWarnings("serial")
 	private static class TimeoutRetryContext extends RetryContextSupport {
 		private long timeout;
 

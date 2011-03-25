@@ -20,6 +20,7 @@ import org.springframework.core.AttributeAccessorSupport;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 
+@SuppressWarnings("serial")
 public class RetryContextSupport extends AttributeAccessorSupport implements RetryContext {
 
 	private boolean terminate = false;

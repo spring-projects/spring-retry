@@ -26,6 +26,7 @@ import org.springframework.retry.RetryException;
  * @author Rob Harrop
  * @since 2.1
  */
+@SuppressWarnings("serial")
 public class BackOffInterruptedException extends RetryException {
 
 	public BackOffInterruptedException(String msg) {

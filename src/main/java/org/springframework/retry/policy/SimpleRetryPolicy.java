@@ -133,6 +133,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 		return new SimpleRetryContext(parent);
 	}
 
+	@SuppressWarnings("serial")
 	private static class SimpleRetryContext extends RetryContextSupport {
 		public SimpleRetryContext(RetryContext parent) {
 			super(parent);
