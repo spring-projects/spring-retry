@@ -5,6 +5,8 @@
 	<artifactId>spring-retry</artifactId>
 	<version>1.0.0.RELEASE</version>
 	<name>Spring Retry</name>
+	<description><![CDATA[Spring Retry provides an abstraction around retrying failed operations, with an emphasis on declarative control of the process and policy-based bahaviour that is easy to extend and customize.  For instance, you can configure a plain POJO operation to retry if it fails, based on the type of exception, and with a fixed or exponential backoff.
+    ]]></description>
 	<url>http://www.springsource.org</url>
 	<organization>
 		<name>SpringSource</name>
@@ -76,6 +78,23 @@
 				<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 			  </repository>
 			</distributionManagement>
+			<build>
+			  <plugins>
+				<plugin>
+				  <groupId>org.apache.maven.plugins</groupId>
+				  <artifactId>maven-gpg-plugin</artifactId>
+				  <executions>
+					<execution>
+					  <id>sign-artifacts</id>
+					  <phase>verify</phase>
+					  <goals>
+						<goal>sign</goal>
+					  </goals>
+					</execution>
+				  </executions>
+				</plugin>
+			  </plugins>
+			</build>
 		</profile>
 	</profiles>
 
@@ -239,7 +258,7 @@
 				  <goals>
 					<goal>jar</goal>
 				  </goals>
-				  <phase>deploy</phase>
+				  <phase>package</phase>
 				</execution>
 			  </executions>
 			</plugin>
@@ -251,7 +270,7 @@
 				  <goals>
 					<goal>jar</goal>
 				  </goals>
-				  <phase>deploy</phase>
+				  <phase>package</phase>
 				</execution>
 			  </executions>
 			</plugin>

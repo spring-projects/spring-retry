@@ -1,9 +1,8 @@
-Bundle-SymbolicName: org.springframework.commons.retry
-Bundle-Name: Spring Commons Retry
+Bundle-SymbolicName: org.springframework.retry
+Bundle-Name: Spring Retry
 Bundle-Vendor: SpringSource
 Bundle-ManifestVersion: 2
 Import-Template: 
- org.springframework.commons.*;version="[1.0.0, 2.0.0)",
  org.springframework.beans.*;version="[3.0.0, 4.0.0)",
  org.springframework.context.*;version="[3.0.0, 4.0.0)",
  org.springframework.core.*;version="[3.0.0, 4.0.0)",
