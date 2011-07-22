@@ -51,7 +51,7 @@ public final class RetrySynchronizationManager {
 
 	/**
 	 * Method for registering a context - should only be used by
-	 * {@link org.springframework.repeat.RepeatOperations} implementations to ensure that
+	 * {@link RetryOperations} implementations to ensure that
 	 * {@link #getContext()} always returns the correct value.
 	 * 
 	 * @param context the new context to register
@@ -65,7 +65,7 @@ public final class RetrySynchronizationManager {
 
 	/**
 	 * Clear the current context at the end of a batch - should only be used by
-	 * {@link RepeatOperations} implementations.
+	 * {@link RetryOperations} implementations.
 	 * 
 	 * @return the old value if there was one.
 	 */
