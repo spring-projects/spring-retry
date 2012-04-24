@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -67,6 +68,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * 
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class RetryTemplate implements RetryOperations {
 
@@ -220,8 +222,22 @@ public class RetryTemplate implements RetryOperations {
 				throw new TerminatedRetryException("Retry terminated abnormally by interceptor before first attempt");
 			}
 
-			// Start the backoff context...
-			BackOffContext backOffContext = backOffPolicy.start(context);
+			// Get or Start the backoff context...
+			BackOffContext backOffContext = null;
+			RetryContextSupport retryContextSupport = null;
+			if (context instanceof RetryContextSupport) {
+				retryContextSupport = (RetryContextSupport) context;
+				Object resource = retryContextSupport.getAttribute("backOffContext");
+				if (resource instanceof BackOffContext) {
+					backOffContext = (BackOffContext) resource;
+				}
+			}
+			if (backOffContext == null) {
+				backOffContext = backOffPolicy.start(context);
+				if (retryContextSupport != null && backOffContext != null) {
+					retryContextSupport.setAttribute("backOffContext", backOffContext);
+				}
+			}
 
 			/*
 			 * We allow the whole loop to be skipped if the policy or context

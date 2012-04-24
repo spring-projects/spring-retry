@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
 import org.springframework.retry.ExhaustedRetryException;
+import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryState;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  * 
  */
 public class StatefulRetryIntegrationTests {
@@ -112,6 +117,38 @@ public class StatefulRetryIntegrationTests {
 
 		assertEquals(2, callback.attempts);
 		assertEquals("bar", result);
+	}
+
+	@Test
+	public void testExponentialBackOffIsExponential() throws Exception {
+		ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
+		policy.setInitialInterval(100);
+		policy.setMultiplier(1.5);
+		RetryTemplate template = new RetryTemplate();
+		template.setBackOffPolicy(policy);
+		final List<Long> times = new ArrayList<Long>();
+		RetryState retryState = new DefaultRetryState("bar");
+		for (int i = 0; i < 3; i++) {
+			try {
+				template.execute(new RetryCallback<String>() {
+					public String doWithRetry(RetryContext context) throws Exception {
+						times.add(System.currentTimeMillis());
+						throw new Exception("Fail");
+					}
+				}, new RecoveryCallback<String>() {
+					public String recover(RetryContext context)
+							throws Exception {
+						return null;
+					}
+				}, retryState);
+			}
+			catch (Exception e) {
+				assertTrue(e.getMessage().equals("Fail"));
+			}
+		}
+		assertEquals(3, times.size());
+		assertTrue(times.get(1) - times.get(0) >= 100);
+		assertTrue(times.get(2) - times.get(1) >= 150);
 	}
 
 	/**
