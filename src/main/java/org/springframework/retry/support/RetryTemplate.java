@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.AttributeAccessor;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -37,7 +38,6 @@ import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
-import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -224,18 +224,18 @@ public class RetryTemplate implements RetryOperations {
 
 			// Get or Start the backoff context...
 			BackOffContext backOffContext = null;
-			RetryContextSupport retryContextSupport = null;
-			if (context instanceof RetryContextSupport) {
-				retryContextSupport = (RetryContextSupport) context;
-				Object resource = retryContextSupport.getAttribute("backOffContext");
+			AttributeAccessor attributeAccessor = null;
+			if (context instanceof AttributeAccessor) {
+				attributeAccessor = (AttributeAccessor) context;
+				Object resource = attributeAccessor.getAttribute("backOffContext");
 				if (resource instanceof BackOffContext) {
 					backOffContext = (BackOffContext) resource;
 				}
 			}
 			if (backOffContext == null) {
 				backOffContext = backOffPolicy.start(context);
-				if (retryContextSupport != null && backOffContext != null) {
-					retryContextSupport.setAttribute("backOffContext", backOffContext);
+				if (attributeAccessor != null && backOffContext != null) {
+					attributeAccessor.setAttribute("backOffContext", backOffContext);
 				}
 			}
 
