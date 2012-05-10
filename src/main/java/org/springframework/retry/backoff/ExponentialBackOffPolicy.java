@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.retry.backoff;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.retry.RetryContext;
 import org.springframework.util.ClassUtils;
 
@@ -35,9 +37,11 @@ import org.springframework.util.ClassUtils;
  * 
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class ExponentialBackOffPolicy implements BackOffPolicy {
 
+	protected final Log logger = LogFactory.getLog(this.getClass());
 	/**
 	 * The default 'initialInterval' value - 100 millisecs. Coupled with the
 	 * default 'multiplier' value this gives a useful initial spread of pauses
@@ -151,7 +155,11 @@ public class ExponentialBackOffPolicy implements BackOffPolicy {
 	public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 		ExponentialBackOffContext context = (ExponentialBackOffContext) backOffContext;
 		try {
-			sleeper.sleep(context.getSleepAndIncrement());
+			long sleepTime = context.getSleepAndIncrement();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Sleeping for " + sleepTime);
+			}
+			sleeper.sleep(sleepTime);
 		}
 		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
