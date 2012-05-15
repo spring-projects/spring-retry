@@ -42,15 +42,15 @@
 			<distributionManagement>
 				<site>
 					<id>spring-site-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-amqp/docs</url>
+					<url>file:///${java.io.tmpdir}/spring-retry/docs</url>
 				</site>
 				<repository>
 					<id>spring-milestone-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-amqp/milestone</url>
+					<url>file:///${java.io.tmpdir}/spring-retry/milestone</url>
 				</repository>
 				<snapshotRepository>
 					<id>spring-snapshot-staging</id>
-					<url>file:///${java.io.tmpdir}/spring-amqp/snapshot</url>
+					<url>file:///${java.io.tmpdir}/spring-retry/snapshot</url>
 				</snapshotRepository>
 			</distributionManagement>
 		</profile>
