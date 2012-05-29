@@ -184,7 +184,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 	}
 
-	private static class ExponentialBackOffContext implements BackOffContext {
+    static class ExponentialBackOffContext implements BackOffContext {
 
 		private final double multiplier;
 
@@ -198,16 +198,32 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 			this.maxInterval = maxInterval;
 		}
 
-		public synchronized long getSleepAndIncrement() {
-			long sleep = this.interval;
-			if (sleep > maxInterval) {
-				sleep = (long) maxInterval;
-			}
-			else {
-				this.interval *= this.multiplier;
-			}
-			return sleep;
-		}
+        public synchronized long getSleepAndIncrement() {
+            long sleep = this.interval;
+            if (sleep > maxInterval) {
+                sleep = (long) maxInterval;
+            }
+            else {
+                this.interval = getNextInterval();
+            }
+            return sleep;
+        }
+
+        protected long getNextInterval() {
+            return (long)(this.interval * this.multiplier);
+        }
+
+        public double getMultiplier() {
+            return multiplier;
+        }
+
+        public long getInterval() {
+            return interval;
+        }
+
+        public long getMaxInterval() {
+            return maxInterval;
+        }
 	}
 
 	public String toString() {
