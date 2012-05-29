@@ -27,7 +27,7 @@ package org.springframework.retry.backoff;
  * @author Rob Harrop
  * @author Dave Syer
  */
-public class FixedBackOffPolicy extends StatelessBackOffPolicy {
+public class FixedBackOffPolicy extends StatelessBackOffPolicy implements SleepingBackOffPolicy<FixedBackOffPolicy> {
 
 	/**
 	 * Default back off period - 1000ms.
@@ -41,7 +41,14 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy {
 
 	
 	private Sleeper sleeper = new ObjectWaitSleeper();
-	
+
+    public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
+        FixedBackOffPolicy res = new FixedBackOffPolicy();
+        res.setBackOffPeriod(backOffPeriod);
+        res.setSleeper(sleeper);
+        return res;
+    }
+
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
 	 * @param sleeper the sleeper to set defaults to {@link ObjectWaitSleeper}.
@@ -78,4 +85,8 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
+
+    public String toString() {
+        return "FixedBackOffPolicy[backOffPeriod=" + backOffPeriod + "]";
+    }
 }

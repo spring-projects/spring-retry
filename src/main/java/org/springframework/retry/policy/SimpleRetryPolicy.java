@@ -23,6 +23,7 @@ import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
+import org.springframework.util.ClassUtils;
 
 /**
  * 
@@ -150,4 +151,8 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	private boolean retryForException(Throwable ex) {
 		return retryableClassifier.classify(ex);
 	}
+
+    public String toString() {
+        return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + maxAttempts + "]";
+    }
 }

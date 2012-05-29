@@ -39,7 +39,7 @@ import org.springframework.util.ClassUtils;
  * @author Dave Syer
  * @author Gary Russell
  */
-public class ExponentialBackOffPolicy implements BackOffPolicy {
+public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
 
 	protected final Log logger = LogFactory.getLog(this.getClass());
 	/**
@@ -83,6 +83,24 @@ public class ExponentialBackOffPolicy implements BackOffPolicy {
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;
 	}
+
+    public ExponentialBackOffPolicy withSleeper(Sleeper sleeper) {
+        ExponentialBackOffPolicy res = newInstance();
+        cloneValues(res);
+        res.setSleeper(sleeper);
+        return res;
+    }
+
+    protected ExponentialBackOffPolicy newInstance() {
+        return new ExponentialBackOffPolicy();
+    }
+
+    protected void cloneValues(ExponentialBackOffPolicy target) {
+        target.setInitialInterval(getInitialInterval());
+        target.setMaxInterval(getMaxInterval());
+        target.setMultiplier(getMultiplier());
+        target.setSleeper(sleeper);
+    }
 
 	/**
 	 * Set the initial sleep interval value. Default is <code>100</code>
