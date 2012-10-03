@@ -27,13 +27,24 @@ import org.springframework.retry.context.RetryContextSupport;
 /**
  * A {@link RetryPolicy} that composes a list of other policies and delegates
  * calls to them in order.
- * 
+ *
  * @author Dave Syer
- * 
+ * @author Michael Minella
+ *
  */
 public class CompositeRetryPolicy implements RetryPolicy {
 
 	RetryPolicy[] policies = new RetryPolicy[0];
+	private boolean optimistic = false;
+
+	/**
+	 * Setter for optimistic.
+	 *
+	 * @param optimistic
+	 */
+	public void setOptimistic(boolean optimistic) {
+		this.optimistic = optimistic;
+	}
 
 	/**
 	 * Setter for policies.
@@ -54,12 +65,26 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	public boolean canRetry(RetryContext context) {
 		RetryContext[] contexts = ((CompositeRetryContext) context).contexts;
 		RetryPolicy[] policies = ((CompositeRetryContext) context).policies;
-		for (int i = 0; i < contexts.length; i++) {
-			if (!policies[i].canRetry(contexts[i])) {
-				return false;
+
+		boolean retryable = true;
+
+		if(optimistic) {
+			retryable = false;
+			for (int i = 0; i < contexts.length; i++) {
+				if (policies[i].canRetry(contexts[i])) {
+					retryable = true;
+				}
 			}
 		}
-		return true;
+		else {
+			for (int i = 0; i < contexts.length; i++) {
+				if (!policies[i].canRetry(contexts[i])) {
+					retryable = false;
+				}
+			}
+		}
+
+		return retryable;
 	}
 
 	/**

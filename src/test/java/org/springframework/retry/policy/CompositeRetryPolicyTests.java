@@ -135,4 +135,16 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertSame(context, child.getParent());
 	}
 
+	public void testOptimistic() throws Exception {
+		CompositeRetryPolicy policy = new CompositeRetryPolicy();
+		policy.setOptimistic(true);
+		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {
+			public boolean canRetry(RetryContext context) {
+				return false;
+			}
+		}, new MockRetryPolicySupport() });
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		assertTrue(policy.canRetry(context));
+	}
 }
