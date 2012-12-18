@@ -16,81 +16,74 @@
 
 package org.springframework.retry.support;
 
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 public class RetrySimulationTests {
-    @Test
-    public void testSimulatorExercisesFixedBackoff() {
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(5);
 
-        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
-        backOffPolicy.setBackOffPeriod(400);
+	@Test
+	public void testSimulatorExercisesFixedBackoff() {
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(5);
 
-        RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
-        RetrySimulation simulation = simulator.executeSimulation(1000);
-        System.out.println(backOffPolicy);
-        System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
-        System.out.println("All Sleeps:       " + simulation.getUniqueSleeps());
-        System.out.println("Sleep Occurences: " + simulation.getUniqueSleepsHistogram());
+		FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+		backOffPolicy.setBackOffPeriod(400);
 
-        assertEquals(asList(400l, 400l, 400l, 400l), simulation.getLongestTotalSleepSequence().getSleeps());
-        assertEquals(asList(400l), simulation.getUniqueSleeps());
-        assertEquals(asList(4000l), simulation.getUniqueSleepsHistogram());
-    }
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
+		RetrySimulation simulation = simulator.executeSimulation(1000);
+		System.out.println(backOffPolicy);
+		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println("Percentiles:       " + simulation.getPercentiles());
 
-    @Test
-    public void testSimulatorExercisesExponentialBackoff() {
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(5);
+		assertEquals(asList(400l, 400l, 400l, 400l), simulation.getLongestTotalSleepSequence().getSleeps());
+		assertEquals(asList(400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d), simulation.getPercentiles());
+		assertEquals(400d, simulation.getPercentile(0.5),0.1);
+	}
 
-        ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
-        backOffPolicy.setMultiplier(2);
-        backOffPolicy.setMaxInterval(30000);
-        backOffPolicy.setInitialInterval(100);
+	@Test
+	public void testSimulatorExercisesExponentialBackoff() {
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(5);
 
-        RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
-        RetrySimulation simulation = simulator.executeSimulation(1000);
-        System.out.println(backOffPolicy);
-        System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
-        System.out.println("All Sleeps:       " + simulation.getUniqueSleeps());
-        System.out.println("Sleep Occurences: " + simulation.getUniqueSleepsHistogram());
+		ExponentialBackOffPolicy backOffPolicy = new ExponentialBackOffPolicy();
+		backOffPolicy.setMultiplier(2);
+		backOffPolicy.setMaxInterval(30000);
+		backOffPolicy.setInitialInterval(100);
 
-        assertEquals(asList(100l, 200l, 400l, 800l), simulation.getLongestTotalSleepSequence().getSleeps());
-        assertEquals(asList(100l, 200l, 400l, 800l), simulation.getUniqueSleeps());
-        assertEquals(asList(1000l, 1000l, 1000l, 1000l), simulation.getUniqueSleepsHistogram());
-    }
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
+		RetrySimulation simulation = simulator.executeSimulation(1000);
+		System.out.println(backOffPolicy);
+		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println("Percentiles:       " + simulation.getPercentiles());
 
-    @Test
-    public void testSimulatorExercisesRandomExponentialBackoff() {
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(5);
+		assertEquals(asList(100l, 200l, 400l, 800l), simulation.getLongestTotalSleepSequence().getSleeps());
+		assertEquals(asList(100d, 100d, 200d, 200d, 300d, 400d, 400d, 800d, 800d), simulation.getPercentiles());
+		assertEquals(300d, simulation.getPercentile(0.5f), 0.1);
+	}
 
-        ExponentialBackOffPolicy backOffPolicy = new ExponentialRandomBackOffPolicy();
-        backOffPolicy.setMultiplier(2);
-        backOffPolicy.setMaxInterval(30000);
-        backOffPolicy.setInitialInterval(100);
+	@Test
+	public void testSimulatorExercisesRandomExponentialBackoff() {
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(5);
 
-        RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
-        RetrySimulation simulation = simulator.executeSimulation(10000);
-        System.out.println(backOffPolicy);
-        System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
-        System.out.println("All Sleeps:       " + simulation.getUniqueSleeps());
-        System.out.println("Sleep Occurences: " + simulation.getUniqueSleepsHistogram());
+		ExponentialBackOffPolicy backOffPolicy = new ExponentialRandomBackOffPolicy();
+		backOffPolicy.setMultiplier(2);
+		backOffPolicy.setMaxInterval(30000);
+		backOffPolicy.setInitialInterval(100);
 
-        assertEquals(asList(100l, 200l, 400l, 800l), simulation.getLongestTotalSleepSequence().getSleeps());
-        assertEquals(asList(100l, 200l, 300l, 400l, 500l, 600l, 700l, 800l), simulation.getUniqueSleeps());
-        for (long histo : simulation.getUniqueSleepsHistogram()) {
-            assertTrue("Should have experienced a sleep more than " + histo + " times",
-                       histo > 1000);
-        }
-    }
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
+		RetrySimulation simulation = simulator.executeSimulation(10000);
+		System.out.println(backOffPolicy);
+		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println("Percentiles:       " + simulation.getPercentiles());
+
+		assertTrue(simulation.getPercentiles().size() > 4);
+	}
 }

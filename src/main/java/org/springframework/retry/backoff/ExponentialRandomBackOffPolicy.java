@@ -40,6 +40,7 @@ import java.util.Random;
  * {@link ExponentialRandomBackOffPolicy} may yield   [50, 100, 100, 100, 600]
  *                                               or   [50, 100, 150, 400, 800]
  * @author Jon Travis
+ * @author Dave Syer
  */
 public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
     /**
@@ -56,19 +57,17 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 
     static class ExponentialRandomBackOffContext extends ExponentialBackOffPolicy.ExponentialBackOffContext {
         private final Random r = new Random();
-        private final long initialInterval;
-        private long intervalIdx;
 
         public ExponentialRandomBackOffContext(long expSeed, double multiplier, long maxInterval) {
             super(expSeed, multiplier, maxInterval);
-            this.initialInterval = expSeed;
-            this.intervalIdx = 0;
+        }
+        
+        @Override
+        public synchronized long getSleepAndIncrement() {
+        	long next = super.getSleepAndIncrement();
+        	next = (long)(next*(1 + r.nextFloat()*(getMultiplier()-1)));
+        	return next;
         }
 
-        @Override
-        protected synchronized long getNextInterval() {
-            intervalIdx++;
-            return initialInterval + initialInterval * Math.max(1, r.nextInt((int)Math.pow(getMultiplier(), intervalIdx)));
-        }
     }
 }

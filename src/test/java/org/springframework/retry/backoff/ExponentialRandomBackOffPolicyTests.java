@@ -16,14 +16,13 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.List;
+
 import junit.framework.TestCase;
-import org.springframework.retry.RetryContext;
-import org.springframework.retry.RetryPolicy;
+
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetrySimulation;
 import org.springframework.retry.support.RetrySimulator;
-
-import java.util.*;
 
 public class ExponentialRandomBackOffPolicyTests extends TestCase {
     static final int NUM_TRIALS = 10000;
@@ -53,9 +52,7 @@ public class ExponentialRandomBackOffPolicyTests extends TestCase {
         assertEquals(MAX_RETRIES - 1, sleeps.size());
         long initialInterval = backOffPolicy.getInitialInterval();
         for (int i=0; i<sleeps.size(); i++) {
-            assertTrue(sleeps.get(i) % backOffPolicy.getInitialInterval() == 0);
-
-            long expectedMaxValue = (long) (initialInterval + initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
+            long expectedMaxValue = 2*(long) (initialInterval + initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
             assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max expected value of " + expectedMaxValue + " at interval " + i,
                        sleeps.get(i) < expectedMaxValue);
         }
@@ -69,18 +66,10 @@ public class ExponentialRandomBackOffPolicyTests extends TestCase {
         System.out.println("Ran " + NUM_TRIALS + " backoff trials.  Each trial retried " + MAX_RETRIES + " times");
         System.out.println("Policy: " + backOffPolicy);
         System.out.println("All generated backoffs:");
-        System.out.println("    " + simulation.getUniqueSleeps());
+        System.out.println("    " + simulation.getPercentiles());
 
         System.out.println("Backoff frequencies:");
-        System.out.print("    " + simulation.getUniqueSleepsHistogram());
+        System.out.print("    " + simulation.getPercentiles());
 
-        long expectedSleep = backOffPolicy.getInitialInterval();
-        List<Long> allSleeps = simulation.getUniqueSleeps();
-        for (int j=0; j<allSleeps.size(); j++) {
-            long sleep = allSleeps.get(j);
-            assertEquals("Missing a multiple of " + backOffPolicy.getInitialInterval(), sleep, expectedSleep);
-
-            expectedSleep += backOffPolicy.getInitialInterval();
-        }
 	}
 }

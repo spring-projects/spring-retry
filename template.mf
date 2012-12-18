@@ -5,6 +5,7 @@ Bundle-ManifestVersion: 2
 Import-Template: 
  org.springframework.beans.*;version="[3.0.0, 4.0.0)",
  org.springframework.context.*;version="[3.0.0, 4.0.0)",
+ org.springframework.aop.*;version="[3.0.0, 4.0.0)",
  org.springframework.core.*;version="[3.0.0, 4.0.0)",
  org.springframework.jdbc.*;version="[3.0.0, 4.0.0)",
  org.springframework.stereotype.*;version="[3.0.0, 4.0.0)",
@@ -14,4 +15,5 @@ Import-Template:
  org.springframework.web.*;version="[3.0.0, 4.0.0)",
  org.springframework.validation.*;version="[3.0.0, 4.0.0)",
  org.springframework.util;version="[3.0.0, 4.0.0)",
+ org.aopalliance.*;version="[1.0.0, 2.0.0)",
  org.apache.commons.logging;version="[1.1.1, 2.0.0)"

@@ -16,14 +16,14 @@
 
 package org.springframework.retry.support;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.backoff.SleepingBackOffPolicy;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A {@link RetrySimulator} is a tool for exercising retry + backoff operations.
@@ -49,10 +49,11 @@ import java.util.List;
  * @author Jon Travis
  */
 public class RetrySimulator {
-    private final SleepingBackOffPolicy backOffPolicy;
+
+	private final SleepingBackOffPolicy<?> backOffPolicy;
     private final RetryPolicy retryPolicy;
 
-    public RetrySimulator(SleepingBackOffPolicy backOffPolicy, RetryPolicy retryPolicy) {
+    public RetrySimulator(SleepingBackOffPolicy<?> backOffPolicy, RetryPolicy retryPolicy) {
         this.backOffPolicy = backOffPolicy;
         this.retryPolicy   = retryPolicy;
     }
@@ -78,14 +79,14 @@ public class RetrySimulator {
      */
     public List<Long> executeSingleSimulation() {
         StealingSleeper stealingSleeper = new StealingSleeper();
-        SleepingBackOffPolicy stealingBackoff = backOffPolicy.withSleeper(stealingSleeper);
+        SleepingBackOffPolicy<?> stealingBackoff = backOffPolicy.withSleeper(stealingSleeper);
 
         RetryTemplate template = new RetryTemplate();
         template.setBackOffPolicy(stealingBackoff);
         template.setRetryPolicy(retryPolicy);
 
         try {
-            template.execute(new FailingRetryCallback<Object>());
+            template.execute(new FailingRetryCallback());
         } catch(FailingRetryException e) {
 
         } catch(Exception e) {
@@ -95,7 +96,7 @@ public class RetrySimulator {
         return stealingSleeper.getSleeps();
     }
 
-    static class FailingRetryCallback<Object> implements RetryCallback<Object> {
+    static class FailingRetryCallback implements RetryCallback<Object> {
         public Object doWithRetry(RetryContext context) throws Exception {
             throw new FailingRetryException();
         }
