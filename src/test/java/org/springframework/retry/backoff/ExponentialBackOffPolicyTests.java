@@ -16,16 +16,20 @@
 
 package org.springframework.retry.backoff;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @author Rob Harrop
  * @author Dave Syer
  */
-public class ExponentialBackOffPolicyTests extends TestCase {
+public class ExponentialBackOffPolicyTests {
 
 	private DummySleeper sleeper = new DummySleeper();
 
+	@Test
 	public void testSetMaxInterval() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMaxInterval(1000);
@@ -35,6 +39,7 @@ public class ExponentialBackOffPolicyTests extends TestCase {
 		assertTrue(strategy.toString().indexOf("maxInterval=1") >= 0);
 	}
 
+	@Test
 	public void testSetInitialInterval() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setInitialInterval(10000);
@@ -43,6 +48,7 @@ public class ExponentialBackOffPolicyTests extends TestCase {
 		assertTrue(strategy.toString().indexOf("initialInterval=1,") >= 0);
 	}
 
+	@Test
 	public void testSetMultiplier() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMultiplier(3.);
@@ -51,6 +57,7 @@ public class ExponentialBackOffPolicyTests extends TestCase {
 		assertTrue(strategy.toString().indexOf("multiplier=1.") >= 0);
 	}
 
+	@Test
 	public void testSingleBackOff() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setSleeper(sleeper);
@@ -59,6 +66,7 @@ public class ExponentialBackOffPolicyTests extends TestCase {
 		assertEquals(ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL, sleeper.getLastBackOff());
 	}
 
+	@Test
 	public void testMaximumBackOff() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMaxInterval(50);
@@ -68,6 +76,7 @@ public class ExponentialBackOffPolicyTests extends TestCase {
 		assertEquals(50, sleeper.getLastBackOff());
 	}
 
+	@Test
 	public void testMultiBackOff() throws Exception {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		long seed = 40;

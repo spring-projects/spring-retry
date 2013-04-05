@@ -16,17 +16,20 @@
 
 package org.springframework.retry.backoff;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 /**
  * @author Rob Harrop
  * @author Dave Syer
  * @since 2.1
  */
-public class FixedBackOffPolicyTests extends TestCase {
+public class FixedBackOffPolicyTests {
 
 	private DummySleeper sleeper = new DummySleeper();
 
+	@Test
 	public void testSetBackoffPeriodNegative() throws Exception {
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();
 		strategy.setBackOffPeriod(-1000L);
@@ -37,6 +40,7 @@ public class FixedBackOffPolicyTests extends TestCase {
 		assertEquals(1, sleeper.getLastBackOff());
 	}
 
+	@Test
 	public void testSingleBackOff() throws Exception {
 		int backOffPeriod = 50;
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();
@@ -47,6 +51,7 @@ public class FixedBackOffPolicyTests extends TestCase {
 		assertEquals(backOffPeriod, sleeper.getLastBackOff());
 	}
 
+	@Test
 	public void testManyBackOffCalls() throws Exception {
 		int backOffPeriod = 50;
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();

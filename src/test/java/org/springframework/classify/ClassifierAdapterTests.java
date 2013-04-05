@@ -31,7 +31,6 @@ public class ClassifierAdapterTests {
 	@Test
 	public void testClassifierAdapterObject() {
 		adapter = new ClassifierAdapter<String, Integer>(new Object() {
-			@SuppressWarnings("unused")
 			@Classifier
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -93,7 +92,6 @@ public class ClassifierAdapterTests {
 	@Test
 	public void testClassifyWithSetter() {
 		adapter.setDelegate(new Object() {
-			@SuppressWarnings("unused")
 			@Classifier
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -105,7 +103,6 @@ public class ClassifierAdapterTests {
 	@Test(expected=IllegalArgumentException.class)
 	public void testClassifyWithWrongType() {
 		adapter.setDelegate(new Object() {
-			@SuppressWarnings("unused")
 			@Classifier
 			public String getValue(Integer key) {
 				return key.toString();

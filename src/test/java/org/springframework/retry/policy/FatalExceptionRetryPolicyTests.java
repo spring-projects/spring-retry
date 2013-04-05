@@ -16,19 +16,22 @@
 
 package org.springframework.retry.policy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
 
-public class FatalExceptionRetryPolicyTests extends TestCase {
+public class FatalExceptionRetryPolicyTests {
 
+	@Test
 	public void testFatalExceptionWithoutState() throws Exception {
 		MockRetryCallback callback = new MockRetryCallback();
 		callback.setExceptionToThrow(new IllegalArgumentException());
@@ -62,6 +65,7 @@ public class FatalExceptionRetryPolicyTests extends TestCase {
 		assertEquals("bar", result);
 	}
 
+	@Test
 	public void testFatalExceptionWithState() throws Exception {
 		MockRetryCallback callback = new MockRetryCallback();
 		callback.setExceptionToThrow(new IllegalArgumentException());

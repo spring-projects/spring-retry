@@ -16,44 +16,54 @@
 
 package org.springframework.classify;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collection;
 import java.util.Collections;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class BinaryExceptionClassifierTests extends TestCase {
+public class BinaryExceptionClassifierTests {
 
 	BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(false);
 
+	@Test
 	public void testClassifyNullIsDefault() {
 		assertFalse(classifier.classify(null));
 	}
 
+	@Test
 	public void testFalseIsDefault() {
 		assertFalse(classifier.getDefault());
 	}
 
+	@Test
 	public void testDefaultProvided() {
 		classifier = new BinaryExceptionClassifier(true);
 		assertTrue(classifier.getDefault());
 	}
 
+	@Test
 	public void testClassifyRandomException() {
 		assertFalse(classifier.classify(new IllegalStateException("foo")));
 	}
 
+	@Test
 	public void testClassifyExactMatch() {
 		Collection<Class<? extends Throwable>> set = Collections
 				.<Class<? extends Throwable>> singleton(IllegalStateException.class);
 		assertTrue(new BinaryExceptionClassifier(set).classify(new IllegalStateException("Foo")));
 	}
 
+	@Test
 	public void testTypesProvidedInConstructor() {
 		classifier = new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>> singleton(IllegalStateException.class));
 		assertTrue(classifier.classify(new IllegalStateException("Foo")));
 	}
 
+	@Test
 	public void testTypesProvidedInConstructorWithNonDefault() {
 		classifier = new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>> singleton(IllegalStateException.class), false);

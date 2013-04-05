@@ -16,15 +16,22 @@
 
 package org.springframework.retry.backoff;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetrySimulation;
 import org.springframework.retry.support.RetrySimulator;
 
-public class ExponentialRandomBackOffPolicyTests extends TestCase {
+/**
+ * @author Dave Syer
+ * @author Jon Travis
+ *
+ */
+public class ExponentialRandomBackOffPolicyTests {
     static final int NUM_TRIALS = 10000;
     static final int MAX_RETRIES = 6;
 
@@ -42,7 +49,8 @@ public class ExponentialRandomBackOffPolicyTests extends TestCase {
         return retryPolicy;
     }
 
-    public void testSingleBackoff() throws Exception {
+	@Test
+   public void testSingleBackoff() throws Exception {
         ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
         RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
         RetrySimulation simulation = simulator.executeSimulation(1);
@@ -58,6 +66,7 @@ public class ExponentialRandomBackOffPolicyTests extends TestCase {
         }
     }
 
+	@Test
 	public void testMultiBackOff() throws Exception {
         ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
         RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());

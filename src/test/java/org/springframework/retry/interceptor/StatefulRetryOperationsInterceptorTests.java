@@ -15,15 +15,19 @@
  */
 package org.springframework.retry.interceptor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
@@ -37,7 +41,7 @@ import org.springframework.retry.support.RetryTemplate;
  * @author Dave Syer
  * 
  */
-public class StatefulRetryOperationsInterceptorTests extends TestCase {
+public class StatefulRetryOperationsInterceptorTests {
 
 	private StatefulRetryOperationsInterceptor interceptor;
 
@@ -49,6 +53,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 
 	private static int count;
 
+	@Before
 	public void setUp() throws Exception {
 		interceptor = new StatefulRetryOperationsInterceptor();
 		service = (Service) ProxyFactory.getProxy(Service.class, new SingletonTargetSource(new ServiceImpl()));
@@ -57,6 +62,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		count = 0;
 	}
 
+	@Test
 	public void testDefaultInterceptorSunnyDay() throws Exception {
 		((Advised) service).addAdvice(interceptor);
 		try {
@@ -70,6 +76,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(1, count);
 	}
 
+	@Test
 	public void testDefaultTransformerInterceptorSunnyDay() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
 		try {
@@ -83,6 +90,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(1, count);
 	}
 
+	@Test
 	public void testDefaultInterceptorAlwaysRetry() throws Exception {
 		retryTemplate.setRetryPolicy(new AlwaysRetryPolicy());
 		interceptor.setRetryOperations(retryTemplate);
@@ -98,6 +106,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(1, count);
 	}
 
+	@Test
 	public void testInterceptorChainWithRetry() throws Exception {
 		((Advised) service).addAdvice(interceptor);
 		final List<String> list = new ArrayList<String>();
@@ -124,6 +133,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(2, list.size());
 	}
 
+	@Test
 	public void testTransformerWithSuccessfulRetry() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);
@@ -143,6 +153,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(1, result.size());
 	}
 
+	@Test
 	public void testRetryExceptionAfterTooManyAttemptsWithNoRecovery() throws Exception {
 		((Advised) service).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);
@@ -168,6 +179,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(1, count);
 	}
 
+	@Test
 	public void testRecoveryAfterTooManyAttempts() throws Exception {
 		((Advised) service).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);
@@ -191,6 +203,7 @@ public class StatefulRetryOperationsInterceptorTests extends TestCase {
 		assertEquals(2, count);
 	}
 
+	@Test
 	public void testTransformerRecoveryAfterTooManyAttempts() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);

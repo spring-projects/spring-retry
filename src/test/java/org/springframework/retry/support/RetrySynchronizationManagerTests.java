@@ -16,8 +16,13 @@
 
 package org.springframework.retry.support;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.context.RetryContextSupport;
@@ -25,17 +30,18 @@ import org.springframework.retry.context.RetryContextSupport;
 /**
  * @author Dave Syer
  */
-public class RetrySynchronizationManagerTests extends TestCase {
+public class RetrySynchronizationManagerTests {
 
 	RetryTemplate template = new RetryTemplate();
 
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		RetrySynchronizationManagerTests.clearAll();
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
 	}
 
+	@Test
 	public void testStatusIsStoredByTemplate() throws Exception {
 
 		RetryContext status = RetrySynchronizationManager.getContext();
@@ -54,6 +60,7 @@ public class RetrySynchronizationManagerTests extends TestCase {
 		assertNull(status);
 	}
 
+	@Test
 	public void testStatusRegistration() throws Exception {
 		RetryContext status = new RetryContextSupport(null);
 		RetryContext value = RetrySynchronizationManager.register(status);
@@ -62,6 +69,7 @@ public class RetrySynchronizationManagerTests extends TestCase {
 		assertEquals(status, value);
 	}
 
+	@Test
 	public void testClear() throws Exception {
 		RetryContext status = new RetryContextSupport(null);
 		RetryContext value = RetrySynchronizationManager.register(status);
@@ -71,6 +79,7 @@ public class RetrySynchronizationManagerTests extends TestCase {
 		assertNull(value);
 	}
 
+	@Test
 	public void testParent() throws Exception {
 		RetryContext parent = new RetryContextSupport(null);
 		RetryContext child = new RetryContextSupport(parent);

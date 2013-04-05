@@ -16,15 +16,19 @@
 
 package org.springframework.retry;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
 
-public abstract class AbstractExceptionTests extends TestCase {
+import org.junit.Test;
 
+public abstract class AbstractExceptionTests {
+
+	@Test
 	public void testExceptionString() throws Exception {
 		Exception exception = getException("foo");
 		assertEquals("foo", exception.getMessage());
 	}
 
+	@Test
 	public void testExceptionStringThrowable() throws Exception {
 		Exception exception = getException("foo", new IllegalStateException());
 		assertEquals("foo", exception.getMessage().substring(0, 3));

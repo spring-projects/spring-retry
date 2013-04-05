@@ -16,12 +16,18 @@
 
 package org.springframework.retry.policy;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
 import org.springframework.retry.RetryContext;
 
-public class AlwaysRetryPolicyTests extends TestCase {
+public class AlwaysRetryPolicyTests {
 
+	@Test
 	public void testSimpleOperations() throws Exception {
 		AlwaysRetryPolicy policy = new AlwaysRetryPolicy();
 		RetryContext context = policy.open(null);
@@ -33,6 +39,7 @@ public class AlwaysRetryPolicyTests extends TestCase {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@Test
 	public void testRetryCount() throws Exception {
 		AlwaysRetryPolicy policy = new AlwaysRetryPolicy();
 		RetryContext context = policy.open(null);
@@ -44,6 +51,7 @@ public class AlwaysRetryPolicyTests extends TestCase {
 		assertEquals("foo", context.getLastThrowable().getMessage());
 	}
 
+	@Test
 	public void testParent() throws Exception {
 		AlwaysRetryPolicy policy = new AlwaysRetryPolicy();
 		RetryContext context = policy.open(null);

@@ -59,7 +59,6 @@ public class BackToBackPatternClassifierTests {
 	@Test
 	public void testSetRouterDelegate() {
 		classifier.setRouterDelegate(new Object() {
-			@SuppressWarnings("unused")
 			@Classifier
 			public String convert(String value) {
 				return "bucket";

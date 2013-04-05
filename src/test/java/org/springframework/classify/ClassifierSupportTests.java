@@ -16,17 +16,19 @@
 
 package org.springframework.classify;
 
-import org.springframework.classify.ClassifierSupport;
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class ClassifierSupportTests extends TestCase {
+public class ClassifierSupportTests {
 
+	@Test
 	public void testClassifyNullIsDefault() {
 		ClassifierSupport<String,String> classifier = new ClassifierSupport<String,String>("foo");
 		assertEquals(classifier.classify(null), "foo");
 	}
 
+	@Test
 	public void testClassifyRandomException() {
 		ClassifierSupport<Throwable,String> classifier = new ClassifierSupport<Throwable,String>("foo");
 		assertEquals(classifier.classify(new IllegalStateException("Foo")), classifier.classify(null));

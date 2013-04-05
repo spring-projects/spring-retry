@@ -16,11 +16,14 @@
 
 package org.springframework.retry.listener;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
@@ -28,7 +31,7 @@ import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
-public class RetryListenerTests extends TestCase {
+public class RetryListenerTests {
 
 	RetryTemplate template = new RetryTemplate();
 
@@ -36,6 +39,7 @@ public class RetryListenerTests extends TestCase {
 
 	List<String> list = new ArrayList<String>();
 
+	@Test
 	public void testOpenInterceptors() throws Exception {
 		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
 			public <T> boolean open(RetryContext context, RetryCallback<T> callback) {
@@ -60,6 +64,7 @@ public class RetryListenerTests extends TestCase {
 		assertEquals("1:1", list.get(0));
 	}
 
+	@Test
 	public void testOpenCanVetoRetry() throws Exception {
 		template.registerListener(new RetryListenerSupport() {
 			public <T> boolean open(RetryContext context, RetryCallback<T> callback) {
@@ -84,6 +89,7 @@ public class RetryListenerTests extends TestCase {
 		assertEquals("1", list.get(0));
 	}
 
+	@Test
 	public void testCloseInterceptors() throws Exception {
 		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
 			public <T> void close(RetryContext context, RetryCallback<T> callback, Throwable t) {
@@ -107,6 +113,7 @@ public class RetryListenerTests extends TestCase {
 		assertEquals("2:1", list.get(0));
 	}
 
+	@Test
 	public void testOnError() throws Exception {
 		template.setRetryPolicy(new NeverRetryPolicy());
 		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
@@ -138,6 +145,7 @@ public class RetryListenerTests extends TestCase {
 
 	}
 
+	@Test
 	public void testCloseInterceptorsAfterRetry() throws Exception {
 		template.registerListener(new RetryListenerSupport() {
 			public <T> void close(RetryContext context, RetryCallback<T> callback, Throwable t) {

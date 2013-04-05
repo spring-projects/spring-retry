@@ -16,16 +16,24 @@
 
 package org.springframework.retry.policy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
+import org.junit.Test;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 
-public class CompositeRetryPolicyTests extends TestCase {
+public class CompositeRetryPolicyTests {
 
+	@Test
 	public void testEmptyPolicies() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
@@ -33,6 +41,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@Test
 	public void testTrivialPolicies() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
@@ -41,6 +50,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@Test
 	public void testNonTrivialPolicies() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() {
@@ -53,6 +63,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertFalse(policy.canRetry(context));
 	}
 
+	@Test
 	public void testNonTrivialPoliciesWithThrowable() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() {
@@ -73,6 +84,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertFalse("Should be still able to retry", policy.canRetry(context));
 	}
 
+	@Test
 	public void testNonTrivialPoliciesClose() throws Exception {
 		final List<String> list = new ArrayList<String>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
@@ -91,6 +103,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertEquals(2, list.size());
 	}
 
+	@Test
 	public void testExceptionOnPoliciesClose() throws Exception {
 		final List<String> list = new ArrayList<String>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
@@ -115,6 +128,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertEquals(2, list.size());
 	}
 
+	@Test
 	public void testRetryCount() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
@@ -127,6 +141,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertEquals("foo", context.getLastThrowable().getMessage());
 	}
 
+	@Test
 	public void testParent() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
@@ -135,6 +150,7 @@ public class CompositeRetryPolicyTests extends TestCase {
 		assertSame(context, child.getParent());
 	}
 
+	@Test
 	public void testOptimistic() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setOptimistic(true);

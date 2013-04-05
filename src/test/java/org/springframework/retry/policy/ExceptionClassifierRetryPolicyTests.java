@@ -16,23 +16,32 @@
 
 package org.springframework.retry.policy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Collections;
 import java.util.HashMap;
-import junit.framework.TestCase;
 
+import org.junit.Test;
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 
-public class ExceptionClassifierRetryPolicyTests extends TestCase {
+public class ExceptionClassifierRetryPolicyTests {
 
 	private ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 
+	@Test
 	public void testDefaultPolicies() throws Exception {
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 	}
 
+	@Test
 	public void testTrivialPolicies() throws Exception {
 		policy.setPolicyMap(Collections.<Class<? extends Throwable>, RetryPolicy> singletonMap(Exception.class,
 				new MockRetryPolicySupport()));
@@ -41,12 +50,14 @@ public class ExceptionClassifierRetryPolicyTests extends TestCase {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@Test
 	public void testNullPolicies() throws Exception {
 		policy.setPolicyMap(new HashMap<Class<? extends Throwable>, RetryPolicy>());
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 	}
 
+	@Test
 	public void testNullContext() throws Exception {
 		policy.setPolicyMap(Collections.<Class<? extends Throwable>, RetryPolicy> singletonMap(Exception.class,
 				new NeverRetryPolicy()));
@@ -57,6 +68,7 @@ public class ExceptionClassifierRetryPolicyTests extends TestCase {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@Test
 	public void testClassifierOperates() throws Exception {
 
 		RetryContext context = policy.open(null);
@@ -91,6 +103,7 @@ public class ExceptionClassifierRetryPolicyTests extends TestCase {
 
 	int count = 0;
 
+	@Test
 	public void testClose() throws Exception {
 		policy.setExceptionClassifier(new Classifier<Throwable, RetryPolicy>() {
 			public RetryPolicy classify(Throwable throwable) {
@@ -114,6 +127,7 @@ public class ExceptionClassifierRetryPolicyTests extends TestCase {
 		assertEquals(1, count); // now classified
 	}
 
+	@Test
 	public void testRetryCount() throws Exception {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);
@@ -125,6 +139,7 @@ public class ExceptionClassifierRetryPolicyTests extends TestCase {
 		assertEquals("foo", context.getLastThrowable().getMessage());
 	}
 
+	@Test
 	public void testParent() throws Exception {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);

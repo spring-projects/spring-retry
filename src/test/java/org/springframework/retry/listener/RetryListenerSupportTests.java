@@ -16,10 +16,14 @@
 
 package org.springframework.retry.listener;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class RetryListenerSupportTests extends TestCase {
+import org.junit.Test;
 
+public class RetryListenerSupportTests {
+
+	@Test
 	public void testClose() {
 		RetryListenerSupport support = new RetryListenerSupport();
 		try {
@@ -30,6 +34,7 @@ public class RetryListenerSupportTests extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOnError() {
 		RetryListenerSupport support = new RetryListenerSupport();
 		try {
@@ -40,6 +45,7 @@ public class RetryListenerSupportTests extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOpen() {
 		RetryListenerSupport support = new RetryListenerSupport();
 		assertTrue(support.open(null, null));
