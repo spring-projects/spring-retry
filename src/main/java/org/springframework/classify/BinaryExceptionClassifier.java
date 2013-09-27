@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,20 @@ import java.util.Map;
  * supplied types. If the object to be classified is one of the provided types,
  * or is a subclass of one of the types, then the non-default value is returned
  * (usually true).
- * 
+ *
  * @see SubclassClassifier
- * 
+ *
  * @author Dave Syer
- * 
+ * @author Gary Russell
+ *
  */
 public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boolean> {
 
+	private boolean traverseCauses;
+
 	/**
 	 * Create a binary exception classifier with the provided default value.
-	 * 
+	 *
 	 * @param defaultValue defaults to false
 	 */
 	public BinaryExceptionClassifier(boolean defaultValue) {
@@ -46,7 +49,7 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	 * Create a binary exception classifier with the provided classes and their
 	 * subclasses. The mapped value for these exceptions will be the one
 	 * provided (which will be the opposite of the default).
-	 * 
+	 *
 	 * @param value
 	 */
 	public BinaryExceptionClassifier(Collection<Class<? extends Throwable>> exceptionClasses, boolean value) {
@@ -71,7 +74,7 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	/**
 	 * Create a binary exception classifier using the given classification map
 	 * and a default classification of false.
-	 * 
+	 *
 	 * @param typeMap
 	 */
 	public BinaryExceptionClassifier(Map<Class<? extends Throwable>, Boolean> typeMap) {
@@ -81,11 +84,42 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	/**
 	 * Create a binary exception classifier using the given classification map
 	 * and a default classification of false.
-	 * 
+	 *
 	 * @param typeMap
 	 */
 	public BinaryExceptionClassifier(Map<Class<? extends Throwable>, Boolean> typeMap, boolean defaultValue) {
 		super(typeMap, defaultValue);
+	}
+
+
+	public void setTraverseCauses(boolean traverseCauses) {
+		this.traverseCauses = traverseCauses;
+	}
+
+	@Override
+	public Boolean classify(Throwable classifiable) {
+		Boolean classified = super.classify(classifiable);
+		if (!this.traverseCauses) {
+			return classified;
+		}
+
+		/*
+		 * If the result is the default, we need to find out if it was by default
+		 * or so configured; if default, try the cause(es).
+		 */
+		if (classified.equals(this.getDefault())) {
+			Throwable cause = classifiable;
+			do {
+				if (this.getClassified().containsKey(classifiable.getClass())) {
+					return classified; // non-default classification
+				}
+				cause = cause.getCause();
+				classified = super.classify(cause);
+			}
+			while (cause != null && classified.equals(this.getDefault()));
+		}
+
+		return classified;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,15 @@ public class BinaryExceptionClassifierTests {
 	}
 
 	@Test
+	public void testClassifyExactMatchInCause() {
+		Collection<Class<? extends Throwable>> set = Collections
+				.<Class<? extends Throwable>> singleton(IllegalStateException.class);
+		BinaryExceptionClassifier binaryExceptionClassifier = new BinaryExceptionClassifier(set);
+		binaryExceptionClassifier.setTraverseCauses(true);
+		assertTrue(binaryExceptionClassifier.classify(new RuntimeException(new IllegalStateException("Foo"))));
+	}
+
+	@Test
 	public void testTypesProvidedInConstructor() {
 		classifier = new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>> singleton(IllegalStateException.class));
@@ -68,5 +77,13 @@ public class BinaryExceptionClassifierTests {
 		classifier = new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>> singleton(IllegalStateException.class), false);
 		assertFalse(classifier.classify(new IllegalStateException("Foo")));
+	}
+
+	@Test
+	public void testTypesProvidedInConstructorWithNonDefaultInCause() {
+		classifier = new BinaryExceptionClassifier(Collections
+				.<Class<? extends Throwable>> singleton(IllegalStateException.class), false);
+		classifier.setTraverseCauses(true);
+		assertFalse(classifier.classify(new RuntimeException(new RuntimeException(new IllegalStateException("Foo")))));
 	}
 }
