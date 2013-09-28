@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+
 import org.springframework.retry.RetryContext;
 
 public class SimpleRetryPolicyTests {
@@ -95,6 +96,17 @@ public class SimpleRetryPolicyTests {
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 		policy.registerThrowable(context, new RuntimeException("foo"));
+		assertTrue(policy.canRetry(context));
+	}
+
+	@Test
+	public void testRetryableWithCause() throws Exception {
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		map.put(RuntimeException.class, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		policy.registerThrowable(context, new Exception(new RuntimeException("foo")));
 		assertTrue(policy.canRetry(context));
 	}
 

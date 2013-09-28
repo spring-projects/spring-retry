@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,10 @@ import java.util.concurrent.ConcurrentMap;
  * map, or is a subclass of one of the keys, then the map entry value for that
  * key is returned. Otherwise returns the default value which is null by
  * default.
- * 
+ *
  * @author Dave Syer
- * 
+ * @author Gary Russell
+ *
  */
 public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
@@ -43,7 +44,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Create a {@link SubclassClassifier} with null default value.
-	 * 
+	 *
 	 */
 	public SubclassClassifier() {
 		this(null);
@@ -51,7 +52,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
-	 * 
+	 *
 	 * @param defaultValue
 	 */
 	public SubclassClassifier(C defaultValue) {
@@ -60,7 +61,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
-	 * 
+	 *
 	 * @param defaultValue
 	 */
 	public SubclassClassifier(Map<Class<? extends T>, C> typeMap, C defaultValue) {
@@ -72,7 +73,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	/**
 	 * Public setter for the default value for mapping keys that are not found
 	 * in the map (or their subclasses). Defaults to false.
-	 * 
+	 *
 	 * @param defaultValue the default value to set
 	 */
 	public void setDefaultValue(C defaultValue) {
@@ -83,7 +84,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * Set the classifications up as a map. The keys are types and these will be
 	 * mapped along with all their subclasses to the corresponding value. The
 	 * most specific types will match first.
-	 * 
+	 *
 	 * @param map a map from type to class
 	 */
 	public void setTypeMap(Map<Class<? extends T>, C> map) {
@@ -93,7 +94,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	/**
 	 * Return the value from the type map whose key is the class of the given
 	 * Throwable, or its nearest ancestor if a subclass.
-	 * 
+	 *
 	 */
 	public C classify(T classifiable) {
 
@@ -128,11 +129,15 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		return defaultValue;
 	}
 
+	protected Map<Class<? extends T>, C> getClassified() {
+		return classified;
+	}
+
 	/**
 	 * Comparator for classes to order by inheritance.
-	 * 
+	 *
 	 * @author Dave Syer
-	 * 
+	 *
 	 */
 	@SuppressWarnings("serial")
 	private static class ClassComparator implements Comparator<Class<?>>, Serializable {
