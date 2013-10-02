@@ -110,7 +110,7 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 		if (classified.equals(this.getDefault())) {
 			Throwable cause = classifiable;
 			do {
-				if (this.getClassified().containsKey(classifiable.getClass())) {
+				if (this.getClassified().containsKey(cause.getClass())) {
 					return classified; // non-default classification
 				}
 				cause = cause.getCause();
