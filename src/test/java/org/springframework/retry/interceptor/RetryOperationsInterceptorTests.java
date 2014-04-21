@@ -133,6 +133,7 @@ public class RetryOperationsInterceptorTests {
 		assertEquals(2, count);
 		// Expect 2 separate transactions...
 		assertEquals(2, transactionCount);
+		context.close();
 	}
 
 	@Test

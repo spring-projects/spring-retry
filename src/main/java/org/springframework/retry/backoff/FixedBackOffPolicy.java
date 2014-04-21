@@ -16,18 +16,18 @@
 
 package org.springframework.retry.backoff;
 
-
 /**
- * Implementation of {@link BackOffPolicy} that pauses for a fixed period of
- * time before continuing. A pause is implemented using {@link Thread#sleep(long)}.
- * <p/> {@link #setBackOffPeriod(long)} is thread-safe and it is safe to call
- * {@link #setBackOffPeriod} during execution from multiple threads, however
- * this may cause a single retry operation to have pauses of different
- * intervals.
+ * Implementation of {@link BackOffPolicy} that pauses for a fixed period of time before
+ * continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
+ * <p/>
+ * {@link #setBackOffPeriod(long)} is thread-safe and it is safe to call
+ * {@link #setBackOffPeriod} during execution from multiple threads, however this may
+ * cause a single retry operation to have pauses of different intervals.
  * @author Rob Harrop
  * @author Dave Syer
  */
-public class FixedBackOffPolicy extends StatelessBackOffPolicy implements SleepingBackOffPolicy<FixedBackOffPolicy> {
+public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
+		SleepingBackOffPolicy<FixedBackOffPolicy> {
 
 	/**
 	 * Default back off period - 1000ms.
@@ -39,15 +39,14 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 */
 	private volatile long backOffPeriod = DEFAULT_BACK_OFF_PERIOD;
 
-	
 	private Sleeper sleeper = new ObjectWaitSleeper();
 
-    public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
-        FixedBackOffPolicy res = new FixedBackOffPolicy();
-        res.setBackOffPeriod(backOffPeriod);
-        res.setSleeper(sleeper);
-        return res;
-    }
+	public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
+		FixedBackOffPolicy res = new FixedBackOffPolicy();
+		res.setBackOffPeriod(backOffPeriod);
+		res.setSleeper(sleeper);
+		return res;
+	}
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
@@ -58,8 +57,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	}
 
 	/**
-	 * Set the back off period in milliseconds. Cannot be &lt; 1. Default value
-	 * is 1000ms.
+	 * Set the back off period in milliseconds. Cannot be &lt; 1. Default value is 1000ms.
 	 */
 	public void setBackOffPeriod(long backOffPeriod) {
 		this.backOffPeriod = (backOffPeriod > 0 ? backOffPeriod : 1);
@@ -80,13 +78,12 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
 			sleeper.sleep(backOffPeriod);
-		}
-		catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
 
-    public String toString() {
-        return "FixedBackOffPolicy[backOffPeriod=" + backOffPeriod + "]";
-    }
+	public String toString() {
+		return "FixedBackOffPolicy[backOffPeriod=" + backOffPeriod + "]";
+	}
 }

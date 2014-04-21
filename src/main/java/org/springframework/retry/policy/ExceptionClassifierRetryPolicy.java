@@ -84,7 +84,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Create an active context that proxies a retry policy by chosing a target
+	 * Create an active context that proxies a retry policy by choosing a target
 	 * from the policy map.
 	 * 
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)

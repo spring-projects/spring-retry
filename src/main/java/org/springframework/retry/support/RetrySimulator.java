@@ -102,7 +102,8 @@ public class RetrySimulator {
         }
     }
 
-    static class FailingRetryException extends Exception {
+    @SuppressWarnings("serial")
+	static class FailingRetryException extends Exception {
     }
 
     static class StealingSleeper implements Sleeper {
