@@ -44,7 +44,7 @@ import org.springframework.retry.support.RetryTemplate;
 public class StatefulRetryIntegrationTests {
 
 	@Test
-	public void testExternalRetryWithFailAndNoRetry() throws Exception {
+	public void testExternalRetryWithFailAndNoRetry() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 
 		RetryState retryState = new DefaultRetryState("foo");
@@ -86,7 +86,7 @@ public class StatefulRetryIntegrationTests {
 	}
 
 	@Test
-	public void testExternalRetryWithSuccessOnRetry() throws Exception {
+	public void testExternalRetryWithSuccessOnRetry() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 
 		RetryState retryState = new DefaultRetryState("foo");
@@ -120,7 +120,7 @@ public class StatefulRetryIntegrationTests {
 	}
 
 	@Test
-	public void testExponentialBackOffIsExponential() throws Exception {
+	public void testExponentialBackOffIsExponential() throws Throwable {
 		ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
 		policy.setInitialInterval(100);
 		policy.setMultiplier(1.5);

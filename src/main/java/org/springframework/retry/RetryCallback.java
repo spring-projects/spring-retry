@@ -33,5 +33,5 @@ public interface RetryCallback<T> {
 	 * @return the result of the successful operation.
 	 * @throws Exception if processing fails
 	 */
-	T doWithRetry(RetryContext context) throws Exception;
+	T  doWithRetry(RetryContext context) throws Throwable;
 }

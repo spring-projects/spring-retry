@@ -24,8 +24,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.retry.config.EnableRetry;
-import org.springframework.retry.config.Retryable;
+import org.springframework.retry.backoff.Sleeper;
 
 /**
  * @author Dave Syer
@@ -87,6 +86,15 @@ public class EnableRetryTests {
 	@EnableRetry
 	@EnableAspectJAutoProxy(proxyTargetClass = true)
 	protected static class TestConfiguration {
+
+		@Bean
+		public Sleeper sleper() {
+			return new Sleeper() {
+				@Override
+				public void sleep(long period) throws InterruptedException {
+				}
+			};
+		}
 
 		@Bean
 		public Service service() {

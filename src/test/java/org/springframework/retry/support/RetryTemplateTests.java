@@ -54,7 +54,7 @@ public class RetryTemplateTests {
 	int count = 0;
 
 	@Test
-	public void testSuccessfulRetry() throws Exception {
+	public void testSuccessfulRetry() throws Throwable {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x);
@@ -67,7 +67,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testSuccessfulRecovery() throws Exception {
+	public void testSuccessfulRecovery() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		callback.setAttemptsBeforeSuccess(3);
 		RetryTemplate retryTemplate = new RetryTemplate();
@@ -84,7 +84,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testAlwaysTryAtLeastOnce() throws Exception {
+	public void testAlwaysTryAtLeastOnce() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
@@ -93,7 +93,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testNoSuccessRetry() throws Exception {
+	public void testNoSuccessRetry() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		// Something that won't be thrown by JUnit...
 		callback.setExceptionToThrow(new IllegalArgumentException());
@@ -115,7 +115,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testDefaultConfigWithExceptionSubclass() throws Exception {
+	public void testDefaultConfigWithExceptionSubclass() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		int attempts = 3;
 		callback.setAttemptsBeforeSuccess(attempts);
@@ -129,7 +129,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testRollbackClassifierOverridesRetryPolicy() throws Exception {
+	public void testRollbackClassifierOverridesRetryPolicy() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		int attempts = 3;
 		callback.setAttemptsBeforeSuccess(attempts);
@@ -145,7 +145,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testSetExceptions() throws Exception {
+	public void testSetExceptions() throws Throwable {
 		RetryTemplate template = new RetryTemplate();
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, Collections
 				.<Class<? extends Throwable>, Boolean> singletonMap(RuntimeException.class, true));
@@ -170,7 +170,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testBackOffInvoked() throws Exception {
+	public void testBackOffInvoked() throws Throwable {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			MockBackOffStrategy backOff = new MockBackOffStrategy();
@@ -187,7 +187,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testEarlyTermination() throws Exception {
+	public void testEarlyTermination() throws Throwable {
 		try {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.execute(new RetryCallback<Object>() {
@@ -206,15 +206,35 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testNestedContexts() throws Exception {
+	public void testEarlyTerminationWithOriginalException() throws Throwable {
+		try {
+			RetryTemplate retryTemplate = new RetryTemplate();
+			retryTemplate.setThrowLastExceptionOnExhausted(true);
+			retryTemplate.execute(new RetryCallback<Object>() {
+				public Object doWithRetry(RetryContext status) throws Exception {
+					status.setExhaustedOnly();
+					throw new IllegalStateException("Retry this operation");
+				}
+			});
+			fail("Expected ExhaustedRetryException");
+		}
+		catch (IllegalStateException ex) {
+			// Expected for internal retry policy (external would recover
+			// gracefully)
+			assertEquals("Retry this operation", ex.getMessage());
+		}
+	}
+
+	@Test
+	public void testNestedContexts() throws Throwable {
 		RetryTemplate outer = new RetryTemplate();
 		final RetryTemplate inner = new RetryTemplate();
 		outer.execute(new RetryCallback<Object>() {
-			public Object doWithRetry(RetryContext status) throws Exception {
+			public Object doWithRetry(RetryContext status) throws Throwable {
 				context = status;
 				count++;
 				Object result = inner.execute(new RetryCallback<Object>() {
-					public Object doWithRetry(RetryContext status) throws Exception {
+					public Object doWithRetry(RetryContext status) throws Throwable {
 						count++;
 						assertNotNull(context);
 						assertNotSame(status, context);
@@ -231,7 +251,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testRethrowError() throws Exception {
+	public void testRethrowError() throws Throwable {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		try {
@@ -248,7 +268,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testFailedPolicy() throws Exception {
+	public void testFailedPolicy() throws Throwable {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy() {
 			@Override
@@ -270,7 +290,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testBackOffInterrupted() throws Exception {
+	public void testBackOffInterrupted() throws Throwable {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setBackOffPolicy(new StatelessBackOffPolicy() {
 			protected void doBackOff() throws BackOffInterruptedException {
@@ -295,7 +315,7 @@ public class RetryTemplateTests {
 	 * re-thrown.
 	 */
 	@Test
-	public void testNoBackOffForRethrownException() throws Exception {
+	public void testNoBackOffForRethrownException() throws Throwable {
 
 		RetryTemplate tested = new RetryTemplate();
 		tested.setRetryPolicy(new SimpleRetryPolicy(1, Collections.<Class<? extends Throwable>, Boolean> singletonMap(

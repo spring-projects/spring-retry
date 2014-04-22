@@ -42,7 +42,7 @@ public class RetrySynchronizationManagerTests {
 	}
 
 	@Test
-	public void testStatusIsStoredByTemplate() throws Exception {
+	public void testStatusIsStoredByTemplate() throws Throwable {
 
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);

@@ -89,7 +89,7 @@ public class RetrySimulator {
             template.execute(new FailingRetryCallback());
         } catch(FailingRetryException e) {
 
-        } catch(Exception e) {
+        } catch(Throwable e) {
             throw new RuntimeException("Unexpected exception", e);
         }
 

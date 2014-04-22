@@ -174,7 +174,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		catch (ExhaustedRetryException e) {
 			// expected
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Retry was exhausted but there was no recover"));
+			assertTrue("Wrong message: " + message, message.startsWith("Retry exhausted"));
 		}
 		assertEquals(1, count);
 	}

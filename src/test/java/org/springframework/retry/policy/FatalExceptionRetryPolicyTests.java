@@ -32,7 +32,7 @@ import org.springframework.retry.support.RetryTemplate;
 public class FatalExceptionRetryPolicyTests {
 
 	@Test
-	public void testFatalExceptionWithoutState() throws Exception {
+	public void testFatalExceptionWithoutState() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		callback.setExceptionToThrow(new IllegalArgumentException());
 
@@ -66,7 +66,7 @@ public class FatalExceptionRetryPolicyTests {
 	}
 
 	@Test
-	public void testFatalExceptionWithState() throws Exception {
+	public void testFatalExceptionWithState() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 		callback.setExceptionToThrow(new IllegalArgumentException());
 

@@ -18,7 +18,6 @@ import java.util.Arrays;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.ProxyMethodInvocation;
-import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -27,14 +26,17 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
 /**
- * A {@link MethodInterceptor} that can be used to automatically retry calls to a method on a service if it fails. The
- * injected {@link RetryOperations} is used to control the number of retries. By default it will retry a fixed number of
- * times, according to the defaults in {@link RetryTemplate}.<br/>
+ * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
+ * on a service if it fails. The injected {@link RetryOperations} is used to control the
+ * number of retries. By default it will retry a fixed number of times, according to the
+ * defaults in {@link RetryTemplate}.<br/>
  * 
- * Hint about transaction boundaries. If you want to retry a failed transaction you need to make sure that the
- * transaction boundary is inside the retry, otherwise the successful attempt will roll back with the whole transaction.
- * If the method being intercepted is also transactional, then use the ordering hints in the advice declarations to
- * ensure that this one is before the transaction interceptor in the advice chain.
+ * Hint about transaction boundaries. If you want to retry a failed transaction you need
+ * to make sure that the transaction boundary is inside the retry, otherwise the
+ * successful attempt will roll back with the whole transaction. If the method being
+ * intercepted is also transactional, then use the ordering hints in the advice
+ * declarations to ensure that this one is before the transaction interceptor in the
+ * advice chain.
  * 
  * @author Rob Harrop
  * @author Dave Syer
@@ -60,13 +62,15 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			public Object doWithRetry(RetryContext context) throws Exception {
 
 				/*
-				 * If we don't copy the invocation carefully it won't keep a reference to the other interceptors in the
-				 * chain. We don't have a choice here but to specialise to ReflectiveMethodInvocation (but how often
-				 * would another implementation come along?).
+				 * If we don't copy the invocation carefully it won't keep a reference to
+				 * the other interceptors in the chain. We don't have a choice here but to
+				 * specialise to ReflectiveMethodInvocation (but how often would another
+				 * implementation come along?).
 				 */
 				if (invocation instanceof ProxyMethodInvocation) {
 					try {
-						return ((ProxyMethodInvocation) invocation).invocableClone().proceed();
+						return ((ProxyMethodInvocation) invocation).invocableClone()
+								.proceed();
 					} catch (Exception e) {
 						throw e;
 					} catch (Error e) {
@@ -83,7 +87,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		};
 
 		if (recoverer != null) {
-			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(), recoverer);
+			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(
+					invocation.getArguments(), recoverer);
 			return this.retryOperations.execute(retryCallback, recoveryCallback);
 		}
 
@@ -104,16 +109,14 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		/**
 		 * @param args the item that failed.
 		 */
-		private ItemRecovererCallback(Object[] args, MethodInvocationRecoverer<? extends Object> recoverer) {
+		private ItemRecovererCallback(Object[] args,
+				MethodInvocationRecoverer<? extends Object> recoverer) {
 			this.args = Arrays.asList(args).toArray();
 			this.recoverer = recoverer;
 		}
 
 		public Object recover(RetryContext context) {
-			if (recoverer != null) {
-				return recoverer.recover(args, context.getLastThrowable());
-			}
-			throw new ExhaustedRetryException("Retry was exhausted but there was no recovery path.");
+			return recoverer.recover(args, context.getLastThrowable());
 		}
 
 	}
