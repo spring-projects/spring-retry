@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Import;
  * the annotations.
  * 
  * @author Dave Syer
+ * @since 2.0
  *
  */
 @Target(ElementType.TYPE)

@@ -43,6 +43,7 @@ import org.springframework.retry.policy.RetryContextCache;
  * used by the corresponding retry interceptor (otherwise sensible defaults are adopted).
  * 
  * @author Dave Syer
+ * @since 2.0
  *
  */
 @SuppressWarnings("serial")

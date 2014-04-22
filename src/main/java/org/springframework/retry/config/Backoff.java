@@ -40,6 +40,7 @@ import org.springframework.retry.backoff.BackOffPolicy;
  * </ul>
  * 
  * @author Dave Syer
+ * @since 2.0
  *
  */
 @Target(ElementType.TYPE)

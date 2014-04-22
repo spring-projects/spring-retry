@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
  * Annotation for a method invocation that is retryable.
  * 
  * @author Dave Syer
+ * @since 2.0
  *
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
