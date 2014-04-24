@@ -86,7 +86,7 @@ public class StatefulRecoveryRetryTests {
 				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
-		RetryCallback<String> callback = new RetryCallback<String>() {
+		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
@@ -124,7 +124,7 @@ public class StatefulRecoveryRetryTests {
 		assertFalse(classifier.classify(new RuntimeException()));
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input, classifier);
-		RetryCallback<String> callback = new RetryCallback<String>() {
+		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
@@ -152,7 +152,7 @@ public class StatefulRecoveryRetryTests {
 
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
-		RetryCallback<String> callback = new RetryCallback<String>() {
+		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
@@ -188,7 +188,7 @@ public class StatefulRecoveryRetryTests {
 		final StringHolder item = new StringHolder("bar");
 		RetryState state = new DefaultRetryState(item);
 
-		RetryCallback<StringHolder> callback = new RetryCallback<StringHolder>() {
+		RetryCallback<StringHolder, Exception> callback = new RetryCallback<StringHolder, Exception>() {
 			public StringHolder doWithRetry(RetryContext context) throws Exception {
 				// This simulates what happens if someone uses a primary key
 				// for hashCode and equals and then relies on default key
@@ -231,7 +231,7 @@ public class StatefulRecoveryRetryTests {
 				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
 		retryTemplate.setRetryContextCache(new MapRetryContextCache(1));
 
-		RetryCallback<Object> callback = new RetryCallback<Object>() {
+		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
 			public Object doWithRetry(RetryContext context) throws Exception {
 				count++;
 				throw new RuntimeException("Barf!");
@@ -266,7 +266,7 @@ public class StatefulRecoveryRetryTests {
 		final StringHolder item = new StringHolder("foo");
 		RetryState state = new DefaultRetryState(item);
 
-		RetryCallback<Object> callback = new RetryCallback<Object>() {
+		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
 			public Object doWithRetry(RetryContext context) throws Exception {
 				count++;
 				throw new RuntimeException("Barf!");

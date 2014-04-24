@@ -96,7 +96,7 @@ public class RetrySimulator {
         return stealingSleeper.getSleeps();
     }
 
-    static class FailingRetryCallback implements RetryCallback<Object> {
+    static class FailingRetryCallback implements RetryCallback<Object, Exception> {
         public Object doWithRetry(RetryContext context) throws Exception {
             throw new FailingRetryException();
         }

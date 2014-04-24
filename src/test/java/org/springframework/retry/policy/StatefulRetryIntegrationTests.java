@@ -130,7 +130,7 @@ public class StatefulRetryIntegrationTests {
 		RetryState retryState = new DefaultRetryState("bar");
 		for (int i = 0; i < 3; i++) {
 			try {
-				template.execute(new RetryCallback<String>() {
+				template.execute(new RetryCallback<String, Exception>() {
 					public String doWithRetry(RetryContext context) throws Exception {
 						times.add(System.currentTimeMillis());
 						throw new Exception("Fail");
@@ -155,7 +155,7 @@ public class StatefulRetryIntegrationTests {
 	 * @author Dave Syer
 	 * 
 	 */
-	private static final class MockRetryCallback implements RetryCallback<String> {
+	private static final class MockRetryCallback implements RetryCallback<String, Exception> {
 		int attempts = 0;
 
 		public String doWithRetry(RetryContext context) throws Exception {

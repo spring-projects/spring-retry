@@ -23,7 +23,7 @@ package org.springframework.retry;
  * @author Rob Harrop
  * @author Dave Syer
  */
-public interface RetryCallback<T> {
+public interface RetryCallback<T, E extends Throwable> {
 
 	/**
 	 * Execute an operation with retry semantics. Operations should generally be
@@ -33,5 +33,5 @@ public interface RetryCallback<T> {
 	 * @return the result of the successful operation.
 	 * @throws Exception if processing fails
 	 */
-	T  doWithRetry(RetryContext context) throws Throwable;
+	T  doWithRetry(RetryContext context) throws E;
 }

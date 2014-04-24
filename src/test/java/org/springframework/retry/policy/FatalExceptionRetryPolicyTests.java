@@ -100,7 +100,7 @@ public class FatalExceptionRetryPolicyTests {
 		assertEquals("bar", result);
 	}
 
-	private static class MockRetryCallback implements RetryCallback<String> {
+	private static class MockRetryCallback implements RetryCallback<String, Exception> {
 
 		private int attempts;
 

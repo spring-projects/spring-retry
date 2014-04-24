@@ -57,7 +57,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
-		RetryCallback<Object> retryCallback = new RetryCallback<Object>() {
+		RetryCallback<Object, Throwable> retryCallback = new RetryCallback<Object, Throwable>() {
 
 			public Object doWithRetry(RetryContext context) throws Exception {
 

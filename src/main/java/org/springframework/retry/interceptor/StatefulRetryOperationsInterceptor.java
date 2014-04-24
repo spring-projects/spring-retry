@@ -156,7 +156,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * 
 	 */
 	private static final class MethodInvocationRetryCallback implements
-			RetryCallback<Object> {
+			RetryCallback<Object, Throwable> {
 		/**
 		 * 
 		 */

@@ -47,7 +47,7 @@ public class RetrySynchronizationManagerTests {
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
 
-		template.execute(new RetryCallback<Object>() {
+		template.execute(new RetryCallback<Object, Exception>() {
 			public Object doWithRetry(RetryContext status) throws Exception {
 				RetryContext global = RetrySynchronizationManager.getContext();
 				assertNotNull(status);

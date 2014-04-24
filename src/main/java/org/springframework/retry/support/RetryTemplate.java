@@ -150,7 +150,7 @@ public class RetryTemplate implements RetryOperations {
 	 * @throws TerminatedRetryException if the retry has been manually terminated by a
 	 * listener.
 	 */
-	public final <T> T execute(RetryCallback<T> retryCallback) throws Throwable {
+	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback) throws E {
 		return doExecute(retryCallback, null, null);
 	}
 
@@ -163,8 +163,8 @@ public class RetryTemplate implements RetryOperations {
 	 * @throws TerminatedRetryException if the retry has been manually terminated by a
 	 * listener.
 	 */
-	public final <T> T execute(RetryCallback<T> retryCallback,
-			RecoveryCallback<T> recoveryCallback) throws Throwable {
+	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
+			RecoveryCallback<T> recoveryCallback) throws E {
 		return doExecute(retryCallback, recoveryCallback, null);
 	}
 
@@ -176,8 +176,8 @@ public class RetryTemplate implements RetryOperations {
 	 * 
 	 * @throws ExhaustedRetryException if the retry has been exhausted.
 	 */
-	public final <T> T execute(RetryCallback<T> retryCallback, RetryState retryState)
-			throws Throwable, ExhaustedRetryException {
+	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState)
+			throws E, ExhaustedRetryException {
 		return doExecute(retryCallback, null, retryState);
 	}
 
@@ -187,9 +187,9 @@ public class RetryTemplate implements RetryOperations {
 	 * 
 	 * @see RetryOperations#execute(RetryCallback, RetryState)
 	 */
-	public final <T> T execute(RetryCallback<T> retryCallback,
+	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
 			RecoveryCallback<T> recoveryCallback, RetryState retryState)
-			throws Throwable, ExhaustedRetryException {
+			throws E, ExhaustedRetryException {
 		return doExecute(retryCallback, recoveryCallback, retryState);
 	}
 
@@ -198,10 +198,11 @@ public class RetryTemplate implements RetryOperations {
 	 * recovery callback.
 	 * 
 	 * @see RetryOperations#execute(RetryCallback, RecoveryCallback, RetryState)
-	 * @throws ExhaustedRetryException if the retry has been exhausted.
+	 * @throws ExhaustedRetryException if the retry has been exhausted.		finally {
+
 	 */
-	protected <T> T doExecute(RetryCallback<T> retryCallback,
-			RecoveryCallback<T> recoveryCallback, RetryState state) throws Throwable,
+	protected <T, E extends Throwable> T doExecute(RetryCallback<T, E> retryCallback,
+			RecoveryCallback<T> recoveryCallback, RetryState state) throws E,
 			ExhaustedRetryException {
 
 		RetryPolicy retryPolicy = this.retryPolicy;
@@ -290,7 +291,9 @@ public class RetryTemplate implements RetryOperations {
 					if (shouldRethrow(retryPolicy, context, state)) {
 						logger.debug("Rethrow in retry for policy: count="
 								+ context.getRetryCount());
-						throw wrapIfNecessary(e);
+						@SuppressWarnings("unchecked")
+						E rethrow = (E) wrapIfNecessary(e);
+						throw rethrow;
 					}
 
 				}
@@ -311,7 +314,12 @@ public class RetryTemplate implements RetryOperations {
 
 			return handleRetryExhausted(recoveryCallback, context, state);
 
-		} finally {
+		} catch (Throwable e) {
+			@SuppressWarnings("unchecked")
+			E rethrow = (E) wrapIfNecessary(e);
+			throw rethrow;
+		}
+		finally {
 			close(retryPolicy, context, state, lastException == null);
 			doCloseInterceptors(retryCallback, context, lastException);
 			RetrySynchronizationManager.clear();
@@ -451,9 +459,11 @@ public class RetryTemplate implements RetryOperations {
 		throw wrapIfNecessary(context.getLastThrowable());
 	}
 
-	protected void rethrow(RetryContext context, String message) throws Throwable {
+	protected <E extends Throwable> void rethrow(RetryContext context, String message) throws E {
 		if (throwLastExceptionOnExhausted) {
-			throw (Throwable) context.getLastThrowable();
+			@SuppressWarnings("unchecked")
+			E rethrow = (E) context.getLastThrowable();
+			throw rethrow;
 		} else {
 			throw new ExhaustedRetryException(message, context.getLastThrowable());
 		}
@@ -478,7 +488,7 @@ public class RetryTemplate implements RetryOperations {
 		}
 	}
 
-	private <T> boolean doOpenInterceptors(RetryCallback<T> callback, RetryContext context) {
+	private <T, E extends Throwable> boolean doOpenInterceptors(RetryCallback<T, E> callback, RetryContext context) {
 
 		boolean result = true;
 
@@ -490,14 +500,14 @@ public class RetryTemplate implements RetryOperations {
 
 	}
 
-	private <T> void doCloseInterceptors(RetryCallback<T> callback, RetryContext context,
+	private <T, E extends Throwable> void doCloseInterceptors(RetryCallback<T, E> callback, RetryContext context,
 			Throwable lastException) {
 		for (int i = listeners.length; i-- > 0;) {
 			listeners[i].close(context, callback, lastException);
 		}
 	}
 
-	private <T> void doOnErrorInterceptors(RetryCallback<T> callback,
+	private <T, E extends Throwable> void doOnErrorInterceptors(RetryCallback<T, E> callback,
 			RetryContext context, Throwable throwable) {
 		for (int i = listeners.length; i-- > 0;) {
 			listeners[i].onError(context, callback, throwable);
@@ -508,13 +518,15 @@ public class RetryTemplate implements RetryOperations {
 	 * Re-throws the original throwable if it is unchecked, wraps checked exceptions into
 	 * {@link RetryException}.
 	 */
-	private static Exception wrapIfNecessary(Throwable throwable) {
+	private static <E extends Throwable> E wrapIfNecessary(Throwable throwable) throws RetryException {
 		if (throwable instanceof Error) {
 			throw (Error) throwable;
 		} else if (throwable instanceof Exception) {
-			return (Exception) throwable;
+			@SuppressWarnings("unchecked")
+			E rethrow = (E) throwable;
+			return rethrow;
 		} else {
-			return new RetryException("Exception in batch process", throwable);
+			throw new RetryException("Exception in batch process", throwable);
 		}
 	}
 
