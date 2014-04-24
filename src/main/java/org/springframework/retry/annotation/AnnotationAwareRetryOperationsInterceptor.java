@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.springframework.retry.config;
+package org.springframework.retry.annotation;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -28,9 +29,10 @@ import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
+import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
+import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
@@ -38,6 +40,8 @@ import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * Wrapper interceptor that interprets the retry metadata on the method it is invoking and
@@ -91,11 +95,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 	}
 
 	public Object invoke(MethodInvocation invocation) throws Throwable {
-		MethodInterceptor delegate = getDelegate(invocation.getMethod());
+		MethodInterceptor delegate = getDelegate(invocation.getThis(), invocation.getMethod());
 		return delegate.invoke(invocation);
 	}
 
-	private MethodInterceptor getDelegate(Method method) {
+	private MethodInterceptor getDelegate(Object target, Method method) {
 		if (!delegates.containsKey(method)) {
 			synchronized (delegates) {
 				if (!delegates.containsKey(method)) {
@@ -107,9 +111,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 					}
 					MethodInterceptor delegate;
 					if (retryable.stateful()) {
-						delegate = getStatefulInterceptor(retryable);
+						delegate = getStatefulInterceptor(target, method, retryable);
 					} else {
-						delegate = getStatelessInterceptor(retryable);
+						delegate = getStatelessInterceptor(target, method, retryable);
 					}
 					// TODO: allow declaring class to specify @Recover methods
 					delegates.put(method, delegate);
@@ -119,16 +123,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 		return delegates.get(method);
 	}
 
-	private MethodInterceptor getStatelessInterceptor(Retryable retryable) {
+	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
 		RetryOperationsInterceptor interceptor = new RetryOperationsInterceptor();
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		interceptor.setRetryOperations(template);
+		interceptor.setRecoverer(getRecoverer(target, method));
 		return interceptor;
 	}
 
-	private MethodInterceptor getStatefulInterceptor(Retryable retryable) {
+	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
 		StatefulRetryOperationsInterceptor interceptor = new StatefulRetryOperationsInterceptor();
 		if (methodArgumentsKeyGenerator != null) {
 			interceptor.setKeyGenerator(methodArgumentsKeyGenerator);
@@ -141,7 +146,28 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		interceptor.setRetryOperations(template);
+		interceptor.setRecoverer(getRecoverer(target, method));
 		return interceptor;
+	}
+
+	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method) {
+		if (target instanceof MethodInvocationRecoverer) {
+			return (MethodInvocationRecoverer<?>) target;
+		}
+		final AtomicBoolean foundRecoverable = new AtomicBoolean(false);
+		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
+			@Override
+			public void doWith(Method method) throws IllegalArgumentException,
+					IllegalAccessException {
+				if (AnnotationUtils.findAnnotation(method, Recover.class)!=null) {
+					foundRecoverable.set(true);
+				}
+			}
+		});
+		if (!foundRecoverable.get()) {
+			return null;
+		}
+		return new RecoverAnnotationRecoveryHandler<Object>(target, method);
 	}
 
 	private RetryPolicy getRetryPolicy(Retryable retryable) {

@@ -21,13 +21,17 @@ public class Application {
 @Service
 class Service {
     @Retryable(RemoteAccessException.class)
-    public service() {
+    public void service() {
         // ... do something
+    }
+    @Recover
+    public void recover(RemoteAccessException e) {
+       // ... panic
     }
 }
 ```
 
-Call the "service" method and if it fails with a `RemoteAccessException` then it will retry (up to three times by default). There are various options in the `@Retryable` annotation attributes for including and excluding exception types, limiting the number of retries and the policy for backoff.
+Call the "service" method and if it fails with a `RemoteAccessException` then it will retry (up to three times by default), and then execute the "recover" method if unsuccessful. There are various options in the `@Retryable` annotation attributes for including and excluding exception types, limiting the number of retries and the policy for backoff.
 
 ## Building
 

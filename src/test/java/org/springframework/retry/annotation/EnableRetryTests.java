@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package org.springframework.retry.config;
+package org.springframework.retry.annotation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -24,6 +25,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.backoff.Sleeper;
 
 /**
@@ -39,6 +43,17 @@ public class EnableRetryTests {
 		Service service = context.getBean(Service.class);
 		service.service();
 		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
+	public void recovery() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
+		RecoverableService service = context.getBean(RecoverableService.class);
+		service.service();
+		assertEquals(3, service.getCount());
+		assertNotNull(service.getCause());
 		context.close();
 	}
 
@@ -102,6 +117,11 @@ public class EnableRetryTests {
 		}
 
 		@Bean
+		public RecoverableService recoverable() {
+			return new RecoverableService();
+		}
+
+		@Bean
 		public RetryableService retryable() {
 			return new RetryableService();
 		}
@@ -127,6 +147,32 @@ public class EnableRetryTests {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	protected static class RecoverableService {
+
+		private int count = 0;
+		private Throwable cause;
+
+		@Retryable(RuntimeException.class)
+		public void service() {
+			count++;
+			throw new RuntimeException("Planned");
+		}
+
+		@Recover
+		public void recover(Throwable cause) {
+			this.cause = cause;
+		}
+		
+		public Throwable getCause() {
+			return cause;
 		}
 
 		public int getCount() {
