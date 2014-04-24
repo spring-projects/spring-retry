@@ -115,7 +115,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 					} else {
 						delegate = getStatelessInterceptor(target, method, retryable);
 					}
-					// TODO: allow declaring class to specify @Recover methods
 					delegates.put(method, delegate);
 				}
 			}

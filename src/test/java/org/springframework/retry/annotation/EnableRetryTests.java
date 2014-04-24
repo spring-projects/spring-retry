@@ -18,16 +18,15 @@ package org.springframework.retry.annotation;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.backoff.Sleeper;
 
 /**
@@ -43,6 +42,16 @@ public class EnableRetryTests {
 		Service service = context.getBean(Service.class);
 		service.service();
 		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
+	public void marker() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
+		Service service = context.getBean(Service.class);
+		assertTrue(AopUtils.isCglibProxy(service));
+		assertTrue(service instanceof org.springframework.retry.interceptor.Retryable);
 		context.close();
 	}
 

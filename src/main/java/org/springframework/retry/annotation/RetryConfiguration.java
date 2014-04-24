@@ -23,6 +23,8 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.aopalliance.aop.Advice;
+import org.springframework.aop.ClassFilter;
+import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
@@ -49,7 +51,7 @@ import org.springframework.retry.policy.RetryContextCache;
 @SuppressWarnings("serial")
 @Configuration
 public class RetryConfiguration extends AbstractPointcutAdvisor implements
-		BeanFactoryAware {
+		IntroductionAdvisor, BeanFactoryAware {
 
 	private Advice advice;
 
@@ -84,6 +86,20 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 		if (this.advice instanceof BeanFactoryAware) {
 			((BeanFactoryAware) this.advice).setBeanFactory(beanFactory);
 		}
+	}
+
+	@Override
+	public ClassFilter getClassFilter() {
+		return pointcut.getClassFilter();
+	}
+
+	@Override
+	public Class<?>[] getInterfaces() {
+		return new Class[] { org.springframework.retry.interceptor.Retryable.class };
+	}
+
+	@Override
+	public void validateInterfaces() throws IllegalArgumentException {
 	}
 
 	@Override

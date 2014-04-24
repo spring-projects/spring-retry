@@ -260,6 +260,8 @@ for a random backoff between 100 and 500 milliseconds and up to 12 attempts. The
 
 The `@EnableRetry` annotation also looks for beans of type `Sleeper` and other strategies used in the `RetryTemplate` and interceptors to control the beviour of the retry at runtime.
 
+The `@EnableRetry` annotation creates proxies for `@Retryable` beans, and the proxies (so the bean instances in the application) have the `Retryable` interface added to them. This is purely a marker interface, but might be useful for other tools looking to apply retry advice (they should usually not bother if the bean already implements `Retryable`).
+
 ### XML Configuration
 
 Here is an example of declarative iteration using Spring AOP to repeat a service call to a method called `remoteCall` (for more detail on how to configure AOP interceptors see the Spring User Guide):
