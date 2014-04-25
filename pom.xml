@@ -58,9 +58,9 @@
 			<id>milestone</id>
 			<distributionManagement>
 			  <repository>
-				<id>spring-milestone</id>
+				<id>repo.spring.io</id>
 				<name>Spring Milestone Repository</name>
-				<url>s3://maven.springframework.org/milestone</url>
+				<url>https://repo.spring.io/libs-milestone-local</url>
 			  </repository>
 			</distributionManagement>
 		</profile>
@@ -99,9 +99,9 @@
 	</profiles>
 
 	<scm>
-		<url>http://github.com/SpringSource/spring-retry</url>
-		<connection>scm:git:git://github.com/SpringSource/spring-retry.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/SpringSource/spring-retry.git</developerConnection>
+		<url>http://github.com/spring-projects/spring-retry</url>
+		<connection>scm:git:git://github.com/spring-projects/spring-retry.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/spring-projects/spring-retry.git</developerConnection>
 	  <tag>HEAD</tag>
   </scm>
 
@@ -109,7 +109,7 @@
 		<developer>
 			<id>dsyer</id>
 			<name>Dave Syer</name>
-			<email>dsyer@vmware.com</email>
+			<email>dsyer@gopivotal.com</email>
 		</developer>
 	</developers>
 
@@ -200,15 +200,6 @@
 						<descriptorRefs>
 							<descriptorRef>project</descriptorRef>
 						</descriptorRefs>
-					</configuration>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<configuration>
-						<archive>
-							<manifestFile>target/classes/META-INF/MANIFEST.MF</manifestFile>
-						</archive>
 					</configuration>
 				</plugin>
 			</plugins>
