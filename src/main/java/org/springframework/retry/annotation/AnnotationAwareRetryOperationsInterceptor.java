@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -44,14 +45,14 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
- * Wrapper interceptor that interprets the retry metadata on the method it is invoking and
+ * WrappeMethodInterceptorr interceptor that interprets the retry metadata on the method it is invoking and
  * delegates to an appropriate RetryOperationsInterceptor.
  * 
  * @author Dave Syer
  * @since 2.0
  *
  */
-public class AnnotationAwareRetryOperationsInterceptor implements MethodInterceptor {
+public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor {
 
 	private Map<Method, MethodInterceptor> delegates = new HashMap<Method, MethodInterceptor>();
 
@@ -97,6 +98,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements MethodIntercep
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		MethodInterceptor delegate = getDelegate(invocation.getThis(), invocation.getMethod());
 		return delegate.invoke(invocation);
+	}
+
+	@Override
+	public boolean implementsInterface(Class<?> intf) {
+		return Retryable.class.isAssignableFrom(intf);
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {

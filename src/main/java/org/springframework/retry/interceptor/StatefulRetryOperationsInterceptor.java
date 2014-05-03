@@ -22,7 +22,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -52,7 +51,7 @@ import org.springframework.util.ObjectUtils;
  * 
  * @author Dave Syer
  */
-public class StatefulRetryOperationsInterceptor implements IntroductionInterceptor {
+public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 	private transient Log logger = LogFactory.getLog(getClass());
 
@@ -104,11 +103,6 @@ public class StatefulRetryOperationsInterceptor implements IntroductionIntercept
 	public void setNewItemIdentifier(
 			NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 		this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
-	}
-
-	@Override
-	public boolean implementsInterface(Class<?> intf) {
-		return Retryable.class.isAssignableFrom(intf);
 	}
 
 	/**

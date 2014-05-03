@@ -28,9 +28,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.backoff.Sleeper;
 
 /**
@@ -45,7 +42,8 @@ public class EnableRetryWithBackoffTests {
 				TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		service.service();
-		assertEquals("[1000, 1000]", context.getBean(TestConfiguration.class).periods.toString());
+		assertEquals("[1000, 1000]", context.getBean(PeriodSleeper.class)
+				.getPeriods().toString());
 		assertEquals(3, service.getCount());
 		context.close();
 	}
@@ -56,8 +54,8 @@ public class EnableRetryWithBackoffTests {
 				TestConfiguration.class);
 		RandomService service = context.getBean(RandomService.class);
 		service.service();
-		List<Long> periods = context.getBean(TestConfiguration.class).periods;
-		assertTrue("Wrong periods: " + periods, periods.get(0)>1000);
+		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
+		assertTrue("Wrong periods: " + periods, periods.get(0) > 1000);
 		assertEquals(3, service.getCount());
 		context.close();
 	}
@@ -69,7 +67,8 @@ public class EnableRetryWithBackoffTests {
 		ExponentialService service = context.getBean(ExponentialService.class);
 		service.service();
 		assertEquals(3, service.getCount());
-		assertEquals("[1000, 1100]", context.getBean(TestConfiguration.class).periods.toString());
+		assertEquals("[1000, 1100]", context.getBean(PeriodSleeper.class)
+				.getPeriods().toString());
 		context.close();
 	}
 
@@ -81,10 +80,12 @@ public class EnableRetryWithBackoffTests {
 				.getBean(ExponentialRandomService.class);
 		service.service(1);
 		assertEquals(3, service.getCount());
-		List<Long> periods = context.getBean(TestConfiguration.class).periods;
-		assertNotEquals("[1000, 1100]", context.getBean(TestConfiguration.class).periods.toString());
-		assertTrue("Wrong periods: " + periods, periods.get(0)>1000);
-		assertTrue("Wrong periods: " + periods, periods.get(1)>1100 && periods.get(1)<1210);
+		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
+		assertNotEquals("[1000, 1100]", context.getBean(PeriodSleeper.class)
+				.getPeriods().toString());
+		assertTrue("Wrong periods: " + periods, periods.get(0) > 1000);
+		assertTrue("Wrong periods: " + periods, periods.get(1) > 1100
+				&& periods.get(1) < 1210);
 		context.close();
 	}
 
@@ -92,17 +93,10 @@ public class EnableRetryWithBackoffTests {
 	@EnableRetry
 	@EnableAspectJAutoProxy(proxyTargetClass = true)
 	protected static class TestConfiguration {
-		
-		private List<Long> periods = new ArrayList<Long>();
-		
+
 		@Bean
-		public Sleeper sleper() {
-			return new Sleeper() {
-				@Override
-				public void sleep(long period) throws InterruptedException {
-					periods.add(period);
-				}
-			};
+		public PeriodSleeper sleper() {
+			return new PeriodSleeper();
 		}
 
 		@Bean
@@ -123,6 +117,21 @@ public class EnableRetryWithBackoffTests {
 		@Bean
 		public ExponentialService excludes() {
 			return new ExponentialService();
+		}
+
+	}
+
+	protected static class PeriodSleeper implements Sleeper {
+
+		private List<Long> periods = new ArrayList<Long>();
+
+		@Override
+		public void sleep(long period) throws InterruptedException {
+			periods.add(period);
+		}
+
+		private List<Long> getPeriods() {
+			return periods;
 		}
 
 	}
@@ -182,7 +191,7 @@ public class EnableRetryWithBackoffTests {
 
 		private int count = 0;
 
-		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, random=true))
+		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, random = true))
 		public void service(int value) {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");

@@ -17,7 +17,6 @@ import java.util.Arrays;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.aop.ProxyMethodInvocation;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -42,7 +41,7 @@ import org.springframework.util.Assert;
  * @author Rob Harrop
  * @author Dave Syer
  */
-public class RetryOperationsInterceptor implements IntroductionInterceptor {
+public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	private RetryOperations retryOperations = new RetryTemplate();
 	private MethodInvocationRecoverer<?> recoverer;
@@ -56,11 +55,6 @@ public class RetryOperationsInterceptor implements IntroductionInterceptor {
 		this.recoverer = recoverer;
 	}
 	
-	@Override
-	public boolean implementsInterface(Class<?> intf) {
-		return Retryable.class.isAssignableFrom(intf);
-	}
-
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
 		RetryCallback<Object, Throwable> retryCallback = new RetryCallback<Object, Throwable>() {
