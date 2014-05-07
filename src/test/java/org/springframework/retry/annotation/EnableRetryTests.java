@@ -26,7 +26,6 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.retry.backoff.Sleeper;
 
 /**
@@ -42,6 +41,15 @@ public class EnableRetryTests {
 		Service service = context.getBean(Service.class);
 		service.service();
 		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
+	public void proxyTargetClass() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestProxyConfiguration.class);
+		Service service = context.getBean(Service.class);
+		assertTrue(AopUtils.isCglibProxy(service));
 		context.close();
 	}
 
@@ -107,8 +115,18 @@ public class EnableRetryTests {
 	}
 
 	@Configuration
+	@EnableRetry(proxyTargetClass = true)
+	protected static class TestProxyConfiguration {
+
+		@Bean
+		public Service service() {
+			return new Service();
+		}
+
+	}
+
+	@Configuration
 	@EnableRetry
-	@EnableAspectJAutoProxy(proxyTargetClass = true)
 	protected static class TestConfiguration {
 
 		@Bean
@@ -179,7 +197,7 @@ public class EnableRetryTests {
 		public void recover(Throwable cause) {
 			this.cause = cause;
 		}
-		
+
 		public Throwable getCause() {
 			return cause;
 		}
