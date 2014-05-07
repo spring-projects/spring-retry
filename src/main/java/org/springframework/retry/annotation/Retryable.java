@@ -22,8 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Import;
-
 /**
  * Annotation for a method invocation that is retryable.
  * 
@@ -33,48 +31,56 @@ import org.springframework.context.annotation.Import;
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Import(RetryConfiguration.class)
 @Documented
 public @interface Retryable {
 
 	/**
-	 * Exception types that are retryable. Synonym for includes(). Defaults to empty (and
-	 * if excludes is also empty all exceptions are retried).
+	 * Exception types that are retryable. Synonym for includes(). Defaults to
+	 * empty (and if excludes is also empty all exceptions are retried).
 	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] value() default {};
 
 	/**
-	 * Exception types that are retryable. Defaults to empty (and if excludes is also
-	 * empty all exceptions are retried).
+	 * Exception types that are retryable. Defaults to empty (and if excludes is
+	 * also empty all exceptions are retried).
 	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] include() default {};
 
 	/**
-	 * Exception types that are not retryable. Defaults to empty (and if includes is also
-	 * empty all exceptions are retried).
+	 * Exception types that are not retryable. Defaults to empty (and if
+	 * includes is also empty all exceptions are retried).
 	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] exclude() default {};
 
 	/**
-	 * Flag to say that the retry is stateful: i.e. exceptions are re-thrown, but the
-	 * retry policy is applied with the same policy to subsequent invocations with the
-	 * same arguments. If false then retryable exceptions are not re-thrown.
+	 * Flag to say that the retry is stateful: i.e. exceptions are re-thrown,
+	 * but the retry policy is applied with the same policy to subsequent
+	 * invocations with the same arguments. If false then retryable exceptions
+	 * are not re-thrown.
 	 * 
 	 * @return true if retry is stateful, default false
 	 */
 	boolean stateful() default false;
 
 	/**
-	 * @return the maximum number of attempts (including the first failure), defaults to 3
+	 * @return the maximum number of attempts (including the first failure),
+	 *         defaults to 3
 	 */
 	int maxAttempts() default 3;
-	
+
+	/**
+	 * Specify the backof properties for retrying this operation. The default is
+	 * no backoff, but it can be a good idea to pause between attempts (even at
+	 * the cost of blocking a thread).
+	 * 
+	 * @return a backoff specification
+	 */
 	Backoff backoff() default @Backoff();
 
 }
