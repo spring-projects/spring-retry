@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.retry.backoff;
 
 /**
- * Simple {@link Sleeper} implementation that just waits on a local Object.
- * @deprecated in favor of {@link org.springframework.retry.backoff.ThreadWaitSleeper}
+ * Simple {@link Sleeper} implementation that just blocks the current Thread with sleep period.
  *
- * @author Dave Syer
- *
+ * @author Artem Bilan
+ * @since 1.1
  */
-@Deprecated
-public class ObjectWaitSleeper implements Sleeper {
+public class ThreadWaitSleeper implements Sleeper {
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.springframework.batch.retry.backoff.Sleeper#sleep(long)
-	 */
+	@Override
 	public void sleep(long backOffPeriod) throws InterruptedException {
-		Object mutex = new Object();
-		synchronized (mutex) {
-			mutex.wait(backOffPeriod);
-		}
+		Thread.sleep(backOffPeriod);
 	}
 
 }

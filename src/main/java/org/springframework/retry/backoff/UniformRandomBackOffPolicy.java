@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,12 @@ import java.util.Random;
 /**
  * Implementation of {@link BackOffPolicy} that pauses for a random period of
  * time before continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
- * <p/> {@link #setMinBackOffPeriod(long)} is thread-safe and it is safe to call
- * {@link #setBackOffPeriod} during execution from multiple threads, however
+ * <p/>
+ * {@link #setMinBackOffPeriod(long)} is thread-safe and it is safe to call
+ * {@link #setMaxBackOffPeriod(long)} during execution from multiple threads, however
  * this may cause a single retry operation to have pauses of different
  * intervals.
+ *
  * @author Rob Harrop
  * @author Dave Syer
  */
@@ -46,8 +48,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	private volatile long maxBackOffPeriod = DEFAULT_BACK_OFF_MAX_PERIOD;
 
 	private Random random = new Random(System.currentTimeMillis());
-	
-	private Sleeper sleeper = new ObjectWaitSleeper();
+
+	private Sleeper sleeper = new ThreadWaitSleeper();
 
     public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
         UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
@@ -58,7 +60,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
-	 * @param sleeper the sleeper to set defaults to {@link ObjectWaitSleeper}.
+	 * @param sleeper the sleeper to set defaults to {@link ThreadWaitSleeper}.
 	 */
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;

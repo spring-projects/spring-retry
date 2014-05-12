@@ -30,33 +30,30 @@ import org.springframework.util.Assert;
 /**
  * A {@link RetryPolicy} that dynamically adapts to one of a set of injected
  * policies according to the value of the latest exception.
- * 
+ *
  * @author Dave Syer
- * 
+ *
  */
 public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
-	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(
-			new NeverRetryPolicy());
+	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(new NeverRetryPolicy());
 
 	/**
 	 * Setter for policy map used to create a classifier. Either this property
 	 * or the exception classifier directly should be set, but not both.
-	 * 
+	 *
 	 * @param policyMap a map of Throwable class to {@link RetryPolicy} that
 	 * will be used to create a {@link Classifier} to locate a policy.
 	 */
 	public void setPolicyMap(Map<Class<? extends Throwable>, RetryPolicy> policyMap) {
-		SubclassClassifier<Throwable, RetryPolicy> subclassClassifier = new SubclassClassifier<Throwable, RetryPolicy>(
-				policyMap, (RetryPolicy) new NeverRetryPolicy());
-		this.exceptionClassifier = subclassClassifier;
+		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(policyMap, new NeverRetryPolicy());
 	}
 
 	/**
 	 * Setter for an exception classifier. The classifier is responsible for
 	 * translating exceptions to concrete retry policies. Either this property
 	 * or the policy map should be used, but not both.
-	 * 
+	 *
 	 * @param exceptionClassifier ExceptionClassifier to use
 	 */
 	public void setExceptionClassifier(Classifier<Throwable, RetryPolicy> exceptionClassifier) {
@@ -65,7 +62,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Delegate to the policy currently activated in the context.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	public boolean canRetry(RetryContext context) {
@@ -75,7 +72,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Delegate to the policy currently activated in the context.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
 	public void close(RetryContext context) {
@@ -86,7 +83,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	/**
 	 * Create an active context that proxies a retry policy by choosing a target
 	 * from the policy map.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
 	public RetryContext open(RetryContext parent) {
@@ -95,7 +92,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Delegate to the policy currently activated in the context.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#registerThrowable(org.springframework.retry.RetryContext,
 	 * Throwable)
 	 */
@@ -125,11 +122,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 		}
 
 		public boolean canRetry(RetryContext context) {
-			if (this.context == null) {
-				// there was no error yet
-				return true;
-			}
-			return policy.canRetry(this.context);
+			return this.context == null || policy.canRetry(this.context);
 		}
 
 		public void close(RetryContext context) {

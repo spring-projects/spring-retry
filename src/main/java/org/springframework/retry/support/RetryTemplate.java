@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 the original author or authors.
+ * Copyright 2006-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.core.AttributeAccessor;
+
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -46,25 +46,26 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * Template class that simplifies the execution of operations with retry semantics. <br/>
  * Retryable operations are encapsulated in implementations of the {@link RetryCallback}
  * interface and are executed using one of the supplied execute methods. <br/>
- * 
+ *
  * By default, an operation is retried if is throws any {@link Exception} or subclass of
  * {@link Exception}. This behaviour can be changed by using the
  * {@link #setRetryPolicy(RetryPolicy)} method. <br/>
- * 
+ *
  * Also by default, each operation is retried for a maximum of three attempts with no back
  * off in between. This behaviour can be configured using the
  * {@link #setRetryPolicy(RetryPolicy)} and {@link #setBackOffPolicy(BackOffPolicy)}
  * properties. The {@link org.springframework.retry.backoff.BackOffPolicy} controls how
  * long the pause is between each individual retry attempt. <br/>
- * 
+ *
  * This class is thread-safe and suitable for concurrent access when executing operations
  * and when performing configuration changes. As such, it is possible to change the number
  * of retries on the fly, as well as the {@link BackOffPolicy} used and no in progress
  * retryable operations will be affected.
- * 
+ *
  * @author Rob Harrop
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  */
 public class RetryTemplate implements RetryOperations {
 
@@ -72,9 +73,8 @@ public class RetryTemplate implements RetryOperations {
 
 	private volatile BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
-	private volatile RetryPolicy retryPolicy = new SimpleRetryPolicy(3,
-			Collections.<Class<? extends Throwable>, Boolean> singletonMap(
-					Exception.class, true));
+	private volatile RetryPolicy retryPolicy =
+			new SimpleRetryPolicy(3, Collections.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true));
 
 	private volatile RetryListener[] listeners = new RetryListener[0];
 
@@ -91,7 +91,7 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Public setter for the {@link RetryContextCache}.
-	 * 
+	 *
 	 * @param retryContextCache the {@link RetryContextCache} to set.
 	 */
 	public void setRetryContextCache(RetryContextCache retryContextCache) {
@@ -101,7 +101,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Setter for listeners. The listeners are executed before and after a retry block
 	 * (i.e. before and after all the attempts), and on an error (every attempt).
-	 * 
+	 *
 	 * @param listeners
 	 * @see RetryListener
 	 */
@@ -112,7 +112,7 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Register an additional listener.
-	 * 
+	 *
 	 * @param listener
 	 * @see #setListeners(RetryListener[])
 	 */
@@ -124,7 +124,7 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Setter for {@link BackOffPolicy}.
-	 * 
+	 *
 	 * @param backOffPolicy
 	 */
 	public void setBackOffPolicy(BackOffPolicy backOffPolicy) {
@@ -133,7 +133,7 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Setter for {@link RetryPolicy}.
-	 * 
+	 *
 	 * @param retryPolicy
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
@@ -144,9 +144,9 @@ public class RetryTemplate implements RetryOperations {
 	 * Keep executing the callback until it either succeeds or the policy dictates that we
 	 * stop, in which case the most recent exception thrown by the callback will be
 	 * rethrown.
-	 * 
+	 *
 	 * @see RetryOperations#execute(RetryCallback)
-	 * 
+	 *
 	 * @throws TerminatedRetryException if the retry has been manually terminated by a
 	 * listener.
 	 */
@@ -157,9 +157,9 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Keep executing the callback until it either succeeds or the policy dictates that we
 	 * stop, in which case the recovery callback will be executed.
-	 * 
+	 *
 	 * @see RetryOperations#execute(RetryCallback, RecoveryCallback)
-	 * 
+	 *
 	 * @throws TerminatedRetryException if the retry has been manually terminated by a
 	 * listener.
 	 */
@@ -171,9 +171,9 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Execute the callback once if the policy dictates that we can, re-throwing any
 	 * exception encountered so that clients can re-present the same task later.
-	 * 
+	 *
 	 * @see RetryOperations#execute(RetryCallback, RetryState)
-	 * 
+	 *
 	 * @throws ExhaustedRetryException if the retry has been exhausted.
 	 */
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState)
@@ -184,7 +184,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Execute the callback once if the policy dictates that we can, re-throwing any
 	 * exception encountered so that clients can re-present the same task later.
-	 * 
+	 *
 	 * @see RetryOperations#execute(RetryCallback, RetryState)
 	 */
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
@@ -196,7 +196,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Execute the callback once if the policy dictates that we can, otherwise execute the
 	 * recovery callback.
-	 * 
+	 *
 	 * @see RetryOperations#execute(RetryCallback, RecoveryCallback, RetryState)
 	 * @throws ExhaustedRetryException if the retry has been exhausted.		finally {
 
@@ -232,18 +232,16 @@ public class RetryTemplate implements RetryOperations {
 
 			// Get or Start the backoff context...
 			BackOffContext backOffContext = null;
-			AttributeAccessor attributeAccessor = null;
-			if (context instanceof AttributeAccessor) {
-				attributeAccessor = (AttributeAccessor) context;
-				Object resource = attributeAccessor.getAttribute("backOffContext");
-				if (resource instanceof BackOffContext) {
-					backOffContext = (BackOffContext) resource;
-				}
+			Object resource = context.getAttribute("backOffContext");
+
+			if (resource instanceof BackOffContext) {
+				backOffContext = (BackOffContext) resource;
 			}
+
 			if (backOffContext == null) {
 				backOffContext = backOffPolicy.start(context);
-				if (attributeAccessor != null && backOffContext != null) {
-					attributeAccessor.setAttribute("backOffContext", backOffContext);
+				if (backOffContext != null) {
+					context.setAttribute("backOffContext", backOffContext);
 				}
 			}
 
@@ -256,12 +254,15 @@ public class RetryTemplate implements RetryOperations {
 			while (canRetry(retryPolicy, context) && !context.isExhaustedOnly()) {
 
 				try {
-					logger.debug("Retry: count=" + context.getRetryCount());
+					if (logger.isDebugEnabled()) {
+						logger.debug("Retry: count=" + context.getRetryCount());
+					}
 					// Reset the last exception, so if we are successful
 					// the close interceptors will not think we failed...
 					lastException = null;
 					return retryCallback.doWithRetry(context);
-				} catch (Throwable e) {
+				}
+				catch (Throwable e) {
 
 					lastException = e;
 
@@ -269,31 +270,34 @@ public class RetryTemplate implements RetryOperations {
 
 					try {
 						registerThrowable(retryPolicy, state, context, e);
-					} catch (Exception ex) {
-						throw new TerminatedRetryException(
-								"Could not register throwable", ex);
+					}
+					catch (Exception ex) {
+						throw new TerminatedRetryException("Could not register throwable", ex);
 					}
 
 					if (canRetry(retryPolicy, context) && !context.isExhaustedOnly()) {
 						try {
 							backOffPolicy.backOff(backOffContext);
-						} catch (BackOffInterruptedException ex) {
+						}
+						catch (BackOffInterruptedException ex) {
 							lastException = e;
-							// back off was prevented by another thread - fail
-							// the retry
-							logger.debug("Abort retry because interrupted: count="
-									+ context.getRetryCount());
+							// back off was prevented by another thread - fail the retry
+							if (logger.isDebugEnabled()) {
+								logger.debug("Abort retry because interrupted: count=" + context.getRetryCount());
+							}
 							throw ex;
 						}
 					}
 
-					logger.debug("Checking for rethrow: count=" + context.getRetryCount());
+					if (logger.isDebugEnabled()) {
+						logger.debug("Checking for rethrow: count=" + context.getRetryCount());
+					}
+
 					if (shouldRethrow(retryPolicy, context, state)) {
-						logger.debug("Rethrow in retry for policy: count="
-								+ context.getRetryCount());
-						@SuppressWarnings("unchecked")
-						E rethrow = (E) wrapIfNecessary(e);
-						throw rethrow;
+						if (logger.isDebugEnabled()) {
+							logger.debug("Rethrow in retry for policy: count=" + context.getRetryCount());
+						}
+						throw RetryTemplate.<E>wrapIfNecessary(e);
 					}
 
 				}
@@ -305,19 +309,19 @@ public class RetryTemplate implements RetryOperations {
 				 */
 			}
 
-			logger.debug("Retry failed last attempt: count=" + context.getRetryCount());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Retry failed last attempt: count=" + context.getRetryCount());
+			}
 
 			if (context.isExhaustedOnly()) {
-				rethrow(context,
-						"Retry exhausted after last attempt with no recovery path.");
+				rethrow(context, "Retry exhausted after last attempt with no recovery path.");
 			}
 
 			return handleRetryExhausted(recoveryCallback, context, state);
 
-		} catch (Throwable e) {
-			@SuppressWarnings("unchecked")
-			E rethrow = (E) wrapIfNecessary(e);
-			throw rethrow;
+		}
+		catch (Throwable e) {
+			throw RetryTemplate.<E>wrapIfNecessary(e);
 		}
 		finally {
 			close(retryPolicy, context, state, lastException == null);
@@ -331,7 +335,7 @@ public class RetryTemplate implements RetryOperations {
 	 * Decide whether to proceed with the ongoing retry attempt. This method is called
 	 * before the {@link RetryCallback} is executed, but after the backoff and open
 	 * interceptors.
-	 * 
+	 *
 	 * @param retryPolicy the policy to apply
 	 * @param context the current retry context
 	 * @return true if we can continue with the attempt
@@ -343,7 +347,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Clean up the cache if necessary and close the context provided (if the flag
 	 * indicates that processing was successful).
-	 * 
+	 *
 	 * @param context
 	 * @param state
 	 * @param succeeded
@@ -355,7 +359,8 @@ public class RetryTemplate implements RetryOperations {
 				retryContextCache.remove(state.getKey());
 				retryPolicy.close(context);
 			}
-		} else {
+		}
+		else {
 			retryPolicy.close(context);
 		}
 	}
@@ -384,7 +389,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Delegate to the {@link RetryPolicy} having checked in the cache for an existing
 	 * value if the state is not null.
-	 * 
+	 *
 	 * @param retryPolicy a {@link RetryPolicy} to delegate the context creation
 	 * @return a retry context, either a new one or the one used last time the same state
 	 * was encountered
@@ -436,7 +441,7 @@ public class RetryTemplate implements RetryOperations {
 	 * Actions to take after final attempt has failed. If there is state clean up the
 	 * cache. If there is a recovery callback, execute that and return its result.
 	 * Otherwise throw an exception.
-	 * 
+	 *
 	 * @param recoveryCallback the callback for recovery (might be null)
 	 * @param context the current retry context
 	 * @throws Exception if the callback does, and if there is no callback and the state
@@ -464,7 +469,8 @@ public class RetryTemplate implements RetryOperations {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) context.getLastThrowable();
 			throw rethrow;
-		} else {
+		}
+		else {
 			throw new ExhaustedRetryException(message, context.getLastThrowable());
 		}
 	}
@@ -473,27 +479,22 @@ public class RetryTemplate implements RetryOperations {
 	 * Extension point for subclasses to decide on behaviour after catching an exception
 	 * in a {@link RetryCallback}. Normal stateless behaviour is not to rethrow, and if
 	 * there is state we rethrow.
-	 * 
+	 *
 	 * @param retryPolicy
 	 * @param context the current context
-	 * 
+	 *
 	 * @return true if the state is not null but subclasses might choose otherwise
 	 */
-	protected boolean shouldRethrow(RetryPolicy retryPolicy, RetryContext context,
-			RetryState state) {
-		if (state == null) {
-			return false;
-		} else {
-			return state.rollbackFor(context.getLastThrowable());
-		}
+	protected boolean shouldRethrow(RetryPolicy retryPolicy, RetryContext context, RetryState state) {
+		return state != null && state.rollbackFor(context.getLastThrowable());
 	}
 
 	private <T, E extends Throwable> boolean doOpenInterceptors(RetryCallback<T, E> callback, RetryContext context) {
 
 		boolean result = true;
 
-		for (int i = 0; i < listeners.length; i++) {
-			result = result && listeners[i].open(context, callback);
+		for (RetryListener listener : listeners) {
+			result = result && listener.open(context, callback);
 		}
 
 		return result;
@@ -521,11 +522,13 @@ public class RetryTemplate implements RetryOperations {
 	private static <E extends Throwable> E wrapIfNecessary(Throwable throwable) throws RetryException {
 		if (throwable instanceof Error) {
 			throw (Error) throwable;
-		} else if (throwable instanceof Exception) {
+		}
+		else if (throwable instanceof Exception) {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) throwable;
 			return rethrow;
-		} else {
+		}
+		else {
 			throw new RetryException("Exception in batch process", throwable);
 		}
 	}

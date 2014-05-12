@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2008 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,6 @@
  * limitations under the License.
  */
 
-/*
- * Copyright 2002-2008 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.springframework.classify.util;
 
 import java.lang.reflect.Method;
@@ -43,90 +28,92 @@ import org.springframework.util.ClassUtils;
  * method on an object. If the method has no arguments, but arguments are
  * provided, they are ignored and the method is invoked anyway. If there are
  * more arguments than there are provided, then an exception is thrown.
- * 
+ *
  * @author Lucas Ward
- * @since 2.0
+ * @author Artem Bilan
+ * @since 1.1
  */
 public class SimpleMethodInvoker implements MethodInvoker {
 
 	private final Object object;
 
-	private Method method;
+	private final Method method;
+
+	private final Class<?>[] parameterTypes;
+
+	private volatile Object target;
 
 	public SimpleMethodInvoker(Object object, Method method) {
 		Assert.notNull(object, "Object to invoke must not be null");
 		Assert.notNull(method, "Method to invoke must not be null");
 		this.method = method;
+		method.setAccessible(true);
 		this.object = object;
+		this.parameterTypes = method.getParameterTypes();
 	}
 
 	public SimpleMethodInvoker(Object object, String methodName, Class<?>... paramTypes) {
 		Assert.notNull(object, "Object to invoke must not be null");
-		this.method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, paramTypes);
-		if (this.method == null) {
+		Method method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, paramTypes);
+		if (method == null) {
 			// try with no params
-			this.method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, new Class[] {});
+			method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, new Class[] {});
 		}
-		if (this.method == null) {
-			throw new IllegalArgumentException("No methods found for name: [" + methodName + "] in class: ["
-					+ object.getClass() + "] with arguments of type: [" + Arrays.toString(paramTypes) + "]");
-		}
+
+		Assert.notNull(method, "No methods found for name: [" + methodName + "] in class: ["
+				+ object.getClass() + "] with arguments of type: [" + Arrays.toString(paramTypes) + "]");
+
 		this.object = object;
+		this.method = method;
+		method.setAccessible(true);
+		this.parameterTypes = method.getParameterTypes();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.springframework.batch.core.configuration.util.MethodInvoker#invokeMethod
 	 * (java.lang.Object[])
 	 */
+	@Override
 	public Object invokeMethod(Object... args) {
-
-		Class<?>[] parameterTypes = method.getParameterTypes();
-		Object[] invokeArgs;
-		if (parameterTypes.length == 0) {
-			invokeArgs = new Object[] {};
-		}
-		else if (parameterTypes.length != args.length) {
-			throw new IllegalArgumentException("Wrong number of arguments, expected no more than: ["
-					+ parameterTypes.length + "]");
-		}
-		else {
-			invokeArgs = args;
-		}
-
-		method.setAccessible(true);
+		Assert.state(this.parameterTypes.length == args.length,
+				"Wrong number of arguments, expected no more than: [" + this.parameterTypes.length + "]");
 
 		try {
 			// Extract the target from an Advised as late as possible
 			// in case it contains a lazy initialization
-			Object target = extractTarget(object, method);
-			return method.invoke(target, invokeArgs);
+			Object target = extractTarget(this.object, this.method);
+			return method.invoke(target, args);
 		}
 		catch (Exception e) {
-			throw new IllegalArgumentException("Unable to invoke method: [" + method + "] on object: [" + object
-					+ "] with arguments: [" + Arrays.toString(args) + "]", e);
+			throw new IllegalArgumentException("Unable to invoke method: [" + this.method + "] on object: ["
+					+ this.object + "] with arguments: [" + Arrays.toString(args) + "]", e);
 		}
 	}
 
 	private Object extractTarget(Object target, Method method) {
-		if (target instanceof Advised) {
-			Object source;
-			try {
-				source = ((Advised) target).getTargetSource().getTarget();
+		if (this.target == null) {
+			if (target instanceof Advised) {
+				Object source;
+				try {
+					source = ((Advised) target).getTargetSource().getTarget();
+				}
+				catch (Exception e) {
+					throw new IllegalStateException("Could not extract target from proxy", e);
+				}
+				if (source instanceof Advised) {
+					source = extractTarget(source, method);
+				}
+				if (method.getDeclaringClass().isAssignableFrom(source.getClass())) {
+					target = source;
+				}
 			}
-			catch (Exception e) {
-				throw new IllegalStateException("Could not extract target from proxy", e);
-			}
-			if (source instanceof Advised) {
-				source = extractTarget(source, method);
-			}
-			if (method.getDeclaringClass().isAssignableFrom(source.getClass())) {
-				target = source;
-			}
+			this.target = target;
+
 		}
-		return target;
+		return this.target;
 	}
 
 	@Override
@@ -145,8 +132,9 @@ public class SimpleMethodInvoker implements MethodInvoker {
 	@Override
 	public int hashCode() {
 		int result = 25;
-		result = 31 * result + object.hashCode();
-		result = 31 * result + method.hashCode();
+		result = 31 * result + this.object.hashCode();
+		result = 31 * result + this.method.hashCode();
 		return result;
 	}
+
 }
