@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,10 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for a method invocation that is retryable.
- * 
+ *
  * @author Dave Syer
- * @since 2.0
+ * @author Artem Bilan
+ * @since 1.1
  *
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
@@ -35,9 +36,15 @@ import java.lang.annotation.Target;
 public @interface Retryable {
 
 	/**
+	 * Retry interceptor bean name to be applied for retryable method.
+	 * Is mutually exclusive with other attributes.
+	 * @return the retry interceptor bean name
+	 */
+	String interceptor() default "";
+
+	/**
 	 * Exception types that are retryable. Synonym for includes(). Defaults to
 	 * empty (and if excludes is also empty all exceptions are retried).
-	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] value() default {};
@@ -45,7 +52,6 @@ public @interface Retryable {
 	/**
 	 * Exception types that are retryable. Defaults to empty (and if excludes is
 	 * also empty all exceptions are retried).
-	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] include() default {};
@@ -53,7 +59,6 @@ public @interface Retryable {
 	/**
 	 * Exception types that are not retryable. Defaults to empty (and if
 	 * includes is also empty all exceptions are retried).
-	 * 
 	 * @return exception types to retry
 	 */
 	Class<? extends Throwable>[] exclude() default {};
@@ -63,7 +68,6 @@ public @interface Retryable {
 	 * but the retry policy is applied with the same policy to subsequent
 	 * invocations with the same arguments. If false then retryable exceptions
 	 * are not re-thrown.
-	 * 
 	 * @return true if retry is stateful, default false
 	 */
 	boolean stateful() default false;
@@ -78,7 +82,6 @@ public @interface Retryable {
 	 * Specify the backof properties for retrying this operation. The default is
 	 * no backoff, but it can be a good idea to pause between attempts (even at
 	 * the cost of blocking a thread).
-	 * 
 	 * @return a backoff specification
 	 */
 	Backoff backoff() default @Backoff();
