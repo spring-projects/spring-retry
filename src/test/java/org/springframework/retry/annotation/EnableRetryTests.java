@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
+
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.backoff.Sleeper;
+import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 
 /**
  * @author Dave Syer
- *
+ * @author Artem Bilan
+ * @since 1.1
  */
 public class EnableRetryTests {
 
@@ -92,7 +96,8 @@ public class EnableRetryTests {
 		try {
 			service.service();
 			fail("Expected IllegalStateException");
-		} catch (IllegalStateException e) {
+		}
+		catch (IllegalStateException e) {
 		}
 		assertEquals(1, service.getCount());
 		context.close();
@@ -106,11 +111,21 @@ public class EnableRetryTests {
 		for (int i = 0; i < 3; i++) {
 			try {
 				service.service(1);
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				assertEquals("Planned", e.getMessage());
 			}
 		}
 		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
+	public void testExternalInterceptor() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		InterceptableService service = context.getBean(InterceptableService.class);
+		service.service();
+		assertEquals(5, service.getCount());
 		context.close();
 	}
 
@@ -163,6 +178,17 @@ public class EnableRetryTests {
 			return new ExcludesService();
 		}
 
+		@Bean
+		public MethodInterceptor retryInterceptor() {
+			return RetryInterceptorBuilder.stateless()
+					.maxAttempts(5)
+					.build();
+		}
+
+		@Bean
+		public InterceptableService serviceWithExternalInterceptor() {
+			return new InterceptableService();
+		}
 	}
 
 	protected static class Service {
@@ -185,6 +211,7 @@ public class EnableRetryTests {
 	protected static class RecoverableService {
 
 		private int count = 0;
+
 		private Throwable cause;
 
 		@Retryable(RuntimeException.class)
@@ -249,6 +276,23 @@ public class EnableRetryTests {
 		@Retryable(stateful = true)
 		public void service(int value) {
 			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	private static class InterceptableService {
+
+		private int count = 0;
+
+		@Retryable(interceptor = "retryInterceptor")
+		public void service() {
+			if (count++ < 4) {
 				throw new RuntimeException("Planned");
 			}
 		}

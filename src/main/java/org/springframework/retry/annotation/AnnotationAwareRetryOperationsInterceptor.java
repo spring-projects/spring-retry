@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.IntroductionInterceptor;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -35,35 +39,38 @@ import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
-import org.springframework.retry.interceptor.RetryOperationsInterceptor;
-import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
+import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+import org.springframework.util.StringUtils;
 
 /**
  * WrappeMethodInterceptorr interceptor that interprets the retry metadata on the method it is invoking and
  * delegates to an appropriate RetryOperationsInterceptor.
- * 
+ *
  * @author Dave Syer
- * @since 2.0
+ * @author Artem Bilan
+ * @since 1.1
  *
  */
-public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor {
+public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
 
-	private Map<Method, MethodInterceptor> delegates = new HashMap<Method, MethodInterceptor>();
+	private final Map<Method, MethodInterceptor> delegates = new HashMap<Method, MethodInterceptor>();
 
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
 	private MethodArgumentsKeyGenerator methodArgumentsKeyGenerator;
 
 	private NewMethodArgumentsIdentifier newMethodArgumentsIdentifier;
-	
+
 	private Sleeper sleeper;
-	
+
+	private BeanFactory beanFactory;
+
 	/**
 	 * @param sleeper the sleeper to set
 	 */
@@ -73,7 +80,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	/**
 	 * Public setter for the {@link RetryContextCache}.
-	 * 
+	 *
 	 * @param retryContextCache the {@link RetryContextCache} to set.
 	 */
 	public void setRetryContextCache(RetryContextCache retryContextCache) {
@@ -81,78 +88,80 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	/**
-	 * @param methodArgumentsKeyGenerator
+	 * @param methodArgumentsKeyGenerator the {@link MethodArgumentsKeyGenerator}
 	 */
 	public void setKeyGenerator(MethodArgumentsKeyGenerator methodArgumentsKeyGenerator) {
 		this.methodArgumentsKeyGenerator = methodArgumentsKeyGenerator;
 	}
 
 	/**
-	 * @param newMethodArgumentsIdentifier
+	 * @param newMethodArgumentsIdentifier the {@link NewMethodArgumentsIdentifier}
 	 */
-	public void setNewItemIdentifier(
-			NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
+	public void setNewItemIdentifier(NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 		this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
 	}
 
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	@Override
+	public boolean implementsInterface(Class<?> intf) {
+		return org.springframework.retry.interceptor.Retryable.class.isAssignableFrom(intf);
+	}
+
+	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		MethodInterceptor delegate = getDelegate(invocation.getThis(), invocation.getMethod());
 		return delegate.invoke(invocation);
 	}
 
-	@Override
-	public boolean implementsInterface(Class<?> intf) {
-		return Retryable.class.isAssignableFrom(intf);
-	}
-
 	private MethodInterceptor getDelegate(Object target, Method method) {
-		if (!delegates.containsKey(method)) {
-			synchronized (delegates) {
-				if (!delegates.containsKey(method)) {
-					Retryable retryable = AnnotationUtils.findAnnotation(method,
-							Retryable.class);
+		if (!this.delegates.containsKey(method)) {
+			synchronized (this.delegates) {
+				if (!this.delegates.containsKey(method)) {
+					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
 					if (retryable == null) {
-						retryable = AnnotationUtils.findAnnotation(
-								method.getDeclaringClass(), Retryable.class);
+						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
 					}
 					MethodInterceptor delegate;
-					if (retryable.stateful()) {
+					if (StringUtils.hasText(retryable.interceptor())) {
+						delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
+					}
+					else if (retryable.stateful()) {
 						delegate = getStatefulInterceptor(target, method, retryable);
-					} else {
+					}
+					else {
 						delegate = getStatelessInterceptor(target, method, retryable);
 					}
-					delegates.put(method, delegate);
+					this.delegates.put(method, delegate);
 				}
 			}
 		}
-		return delegates.get(method);
+		return this.delegates.get(method);
 	}
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
-		RetryOperationsInterceptor interceptor = new RetryOperationsInterceptor();
-		RetryTemplate template = new RetryTemplate();
-		template.setRetryPolicy(getRetryPolicy(retryable));
-		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
-		interceptor.setRetryOperations(template);
-		interceptor.setRecoverer(getRecoverer(target, method));
-		return interceptor;
+		return RetryInterceptorBuilder.stateless()
+				.retryPolicy(getRetryPolicy(retryable))
+				.backOffPolicy(getBackoffPolicy(retryable.backoff()))
+				.recoverer(getRecoverer(target, method))
+				.build();
 	}
 
 	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
-		StatefulRetryOperationsInterceptor interceptor = new StatefulRetryOperationsInterceptor();
-		if (methodArgumentsKeyGenerator != null) {
-			interceptor.setKeyGenerator(methodArgumentsKeyGenerator);
-		}
-		if (newMethodArgumentsIdentifier != null) {
-			interceptor.setNewItemIdentifier(newMethodArgumentsIdentifier);
-		}
 		RetryTemplate template = new RetryTemplate();
-		template.setRetryContextCache(retryContextCache);
+		template.setRetryContextCache(this.retryContextCache);
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
-		interceptor.setRetryOperations(template);
-		interceptor.setRecoverer(getRecoverer(target, method));
-		return interceptor;
+
+		return RetryInterceptorBuilder.stateful()
+				.retryOperations(template)
+				.recoverer(getRecoverer(target, method))
+				.keyGenerator(this.methodArgumentsKeyGenerator)
+				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
+				.build();
 	}
 
 	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method) {
@@ -164,11 +173,12 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException,
 					IllegalAccessException {
-				if (AnnotationUtils.findAnnotation(method, Recover.class)!=null) {
+				if (AnnotationUtils.findAnnotation(method, Recover.class) != null) {
 					foundRecoverable.set(true);
 				}
 			}
 		});
+
 		if (!foundRecoverable.get()) {
 			return null;
 		}
@@ -193,39 +203,37 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		for (Class<? extends Throwable> type : excludes) {
 			policyMap.put(type, false);
 		}
-		SimpleRetryPolicy simple = new SimpleRetryPolicy(retryable.maxAttempts(),
-				policyMap, true);
-		return simple;
+		return new SimpleRetryPolicy(retryable.maxAttempts(), policyMap, true);
 	}
 
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
-		long min = backoff.delay()==0 ? backoff.value() : backoff.delay();
+		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
 		long max = backoff.maxDelay();
-		if (backoff.multiplier()>0) {
+		if (backoff.multiplier() > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
 			if (backoff.random()) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
 			policy.setInitialInterval(min);
 			policy.setMultiplier(backoff.multiplier());
-			policy.setMaxInterval(max>min ? max : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
-			if (sleeper!=null) {
+			policy.setMaxInterval(max > min ? max : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
+			if (sleeper != null) {
 				policy.setSleeper(sleeper);
 			}
 			return policy;
 		}
-		if (max>min) {
+		if (max > min) {
 			UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
 			policy.setMinBackOffPeriod(min);
 			policy.setMaxBackOffPeriod(max);
-			if (sleeper!=null) {
+			if (sleeper != null) {
 				policy.setSleeper(sleeper);
 			}
 			return policy;
 		}
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
 		policy.setBackOffPeriod(min);
-		if (sleeper!=null) {
+		if (sleeper != null) {
 			policy.setSleeper(sleeper);
 		}
 		return policy;

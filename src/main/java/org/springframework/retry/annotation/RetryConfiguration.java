@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.aopalliance.aop.Advice;
+
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.Pointcut;
@@ -44,9 +45,10 @@ import org.springframework.retry.policy.RetryContextCache;
  * {@link RetryContextCache}, {@link MethodArgumentsKeyGenerator} or
  * {@link NewMethodArgumentsIdentifier} it will be used by the corresponding
  * retry interceptor (otherwise sensible defaults are adopted).
- * 
+ *
  * @author Dave Syer
- * @since 2.0
+ * @author Artem Bilan
+ * @since 1.1
  *
  */
 @SuppressWarnings("serial")
@@ -70,13 +72,17 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 	@Autowired(required = false)
 	private Sleeper sleeper;
 
+	private BeanFactory beanFactory;
+
 	@PostConstruct
 	public void init() {
-		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(
-				1);
+		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
+		if (this.advice instanceof BeanFactoryAware) {
+			((BeanFactoryAware) this.advice).setBeanFactory(beanFactory);
+		}
 	}
 
 	/**
@@ -85,9 +91,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 	 */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
-		if (this.advice instanceof BeanFactoryAware) {
-			((BeanFactoryAware) this.advice).setBeanFactory(beanFactory);
-		}
+		this.beanFactory = beanFactory;
 	}
 
 	@Override
@@ -97,7 +101,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 
 	@Override
 	public Class<?>[] getInterfaces() {
-		return new Class[] { org.springframework.retry.interceptor.Retryable.class };
+		return new Class[] {org.springframework.retry.interceptor.Retryable.class};
 	}
 
 	@Override
@@ -133,22 +137,20 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 
 	/**
 	 * Calculate a pointcut for the given retry annotation types, if any.
-	 * 
+	 *
 	 * @param retryAnnotationTypes
 	 *            the retry annotation types to introspect
 	 * @return the applicable Pointcut object, or {@code null} if none
 	 */
-	protected Pointcut buildPointcut(
-			Set<Class<? extends Annotation>> retryAnnotationTypes) {
+	protected Pointcut buildPointcut(Set<Class<? extends Annotation>> retryAnnotationTypes) {
 		ComposablePointcut result = null;
 		for (Class<? extends Annotation> retryAnnotationType : retryAnnotationTypes) {
-			Pointcut cpc = new AnnotationMatchingPointcut(retryAnnotationType,
-					true);
-			Pointcut mpc = AnnotationMatchingPointcut
-					.forMethodAnnotation(retryAnnotationType);
+			Pointcut cpc = new AnnotationMatchingPointcut(retryAnnotationType, true);
+			Pointcut mpc = AnnotationMatchingPointcut.forMethodAnnotation(retryAnnotationType);
 			if (result == null) {
 				result = new ComposablePointcut(cpc).union(mpc);
-			} else {
+			}
+			else {
 				result.union(cpc).union(mpc);
 			}
 		}
