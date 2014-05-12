@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ import org.junit.Test;
 
 /**
  * @author Dave Syer
+ * @author Artem Bilan
  */
-public class ObjectWaitSleeperTests {
+public class ThreadWaitSleeperTests {
 
 	@Test
 	public void testSingleBackOff() throws Exception {
 		long backOffPeriod = 50;
-		ObjectWaitSleeper strategy = new ObjectWaitSleeper();
+		ThreadWaitSleeper strategy = new ThreadWaitSleeper();
 		long before = System.currentTimeMillis();
 		strategy.sleep(backOffPeriod);
 		long after = System.currentTimeMillis();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,10 @@ package org.springframework.retry.backoff;
  * {@link #setBackOffPeriod(long)} is thread-safe and it is safe to call
  * {@link #setBackOffPeriod} during execution from multiple threads, however this may
  * cause a single retry operation to have pauses of different intervals.
+ *
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Artem Bilan
  */
 public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 		SleepingBackOffPolicy<FixedBackOffPolicy> {
@@ -39,7 +41,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 	 */
 	private volatile long backOffPeriod = DEFAULT_BACK_OFF_PERIOD;
 
-	private Sleeper sleeper = new ObjectWaitSleeper();
+	private Sleeper sleeper = new ThreadWaitSleeper();
 
 	public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
 		FixedBackOffPolicy res = new FixedBackOffPolicy();
@@ -50,7 +52,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
-	 * @param sleeper the sleeper to set defaults to {@link ObjectWaitSleeper}.
+	 * @param sleeper the sleeper to set defaults to {@link ThreadWaitSleeper}.
 	 */
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;
@@ -78,7 +80,8 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
 			sleeper.sleep(backOffPeriod);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}

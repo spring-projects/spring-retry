@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 the original author or authors.
+ * Copyright 2006-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,11 @@ import org.springframework.util.ClassUtils;
  * passed to {@link Math#exp(double)} and the {@link #setMultiplier(double)}
  * property controls by how much this value is increased for each subsequent
  * attempt.
- * 
+ *
  * @author Rob Harrop
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  */
 public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
 
@@ -74,11 +75,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 */
 	private volatile double multiplier = DEFAULT_MULTIPLIER;
 
-	private Sleeper sleeper = new ObjectWaitSleeper();
+	private Sleeper sleeper = new ThreadWaitSleeper();
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
-	 * @param sleeper the sleeper to set defaults to {@link ObjectWaitSleeper}.
+	 * @param sleeper the sleeper to set defaults to {@link ThreadWaitSleeper}.
 	 */
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;
@@ -124,7 +125,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * value will be reset to 1 if this method is called with a value less than
 	 * 1. Set this to avoid infinite waits if backing off a large number of
 	 * times (or if the multiplier is set too high).
-	 * 
+	 *
 	 * @param maxInterval in milliseconds.
 	 */
 	public void setMaxInterval(long maxInterval) {
@@ -141,7 +142,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 	/**
 	 * The maximum interval to sleep for. Defaults to 30 seconds.
-	 * 
+	 *
 	 * @return the maximum interval.
 	 */
 	public long getMaxInterval() {
@@ -151,7 +152,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	/**
 	 * The multiplier to use to generate the next backoff interval from the
 	 * last.
-	 * 
+	 *
 	 * @return the multiplier in use
 	 */
 	public double getMultiplier() {
@@ -201,7 +202,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
         public synchronized long getSleepAndIncrement() {
             long sleep = this.interval;
             if (sleep > maxInterval) {
-                sleep = (long) maxInterval;
+                sleep = maxInterval;
             }
             else {
                 this.interval = getNextInterval();

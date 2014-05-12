@@ -48,7 +48,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Setter for policies.
-	 * 
+	 *
 	 * @param policies
 	 */
 	public void setPolicies(RetryPolicy[] policies) {
@@ -59,7 +59,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 * Delegate to the policies that were in operation when the context was
 	 * created. If any of them cannot retry then return false, oetherwise return
 	 * true.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	public boolean canRetry(RetryContext context) {
@@ -91,7 +91,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 * Delegate to the policies that were in operation when the context was
 	 * created. If any of them fails to close the exception is propagated (and
 	 * those later in the chain are closed before re-throwing).
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
 	public void close(RetryContext context) {
@@ -116,13 +116,13 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	/**
 	 * Creates a new context that copies the existing policies and keeps a list
 	 * of the contexts from each one.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
 	public RetryContext open(RetryContext parent) {
 		List<RetryContext> list = new ArrayList<RetryContext>();
-		for (int i = 0; i < policies.length; i++) {
-			list.add(policies[i].open(parent));
+		for (RetryPolicy policy : policies) {
+			list.add(policy.open(parent));
 		}
 		return new CompositeRetryContext(parent, list);
 	}
@@ -130,7 +130,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	/**
 	 * Delegate to the policies that were in operation when the context was
 	 * created.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
 	public void registerThrowable(RetryContext context, Throwable throwable) {
@@ -150,7 +150,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts) {
 			super(parent);
-			this.contexts = contexts.toArray(new RetryContext[0]);
+			this.contexts = contexts.toArray(new RetryContext[contexts.size()]);
 			this.policies = CompositeRetryPolicy.this.policies;
 		}
 

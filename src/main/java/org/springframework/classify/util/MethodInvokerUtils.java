@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2008 the original author or authors.
+ * Copyright 2002-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.classify.util;
 
 import java.lang.annotation.Annotation;
@@ -30,15 +31,16 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility methods for create MethodInvoker instances.
- * 
+ *
  * @author Lucas Ward
- * @since 2.0
+ * @author Artem Bilan
+ * @since 1.1
  */
 public class MethodInvokerUtils {
 
 	/**
 	 * Create a {@link MethodInvoker} using the provided method name to search.
-	 * 
+	 *
 	 * @param object to be invoked
 	 * @param methodName of the method to be invoked
 	 * @param paramsRequired boolean indicating whether the parameters are
@@ -65,12 +67,12 @@ public class MethodInvokerUtils {
 
 	/**
 	 * Create a String representation of the array of parameter types.
-	 * 
-	 * @param paramTypes
-	 * @return String
+	 *
+	 * @param paramTypes the types of parameters
+	 * @return the paramTypes as String representation
 	 */
 	public static String getParamTypesString(Class<?>... paramTypes) {
-		StringBuffer paramTypesList = new StringBuffer("(");
+		StringBuilder paramTypesList = new StringBuilder("(");
 		for (int i = 0; i < paramTypes.length; i++) {
 			paramTypesList.append(paramTypes[i].getSimpleName());
 			if (i + 1 < paramTypes.length) {
@@ -83,7 +85,7 @@ public class MethodInvokerUtils {
 	/**
 	 * Create a {@link MethodInvoker} using the provided interface, and method
 	 * name from that interface.
-	 * 
+	 *
 	 * @param cls the interface to search for the method named
 	 * @param methodName of the method to be invoked
 	 * @param object to be invoked
@@ -104,7 +106,7 @@ public class MethodInvokerUtils {
 	/**
 	 * Create a MethodInvoker from the delegate based on the annotationType.
 	 * Ensure that the annotated method has a valid set of parameters.
-	 * 
+	 *
 	 * @param annotationType the annotation to scan for
 	 * @param target the target object
 	 * @param expectedParamTypes the expected parameter types for the method
@@ -144,7 +146,7 @@ public class MethodInvokerUtils {
 	 * on the provided object. Annotations that cannot be applied to methods
 	 * (i.e. that aren't annotated with an element type of METHOD) will cause an
 	 * exception to be thrown.
-	 * 
+	 *
 	 * @param annotationType to be searched for
 	 * @param target to be invoked
 	 * @return MethodInvoker for the provided annotation, null if none is found.
@@ -185,7 +187,7 @@ public class MethodInvokerUtils {
 	/**
 	 * Create a {@link MethodInvoker} for the delegate from a single public
 	 * method.
-	 * 
+	 *
 	 * @param target an object to search for an appropriate method
 	 * @return a MethodInvoker that calls a method on the delegate
 	 */

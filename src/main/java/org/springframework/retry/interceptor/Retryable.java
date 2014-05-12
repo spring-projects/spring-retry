@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ package org.springframework.retry.interceptor;
  * Marker interface for proxies that are providing retryable behaviour. Can be added by
  * proxy creators that use the {@link RetryOperationsInterceptor} and
  * {@link StatefulRetryOperationsInterceptor}.
- * @author Dave Syer
  *
+ * @author Dave Syer
+ * @since 1.1
  */
 public interface Retryable {
 
