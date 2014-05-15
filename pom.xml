@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
@@ -21,7 +22,7 @@
 	<packaging>jar</packaging>
 	<properties>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
-		<spring.framework.version>4.0.3.RELEASE</spring.framework.version>
+		<spring.framework.version>4.0.4.RELEASE</spring.framework.version>
 	</properties>
 	<profiles>
 		<profile>
@@ -57,43 +58,43 @@
 		<profile>
 			<id>milestone</id>
 			<distributionManagement>
-			  <repository>
-				<id>repo.spring.io</id>
-				<name>Spring Milestone Repository</name>
-				<url>https://repo.spring.io/libs-milestone-local</url>
-			  </repository>
+				<repository>
+					<id>repo.spring.io</id>
+					<name>Spring Milestone Repository</name>
+					<url>https://repo.spring.io/libs-milestone-local</url>
+				</repository>
 			</distributionManagement>
 		</profile>
 		<profile>
 			<id>central</id>
 			<distributionManagement>
-			  <snapshotRepository>
-				<id>sonatype-nexus-snapshots</id>
-				<name>Sonatype Nexus Snapshots</name>
-				<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-			  </snapshotRepository>
-			  <repository>
-				<id>sonatype-nexus-staging</id>
-				<name>Nexus Release Repository</name>
-				<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-			  </repository>
+				<snapshotRepository>
+					<id>sonatype-nexus-snapshots</id>
+					<name>Sonatype Nexus Snapshots</name>
+					<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+				</snapshotRepository>
+				<repository>
+					<id>sonatype-nexus-staging</id>
+					<name>Nexus Release Repository</name>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
 			</distributionManagement>
 			<build>
-			  <plugins>
-				<plugin>
-				  <groupId>org.apache.maven.plugins</groupId>
-				  <artifactId>maven-gpg-plugin</artifactId>
-				  <executions>
-					<execution>
-					  <id>sign-artifacts</id>
-					  <phase>verify</phase>
-					  <goals>
-						<goal>sign</goal>
-					  </goals>
-					</execution>
-				  </executions>
-				</plugin>
-			  </plugins>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
 			</build>
 		</profile>
 	</profiles>
@@ -102,8 +103,8 @@
 		<url>http://github.com/spring-projects/spring-retry</url>
 		<connection>scm:git:git://github.com/spring-projects/spring-retry.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/spring-projects/spring-retry.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<developers>
 		<developer>
@@ -134,6 +135,18 @@
 		</snapshotRepository>
 	</distributionManagement>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${spring.framework.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -150,7 +163,7 @@
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
-			<version>1.6.6</version>
+			<version>1.7.4</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -162,18 +175,15 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring.framework.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.framework.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
-			<version>${spring.framework.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -188,11 +198,11 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-                <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-release-plugin</artifactId>
-                  <version>2.3</version>
-                </plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
 				<plugin>
 					<artifactId>maven-assembly-plugin</artifactId>
 					<inherited>false</inherited>
@@ -227,28 +237,28 @@
 				</configuration>
 			</plugin>
 			<plugin>
-			  <artifactId>maven-javadoc-plugin</artifactId>
-			  <executions>
-				<execution>
-				  <id>javadoc</id>
-				  <goals>
-					<goal>jar</goal>
-				  </goals>
-				  <phase>package</phase>
-				</execution>
-			  </executions>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>javadoc</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
-			  <artifactId>maven-source-plugin</artifactId>
-			  <executions>
-				<execution>
-				  <id>attach-sources</id>
-				  <goals>
-					<goal>jar</goal>
-				  </goals>
-				  <phase>package</phase>
-				</execution>
-			  </executions>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
