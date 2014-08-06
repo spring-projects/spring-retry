@@ -17,6 +17,7 @@
 package org.springframework.retry.annotation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -43,6 +44,8 @@ public class EnableRetryTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfiguration.class);
 		Service service = context.getBean(Service.class);
+		Foo foo = context.getBean(Foo.class);
+		assertFalse(AopUtils.isAopProxy(foo));
 		service.service();
 		assertEquals(3, service.getCount());
 		context.close();
@@ -145,7 +148,7 @@ public class EnableRetryTests {
 	protected static class TestConfiguration {
 
 		@Bean
-		public Sleeper sleper() {
+		public Sleeper sleeper() {
 			return new Sleeper() {
 				@Override
 				public void sleep(long period) throws InterruptedException {
@@ -189,6 +192,12 @@ public class EnableRetryTests {
 		public InterceptableService serviceWithExternalInterceptor() {
 			return new InterceptableService();
 		}
+
+		@Bean
+		public Foo foo() {
+			return new Foo();
+		}
+
 	}
 
 	protected static class Service {
@@ -302,4 +311,9 @@ public class EnableRetryTests {
 		}
 
 	}
+
+	private static class Foo {
+
+	}
+
 }

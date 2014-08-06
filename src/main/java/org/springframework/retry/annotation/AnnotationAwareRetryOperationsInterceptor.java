@@ -114,7 +114,12 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	@Override
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		MethodInterceptor delegate = getDelegate(invocation.getThis(), invocation.getMethod());
-		return delegate.invoke(invocation);
+		if (delegate != null) {
+			return delegate.invoke(invocation);
+		}
+		else {
+			return invocation.proceed();
+		}
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {
@@ -124,6 +129,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
 					if (retryable == null) {
 						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
+					}
+					if (retryable == null) {
+						return this.delegates.put(method, null);
 					}
 					MethodInterceptor delegate;
 					if (StringUtils.hasText(retryable.interceptor())) {

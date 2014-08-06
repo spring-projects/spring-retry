@@ -29,10 +29,13 @@ import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
+import org.springframework.aop.support.annotation.AnnotationClassFilter;
 import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.classify.util.AnnotationMethodResolver;
+import org.springframework.classify.util.MethodResolver;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
@@ -145,16 +148,32 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 	protected Pointcut buildPointcut(Set<Class<? extends Annotation>> retryAnnotationTypes) {
 		ComposablePointcut result = null;
 		for (Class<? extends Annotation> retryAnnotationType : retryAnnotationTypes) {
-			Pointcut cpc = new AnnotationMatchingPointcut(retryAnnotationType, true);
+			ClassFilter filter = new AnnotationClassOrMethodFilter(retryAnnotationType);
 			Pointcut mpc = AnnotationMatchingPointcut.forMethodAnnotation(retryAnnotationType);
 			if (result == null) {
-				result = new ComposablePointcut(cpc).union(mpc);
+				result = new ComposablePointcut(filter);
 			}
 			else {
-				result.union(cpc).union(mpc);
+				result.union(filter);
 			}
 		}
 		return result;
+	}
+
+	private final class AnnotationClassOrMethodFilter extends AnnotationClassFilter {
+
+		private final MethodResolver methodResolver;
+
+		AnnotationClassOrMethodFilter(Class<? extends Annotation> annotationType) {
+			super(annotationType, true);
+			this.methodResolver = new AnnotationMethodResolver(annotationType);
+		}
+
+		@Override
+		public boolean matches(Class<?> clazz) {
+			return super.matches(clazz) || this.methodResolver.findMethod(clazz) != null;
+		}
+
 	}
 
 }
