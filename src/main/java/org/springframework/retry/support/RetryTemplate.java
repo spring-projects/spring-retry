@@ -516,7 +516,7 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	/**
-	 * Re-throws the original throwable if it is unchecked, wraps checked exceptions into
+	 * Re-throws the original throwable if it is an Exception, and wraps non-exceptions into
 	 * {@link RetryException}.
 	 */
 	private static <E extends Throwable> E wrapIfNecessary(Throwable throwable) throws RetryException {
