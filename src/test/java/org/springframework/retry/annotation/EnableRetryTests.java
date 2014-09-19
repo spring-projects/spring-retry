@@ -46,8 +46,21 @@ public class EnableRetryTests {
 		Service service = context.getBean(Service.class);
 		Foo foo = context.getBean(Foo.class);
 		assertFalse(AopUtils.isAopProxy(foo));
+		assertTrue(AopUtils.isAopProxy(service));
 		service.service();
 		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
+	public void multipleMethods() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
+		MultiService service = context.getBean(MultiService.class);
+		service.service();
+		assertEquals(3, service.getCount());
+		service.other();
+		assertEquals(4, service.getCount());
 		context.close();
 	}
 
@@ -162,6 +175,11 @@ public class EnableRetryTests {
 		}
 
 		@Bean
+		public MultiService multiService() {
+			return new MultiService();
+		}
+
+		@Bean
 		public RecoverableService recoverable() {
 			return new RecoverableService();
 		}
@@ -208,6 +226,30 @@ public class EnableRetryTests {
 		public void service() {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	protected static class MultiService {
+
+		private int count = 0;
+
+		@Retryable(RuntimeException.class)
+		public void service() {
+			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Retryable(RuntimeException.class)
+		public void other() {
+			if (count++ < 3) {
+				throw new RuntimeException("Other");
 			}
 		}
 
