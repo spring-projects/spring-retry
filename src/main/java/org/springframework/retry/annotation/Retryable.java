@@ -79,7 +79,7 @@ public @interface Retryable {
 	int maxAttempts() default 3;
 
 	/**
-	 * Specify the backof properties for retrying this operation. The default is
+	 * Specify the backoff properties for retrying this operation. The default is
 	 * no backoff, but it can be a good idea to pause between attempts (even at
 	 * the cost of blocking a thread).
 	 * @return a backoff specification
