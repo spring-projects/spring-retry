@@ -23,14 +23,12 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 import org.aopalliance.aop.Advice;
-
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.Pointcut;
 import org.springframework.aop.support.AbstractPointcutAdvisor;
 import org.springframework.aop.support.ComposablePointcut;
 import org.springframework.aop.support.annotation.AnnotationClassFilter;
-import org.springframework.aop.support.annotation.AnnotationMatchingPointcut;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,7 +147,6 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements
 		ComposablePointcut result = null;
 		for (Class<? extends Annotation> retryAnnotationType : retryAnnotationTypes) {
 			ClassFilter filter = new AnnotationClassOrMethodFilter(retryAnnotationType);
-			Pointcut mpc = AnnotationMatchingPointcut.forMethodAnnotation(retryAnnotationType);
 			if (result == null) {
 				result = new ComposablePointcut(filter);
 			}
