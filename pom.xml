@@ -199,6 +199,15 @@
 		</dependency>
 	</dependencies>
 
+ <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
 	<build>
 		<pluginManagement>
 			<plugins>
