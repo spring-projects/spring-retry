@@ -99,7 +99,7 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	/**
 	 * Apply the max attempts - a SimpleRetryPolicy will be used. Cannot be used if a custom retry operations
 	 * or retry policy has been set.
-	 * @param maxAttempts the max attempts.
+	 * @param maxAttempts the max attempts (including the initial attempt).
 	 * @return this.
 	 */
 	public RetryInterceptorBuilder<T> maxAttempts(int maxAttempts) {

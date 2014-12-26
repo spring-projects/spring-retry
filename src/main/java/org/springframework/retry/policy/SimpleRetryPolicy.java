@@ -92,22 +92,23 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Setter for retry attempts.
+	 * Set the number of attempts before retries are exhausted. Includes the initial
+	 * attempt before the retries begin so, generally, will be {@code >= 1}. For example
+	 * setting this property to 3 means 3 attempts total (initial + 2 retries).
 	 *
-	 * @param retryAttempts the number of attempts before a retry becomes
-	 * impossible.
+	 * @param maxAttempts the maximum number of attempts including the initial attempt.
 	 */
-	public void setMaxAttempts(int retryAttempts) {
-		this.maxAttempts = retryAttempts;
+	public void setMaxAttempts(int maxAttempts) {
+		this.maxAttempts = maxAttempts;
 	}
 
 	/**
-	 * The maximum number of retry attempts before failure.
+	 * The maximum number of attempts before failure.
 	 *
 	 * @return the maximum number of attempts
 	 */
 	public int getMaxAttempts() {
-		return maxAttempts;
+		return this.maxAttempts;
 	}
 
 	/**
@@ -118,6 +119,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @return true if the last exception was retryable and the number of
 	 * attempts so far is less than the limit.
 	 */
+	@Override
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
 		return (t == null || retryForException(t)) && context.getRetryCount() < maxAttempts;
@@ -126,6 +128,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	/**
 	 * @see org.springframework.retry.RetryPolicy#close(RetryContext)
 	 */
+	@Override
 	public void close(RetryContext status) {
 	}
 
@@ -134,6 +137,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 *
 	 * @see RetryPolicy#registerThrowable(RetryContext, Throwable)
 	 */
+	@Override
 	public void registerThrowable(RetryContext context, Throwable throwable) {
 		SimpleRetryContext simpleContext = ((SimpleRetryContext) context);
 		simpleContext.registerThrowable(throwable);
@@ -146,6 +150,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
+	@Override
 	public RetryContext open(RetryContext parent) {
 		return new SimpleRetryContext(parent);
 	}
