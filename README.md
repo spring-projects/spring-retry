@@ -156,7 +156,7 @@ The `SimpleRetryPolicy` just allows a retry on any of a named list of exception 
 
 ```java
 SimpleRetryPolicy policy = new SimpleRetryPolicy();
-// Set the max retry attempts
+// Set the max attempts including the initial attempt before retrying
 policy.setMaxAttempts(5);
 // Retry on all exceptions (this is the default)
 policy.setRetryableExceptions(new Class[] {Exception.class});
