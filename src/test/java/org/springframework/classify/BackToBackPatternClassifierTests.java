@@ -68,4 +68,22 @@ public class BackToBackPatternClassifierTests {
 		assertEquals("spam", classifier.classify("oof"));
 	}
 
+	@Test
+	public void testSetRouterDelegateSingleMethodWithNoAnnotation() {
+		classifier = new BackToBackPatternClassifier<String, String>();
+		classifier.setRouterDelegate(new RouterDelegate());
+		classifier.setMatcherMap(map);
+		assertEquals("spam", classifier.classify("oof"));
+	}
+
+	private class RouterDelegate implements
+			org.springframework.classify.Classifier<Object, String> {
+
+		@Override
+		public String classify(Object classifiable) {
+			return "bucket";
+		}
+
+	}
+
 }

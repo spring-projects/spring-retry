@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.aop.framework.Advised;
@@ -195,6 +196,10 @@ public class MethodInvokerUtils {
 		final AtomicReference<Method> methodHolder = new AtomicReference<Method>();
 		ReflectionUtils.doWithMethods(target.getClass(), new ReflectionUtils.MethodCallback() {
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+				if ((method.getModifiers() & Modifier.PUBLIC) == 0 || method.isBridge()) {
+					// perform the operation on public method only and skip bridge method
+					return;
+				}
 				if (method.getParameterTypes() == null || method.getParameterTypes().length != 1) {
 					return;
 				}
