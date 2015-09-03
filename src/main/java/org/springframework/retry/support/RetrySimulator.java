@@ -19,6 +19,7 @@ package org.springframework.retry.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
@@ -99,6 +100,11 @@ public class RetrySimulator {
     static class FailingRetryCallback implements RetryCallback<Object, Exception> {
         public Object doWithRetry(RetryContext context) throws Exception {
             throw new FailingRetryException();
+        }
+
+        @Override
+        public MethodInvocation getMethodInvocation() {
+            return null;
         }
     }
 

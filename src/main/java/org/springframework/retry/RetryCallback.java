@@ -16,22 +16,30 @@
 
 package org.springframework.retry;
 
+import org.aopalliance.intercept.MethodInvocation;
+
 /**
  * Callback interface for an operation that can be retried using a
  * {@link RetryOperations}.
- * 
+ *
  * @author Rob Harrop
  * @author Dave Syer
  */
 public interface RetryCallback<T, E extends Throwable> {
 
-	/**
-	 * Execute an operation with retry semantics. Operations should generally be
-	 * idempotent, but implementations may choose to implement compensation
-	 * semantics when an operation is retried.
-	 * @param context the current retry context.
-	 * @return the result of the successful operation.
-	 * @throws Exception if processing fails
-	 */
-	T  doWithRetry(RetryContext context) throws E;
+    /**
+     * Execute an operation with retry semantics. Operations should generally be
+     * idempotent, but implementations may choose to implement compensation
+     * semantics when an operation is retried.
+     * @param context the current retry context.
+     * @return the result of the successful operation.
+     * @throws Exception if processing fails
+     */
+    T doWithRetry(RetryContext context) throws E;
+
+    /**
+     * Allows to access information about method which is under retry
+     * @return MethodInvocation of the advised method
+     */
+    MethodInvocation getMethodInvocation();
 }

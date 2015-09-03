@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
@@ -135,6 +136,11 @@ public class StatefulRetryIntegrationTests {
 						times.add(System.currentTimeMillis());
 						throw new Exception("Fail");
 					}
+
+					@Override
+					public MethodInvocation getMethodInvocation() {
+						return null;
+					}
 				}, new RecoveryCallback<String>() {
 					public String recover(RetryContext context)
 							throws Exception {
@@ -164,6 +170,11 @@ public class StatefulRetryIntegrationTests {
 				throw new RuntimeException();
 			}
 			return "bar";
+		}
+
+		@Override
+		public MethodInvocation getMethodInvocation() {
+			return null;
 		}
 	}
 

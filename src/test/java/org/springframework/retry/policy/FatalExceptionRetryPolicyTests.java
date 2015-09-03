@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -110,6 +111,11 @@ public class FatalExceptionRetryPolicyTests {
 			this.attempts++;
 			// Just barf...
 			throw this.exceptionToThrow;
+		}
+
+		@Override
+		public MethodInvocation getMethodInvocation() {
+			return null;
 		}
 
 		public void setExceptionToThrow(Exception exceptionToThrow) {

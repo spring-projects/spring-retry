@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.dao.DataAccessException;
@@ -90,6 +91,11 @@ public class StatefulRecoveryRetryTests {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		};
 		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
 			public String recover(RetryContext context) {
@@ -128,6 +134,11 @@ public class StatefulRecoveryRetryTests {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		};
 		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
 			public String recover(RetryContext context) {
@@ -155,6 +166,11 @@ public class StatefulRecoveryRetryTests {
 		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
+			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
 			}
 		};
 
@@ -196,6 +212,11 @@ public class StatefulRecoveryRetryTests {
 				((StringHolder) item).string = ((StringHolder) item).string + (count++);
 				throw new RuntimeException("Barf!");
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		};
 
 		try {
@@ -236,6 +257,11 @@ public class StatefulRecoveryRetryTests {
 				count++;
 				throw new RuntimeException("Barf!");
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		};
 
 		try {
@@ -270,6 +296,11 @@ public class StatefulRecoveryRetryTests {
 			public Object doWithRetry(RetryContext context) throws Exception {
 				count++;
 				throw new RuntimeException("Barf!");
+			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
 			}
 		};
 		RecoveryCallback<Object> recoveryCallback = new RecoveryCallback<Object>() {
