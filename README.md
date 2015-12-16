@@ -274,6 +274,34 @@ class Service {
 }
 ```
 
+Version 1.2 introduces the ability to use expressions for certain properties:
+
+```java
+
+@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+public void service1() {
+  ...
+}
+
+@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+public void service2() {
+  ...
+}
+
+@Retryable(exceptionExpression="#{@exceptionChecker.shouldRetry(#root)}",
+    maxAttemptsExpression = "#{@integerFiveBean}",
+  backoff = @Backoff(delayExpression = "#{1}", maxDelayExpression = "#{5}", multiplierExpression = "#{1.1}"))
+public void service3() {
+  ...
+}
+```
+
+These use the familier Spring SpEL expression syntax (`#{...}`).
+
+- `exceptionExpression` is evaluated against the thrown exception as the `#root` object.
+- `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once, during initialization; there is no root object for the evaluation but they can reference other beans in the context.
+
+
 ### XML Configuration
 
 Here is an example of declarative iteration using Spring AOP to repeat a service call to a method called `remoteCall` (for more detail on how to configure AOP interceptors see the Spring User Guide):

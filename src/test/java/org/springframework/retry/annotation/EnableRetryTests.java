@@ -22,15 +22,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Method;
+import java.util.Map;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
 
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryTemplate;
 
 /**
  * @author Dave Syer
@@ -156,6 +163,43 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void testExpression() throws Exception {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		ExpressionService service = context.getBean(ExpressionService.class);
+		service.service1();
+		assertEquals(3, service.getCount());
+		try {
+			service.service2();
+			fail("expected exception");
+		}
+		catch (RuntimeException e) {
+			assertEquals("this cannot be retried", e.getMessage());
+		}
+		assertEquals(4, service.getCount());
+		service.service3();
+		assertEquals(9, service.getCount());
+		RetryConfiguration config = context.getBean(RetryConfiguration.class);
+		AnnotationAwareRetryOperationsInterceptor advice =
+				(AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(config).getPropertyValue("advice");
+		@SuppressWarnings("unchecked")
+		Map<Method, MethodInterceptor> delegates = (Map<Method, MethodInterceptor>) new DirectFieldAccessor(advice)
+				.getPropertyValue("delegates");
+		MethodInterceptor interceptor = delegates
+				.get(ExpressionService.class.getDeclaredMethod("service3"));
+		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
+				.getPropertyValue("retryOperations");
+		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
+		ExponentialBackOffPolicy backOff = (ExponentialBackOffPolicy) templateAccessor
+				.getPropertyValue("backOffPolicy");
+		assertEquals(1, backOff.getInitialInterval());
+		assertEquals(5, backOff.getMaxInterval());
+		assertEquals(1.1, backOff.getMultiplier(), 0.1);
+		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor.getPropertyValue("retryPolicy");
+		assertEquals(5, retryPolicy.getMaxAttempts());
+		context.close();
+	}
+
 	@Configuration
 	@EnableRetry(proxyTargetClass = true)
 	protected static class TestProxyConfiguration {
@@ -221,6 +265,21 @@ public class EnableRetryTests {
 		@Bean
 		public InterceptableService serviceWithExternalInterceptor() {
 			return new InterceptableService();
+		}
+
+		@Bean
+		public ExpressionService expressionService() {
+			return new ExpressionService();
+		}
+
+		@Bean
+		public ExceptionChecker exceptionChecker() {
+			return new ExceptionChecker();
+		}
+
+		@Bean
+		public Integer integerFiveBean() {
+			return Integer.valueOf(5);
 		}
 
 		@Bean
@@ -367,6 +426,46 @@ public class EnableRetryTests {
 
 		public int getCount() {
 			return count;
+		}
+
+	}
+
+	private static class ExpressionService {
+
+		private int count = 0;
+
+		@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+		public void service1() {
+			if (count++ < 2) {
+				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+		public void service2() {
+			count++;
+			throw new RuntimeException("this cannot be retried");
+		}
+
+		@Retryable(exceptionExpression="#{@exceptionChecker.shouldRetry(#root)}",
+				maxAttemptsExpression = "#{@integerFiveBean}",
+			backoff = @Backoff(delayExpression = "#{1}", maxDelayExpression = "#{5}", multiplierExpression = "#{1.1}"))
+		public void service3() {
+			if (count++ < 8) {
+				throw new RuntimeException();
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	public static class ExceptionChecker {
+
+		public boolean shouldRetry(Throwable t) {
+			return true;
 		}
 
 	}

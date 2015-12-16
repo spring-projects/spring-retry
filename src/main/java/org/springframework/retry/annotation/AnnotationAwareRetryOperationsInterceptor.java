@@ -26,12 +26,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.expression.common.TemplateParserContext;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -47,6 +52,7 @@ import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
+import org.springframework.retry.policy.ExpressionRetryPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -66,6 +72,12 @@ import org.springframework.util.StringUtils;
  *
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
+
+	private static final TemplateParserContext PARSER_CONTEXT = new TemplateParserContext();
+
+	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
+
+	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
 	private final Map<Method, MethodInterceptor> delegates = new HashMap<Method, MethodInterceptor>();
 
@@ -113,7 +125,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	/**
 	 * Retry listeners to apply to all operations.
-	 * @param listeners the listeners 
+	 * @param listeners the listeners
 	 */
 	public void setListeners(Collection<RetryListener> listeners) {
 		ArrayList<RetryListener> retryListeners = new ArrayList<RetryListener>(listeners);
@@ -124,6 +136,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+		this.evaluationContext.setBeanResolver(new BeanFactoryResolver(beanFactory));
 	}
 
 	@Override
@@ -263,6 +276,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(retryable);
 		@SuppressWarnings("unchecked")
 		Class<? extends Throwable>[] includes = (Class<? extends Throwable>[]) attrs.get("value");
+		String exceptionExpression = (String) attrs.get("exceptionExpression");
+		boolean hasExpression = StringUtils.hasText(exceptionExpression);
 		if (includes.length == 0) {
 			@SuppressWarnings("unchecked")
 			Class<? extends Throwable>[] value = (Class<? extends Throwable>[]) attrs.get("include");
@@ -270,9 +285,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 		@SuppressWarnings("unchecked")
 		Class<? extends Throwable>[] excludes = (Class<? extends Throwable>[]) attrs.get("exclude");
+		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
+		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
+		if (StringUtils.hasText(maxAttemptsExpression)) {
+			maxAttempts = PARSER.parseExpression(maxAttemptsExpression, PARSER_CONTEXT).getValue(this.evaluationContext,
+					Integer.class);
+		}
 		if (includes.length == 0 && excludes.length == 0) {
-			SimpleRetryPolicy simple = new SimpleRetryPolicy();
-			simple.setMaxAttempts((Integer) attrs.get("maxAttempts"));
+			SimpleRetryPolicy simple = hasExpression ? new ExpressionRetryPolicy(exceptionExpression)
+															.withBeanFactory(this.beanFactory)
+													 : new SimpleRetryPolicy();
+			simple.setMaxAttempts(maxAttempts);
 			return simple;
 		}
 		Map<Class<? extends Throwable>, Boolean> policyMap = new HashMap<Class<? extends Throwable>, Boolean>();
@@ -282,19 +305,38 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		for (Class<? extends Throwable> type : excludes) {
 			policyMap.put(type, false);
 		}
-		return new SimpleRetryPolicy((Integer) attrs.get("maxAttempts"), policyMap, true);
+		if (hasExpression) {
+			return new ExpressionRetryPolicy(maxAttempts, policyMap, true, exceptionExpression)
+					.withBeanFactory(this.beanFactory);
+		}
+		else {
+			return new SimpleRetryPolicy(maxAttempts, policyMap, true);
+		}
 	}
 
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
+		if (StringUtils.hasText(backoff.delayExpression())) {
+			min = PARSER.parseExpression(backoff.delayExpression(), PARSER_CONTEXT).getValue(this.evaluationContext,
+					Long.class);
+		}
 		long max = backoff.maxDelay();
-		if (backoff.multiplier() > 0) {
+		if (StringUtils.hasText(backoff.maxDelayExpression())) {
+			max = PARSER.parseExpression(backoff.maxDelayExpression(), PARSER_CONTEXT).getValue(this.evaluationContext,
+					Long.class);
+		}
+		double multiplier = backoff.multiplier();
+		if (StringUtils.hasText(backoff.multiplierExpression())) {
+			multiplier = PARSER.parseExpression(backoff.multiplierExpression(), PARSER_CONTEXT)
+					.getValue(this.evaluationContext, Double.class);
+		}
+		if (multiplier > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
 			if (backoff.random()) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
 			policy.setInitialInterval(min);
-			policy.setMultiplier(backoff.multiplier());
+			policy.setMultiplier(multiplier);
 			policy.setMaxInterval(max > min ? max : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);

@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  * @since 1.1
  *
  */
@@ -85,11 +86,36 @@ public @interface Retryable {
 	int maxAttempts() default 3;
 
 	/**
+	 * @return an expression evaluated to the maximum number of attempts (including the first failure), defaults to 3
+	 * Overrides {@link #maxAttempts()}.
+	 * @since 1.2
+	 */
+	String maxAttemptsExpression() default "";
+
+	/**
 	 * Specify the backoff properties for retrying this operation. The default is no
 	 * backoff, but it can be a good idea to pause between attempts (even at the cost of
 	 * blocking a thread).
 	 * @return a backoff specification
 	 */
 	Backoff backoff() default @Backoff();
+
+	/**
+	 * Specify an expression to be evaluated after the {@code SimpleRetryPolicy.canRetry()}
+	 * returns true - can be used to conditionally suppress the retry. Only invoked after
+	 * an exception is thrown. The root object for the evaluation is the last {@code Throwable}.
+	 * Other beans in the context can be referenced.
+	 * For example:
+	 * <pre class=code>
+	 *  {@code "message.contains('you can retry this')"}.
+	 * </pre>
+	 * and
+	 * <pre class=code>
+	 *  {@code "@someBean.shouldRetry(#root)"}.
+	 * </pre>
+	 * @return the expression.
+	 * @since 1.2
+	 */
+	String exceptionExpression() default "";
 
 }
