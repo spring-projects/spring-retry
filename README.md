@@ -279,3 +279,8 @@ Here is an example of declarative iteration using Spring AOP to repeat a service
 ```
 
 The example above uses a default `RetryTemplate` inside the interceptor. To change the policies or listeners, you only need to inject an instance of `RetryTemplate` into the interceptor.
+
+### Code of Conduct
+This project adheres to the [Contributor Covenant](https://github.com/spring-projects/spring-retry/blob/master/CODE_OF_CONDUCT.adoc).
+By participating, you  are expected to uphold this code. Please report unacceptable behavior to
+spring-code-of-conduct@pivotal.io.
