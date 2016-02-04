@@ -30,6 +30,7 @@ import static org.junit.Assert.fail;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.ExhaustedRetryException;
@@ -84,6 +85,11 @@ public class RetryTemplateTests {
 						throw new IllegalArgumentException("Planned");
 					}
 					return "foo";
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
 				}
 			};
 			RetryTemplate retryTemplate = new RetryTemplate();
@@ -230,6 +236,11 @@ public class RetryTemplateTests {
 					status.setExhaustedOnly();
 					throw new IllegalStateException("Retry this operation");
 				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
+				}
 			});
 			fail("Expected ExhaustedRetryException");
 		} catch (ExhaustedRetryException ex) {
@@ -248,6 +259,11 @@ public class RetryTemplateTests {
 				public Object doWithRetry(RetryContext status) throws Exception {
 					status.setExhaustedOnly();
 					throw new IllegalStateException("Retry this operation");
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
 				}
 			});
 			fail("Expected ExhaustedRetryException");
@@ -276,10 +292,20 @@ public class RetryTemplateTests {
 								RetrySynchronizationManager.getContext());
 						return null;
 					}
+
+					@Override
+					public MethodInvocation getMethodInvocation() {
+						return null;
+					}
 				});
 				assertSame("The context should be restored", status,
 						RetrySynchronizationManager.getContext());
 				return result;
+			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
 			}
 		});
 		assertEquals(2, count);
@@ -293,6 +319,11 @@ public class RetryTemplateTests {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new Error("Realllly bad!");
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
 				}
 			});
 			fail("Expected Error");
@@ -315,6 +346,11 @@ public class RetryTemplateTests {
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new RuntimeException("Realllly bad!");
 				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
+				}
 			});
 			fail("Expected Error");
 		} catch (TerminatedRetryException e) {
@@ -334,6 +370,11 @@ public class RetryTemplateTests {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new RuntimeException("Bad!");
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
 				}
 			});
 			fail("Expected RuntimeException");
@@ -368,6 +409,11 @@ public class RetryTemplateTests {
 					throw new Exception("maybe next time!");
 				}
 
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
+				}
+
 			}, null, new DefaultRetryState(tested) {
 
 				@Override
@@ -397,6 +443,11 @@ public class RetryTemplateTests {
 			if (attempts < attemptsBeforeSuccess) {
 				throw this.exceptionToThrow;
 			}
+			return null;
+		}
+
+		@Override
+		public MethodInvocation getMethodInvocation() {
 			return null;
 		}
 

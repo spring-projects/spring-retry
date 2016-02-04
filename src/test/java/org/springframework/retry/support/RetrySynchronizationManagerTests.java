@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.retry.RetryCallback;
@@ -52,6 +53,11 @@ public class RetrySynchronizationManagerTests {
 				RetryContext global = RetrySynchronizationManager.getContext();
 				assertNotNull(status);
 				assertEquals(global, status);
+				return null;
+			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
 				return null;
 			}
 		});

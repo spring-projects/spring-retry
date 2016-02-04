@@ -171,6 +171,11 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 				throw new IllegalStateException(e);
 			}
 		}
+
+		@Override
+		public MethodInvocation getMethodInvocation() {
+			return invocation;
+		}
 	}
 
 	/**

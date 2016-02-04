@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -58,6 +59,11 @@ public class RetryListenerTests {
 			public String doWithRetry(RetryContext context) throws Exception {
 				return null;
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		});
 		assertEquals(2, count);
 		assertEquals(2, list.size());
@@ -76,6 +82,11 @@ public class RetryListenerTests {
 			template.execute(new RetryCallback<String, Exception>() {
 				public String doWithRetry(RetryContext context) throws Exception {
 					count++;
+					return null;
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
 					return null;
 				}
 			});
@@ -106,6 +117,11 @@ public class RetryListenerTests {
 			public String doWithRetry(RetryContext context) throws Exception {
 				return null;
 			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
+				return null;
+			}
 		});
 		assertEquals(2, count);
 		assertEquals(2, list.size());
@@ -130,6 +146,11 @@ public class RetryListenerTests {
 				public String doWithRetry(RetryContext context) throws Exception {
 					count++;
 					throw new IllegalStateException("foo");
+				}
+
+				@Override
+				public MethodInvocation getMethodInvocation() {
+					return null;
 				}
 			});
 			fail("Expected IllegalStateException");
@@ -158,6 +179,11 @@ public class RetryListenerTests {
 			public String doWithRetry(RetryContext context) throws Exception {
 				if (count++ < 1)
 					throw new RuntimeException("Retry!");
+				return null;
+			}
+
+			@Override
+			public MethodInvocation getMethodInvocation() {
 				return null;
 			}
 		});

@@ -22,6 +22,7 @@
 	<properties>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
 		<spring.framework.version>4.0.4.RELEASE</spring.framework.version>
+		<maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 	</properties>
 	<profiles>
 		<profile>
