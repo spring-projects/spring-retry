@@ -57,18 +57,19 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Delegate to the policies that were in operation when the context was
-	 * created. If any of them cannot retry then return false, oetherwise return
+	 * created. If any of them cannot retry then return false, otherwise return
 	 * true.
 	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
+	@Override
 	public boolean canRetry(RetryContext context) {
 		RetryContext[] contexts = ((CompositeRetryContext) context).contexts;
 		RetryPolicy[] policies = ((CompositeRetryContext) context).policies;
 
 		boolean retryable = true;
 
-		if(optimistic) {
+		if(this.optimistic) {
 			retryable = false;
 			for (int i = 0; i < contexts.length; i++) {
 				if (policies[i].canRetry(contexts[i])) {
@@ -94,6 +95,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
+	@Override
 	public void close(RetryContext context) {
 		RetryContext[] contexts = ((CompositeRetryContext) context).contexts;
 		RetryPolicy[] policies = ((CompositeRetryContext) context).policies;
@@ -119,9 +121,10 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
+	@Override
 	public RetryContext open(RetryContext parent) {
 		List<RetryContext> list = new ArrayList<RetryContext>();
-		for (RetryPolicy policy : policies) {
+		for (RetryPolicy policy : this.policies) {
 			list.add(policy.open(parent));
 		}
 		return new CompositeRetryContext(parent, list);
@@ -133,6 +136,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
+	@Override
 	public void registerThrowable(RetryContext context, Throwable throwable) {
 		RetryContext[] contexts = ((CompositeRetryContext) context).contexts;
 		RetryPolicy[] policies = ((CompositeRetryContext) context).policies;
