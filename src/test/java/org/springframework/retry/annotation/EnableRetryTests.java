@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 /**
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -145,6 +146,16 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void testInterface() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		TheInterface service = context.getBean(TheInterface.class);
+		service.service1();
+		service.service2();
+		assertEquals(4, service.getCount());
+		context.close();
+	}
+
 	@Configuration
 	@EnableRetry(proxyTargetClass = true)
 	protected static class TestProxyConfiguration {
@@ -214,6 +225,11 @@ public class EnableRetryTests {
 		@Bean
 		public Foo foo() {
 			return new Foo();
+		}
+
+		@Bean
+		public TheInterface anInterface() {
+			return new TheClass();
 		}
 
 	}
@@ -355,6 +371,43 @@ public class EnableRetryTests {
 	}
 
 	private static class Foo {
+
+	}
+
+	public static interface TheInterface {
+
+		void service1();
+
+		@Retryable
+		void service2();
+
+		int getCount();
+
+	}
+
+	public static class TheClass implements TheInterface {
+
+		private int count = 0;
+
+		@Override
+		@Retryable
+		public void service1() {
+			if (count++ < 1) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public void service2() {
+			if (count++ < 3) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public int getCount() {
+			return count;
+		}
 
 	}
 
