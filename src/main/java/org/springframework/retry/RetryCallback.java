@@ -19,7 +19,10 @@ package org.springframework.retry;
 /**
  * Callback interface for an operation that can be retried using a
  * {@link RetryOperations}.
- * 
+ *
+ * @param T the type of object returned by the callback
+ * @param E the type of exception it declares may be thrown
+ *
  * @author Rob Harrop
  * @author Dave Syer
  */
@@ -31,7 +34,7 @@ public interface RetryCallback<T, E extends Throwable> {
 	 * semantics when an operation is retried.
 	 * @param context the current retry context.
 	 * @return the result of the successful operation.
-	 * @throws Exception if processing fails
+	 * @throws Throwable of type E if processing fails
 	 */
 	T  doWithRetry(RetryContext context) throws E;
 }
