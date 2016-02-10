@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  * @since 1.1
  *
  */
@@ -131,6 +132,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
 					}
 					if (retryable == null) {
+						retryable = findAnnotationOnTarget(target, method);
+					}
+					if (retryable == null) {
 						return this.delegates.put(method, null);
 					}
 					MethodInterceptor delegate;
@@ -148,6 +152,16 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			}
 		}
 		return this.delegates.get(method);
+	}
+
+	private Retryable findAnnotationOnTarget(Object target, Method method) {
+		try {
+			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
+			return AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+		}
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
