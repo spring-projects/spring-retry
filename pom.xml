@@ -21,7 +21,7 @@
 	<packaging>jar</packaging>
 	<properties>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
-		<spring.framework.version>4.0.4.RELEASE</spring.framework.version>
+		<spring.framework.version>4.0.9.RELEASE</spring.framework.version>
 	</properties>
 	<profiles>
 		<profile>
@@ -162,13 +162,13 @@
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
-			<version>1.7.4</version>
+			<version>1.8.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
-			<version>1.7.4</version>
+			<version>1.8.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
