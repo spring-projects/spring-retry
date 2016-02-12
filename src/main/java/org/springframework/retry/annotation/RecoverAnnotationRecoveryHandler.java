@@ -39,7 +39,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * preferred over a method whose first argument is Throwable.
  * 
  * @author Dave Syer
- *
+ * @author Josh Long
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -60,9 +60,18 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 		SimpleMetadata meta = methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);
-		@SuppressWarnings("unchecked")
-		T result = (T) ReflectionUtils.invokeMethod(method, target, argsToUse);
-		return result;
+		boolean methodAccessible = method.isAccessible();
+		try {
+			ReflectionUtils.makeAccessible(method);
+			@SuppressWarnings("unchecked")
+			T result = (T) ReflectionUtils.invokeMethod(method, target, argsToUse);
+			return result;
+		}
+		finally {
+			if (methodAccessible != method.isAccessible()) {
+				method.setAccessible(methodAccessible);
+			}
+		}
 	}
 
 	private Method findClosestMatch(Class<? extends Throwable> cause) {
