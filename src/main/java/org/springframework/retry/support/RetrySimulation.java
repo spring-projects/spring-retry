@@ -34,6 +34,7 @@ public class RetrySimulation {
 
 	/**
 	 * Add a sequence of sleeps to the simulation.
+	 * @param sleeps the times to be created as a {@link SleepSequence}
 	 */
 	public void addSequence(List<Long> sleeps) {
 		sleepHistogram.addAll(sleeps);
@@ -97,7 +98,7 @@ public class RetrySimulation {
 		}
 
 		/**
-		 * Returns the longest individual sleep within this sequence.
+		 * @return the longest individual sleep within this sequence
 		 */
 		public long getLongestSleep() {
 			return longestSleep;

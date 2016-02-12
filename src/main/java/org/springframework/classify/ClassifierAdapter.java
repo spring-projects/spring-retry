@@ -42,7 +42,7 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	 * Create a new {@link Classifier} from the delegate provided. Use the
 	 * constructor as an alternative to the {@link #setDelegate(Object)} method.
 	 * 
-	 * @param delegate
+	 * @param delegate the delegate
 	 */
 	public ClassifierAdapter(Object delegate) {
 		setDelegate(delegate);
@@ -53,7 +53,7 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	 * constructor as an alternative to the {@link #setDelegate(Classifier)}
 	 * method.
 	 * 
-	 * @param delegate
+	 * @param delegate the classifier to delegate to
 	 */
 	public ClassifierAdapter(Classifier<C, T> delegate) {
 		classifier = delegate;

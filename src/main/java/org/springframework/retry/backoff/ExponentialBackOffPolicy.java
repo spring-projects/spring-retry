@@ -25,11 +25,11 @@ import org.springframework.util.ClassUtils;
  * Implementation of {@link BackOffPolicy} that increases the back off period
  * for each retry attempt in a given set using the {@link Math#exp(double)
  * exponential} function.
- * <p/>
+ *
  * This implementation is thread-safe and suitable for concurrent access.
  * Modifications to the configuration do not affect any retry sets that are
  * already in progress.
- * <p/>
+ *
  * The {@link #setInitialInterval(long)} property controls the initial value
  * passed to {@link Math#exp(double)} and the {@link #setMultiplier(double)}
  * property controls by how much this value is increased for each subsequent
@@ -104,8 +104,10 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
     }
 
 	/**
-	 * Set the initial sleep interval value. Default is <code>100</code>
+	 * Set the initial sleep interval value. Default is {@code 100}
 	 * millisecond. Cannot be set to a value less than one.
+	 *
+	 * @param initialInterval the initial interval
 	 */
 	public void setInitialInterval(long initialInterval) {
 		this.initialInterval = (initialInterval > 1 ? initialInterval : 1);
@@ -115,6 +117,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * Set the multiplier value. Default is '<code>2.0</code>'. Hint: do not use
 	 * values much in excess of 1.0 (or the backoff will get very long very
 	 * fast).
+	 * @param multiplier the multiplier
 	 */
 	public void setMultiplier(double multiplier) {
 		this.multiplier = (multiplier > 1.0 ? multiplier : 1.0);

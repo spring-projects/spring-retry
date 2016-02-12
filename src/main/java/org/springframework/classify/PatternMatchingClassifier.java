@@ -43,7 +43,7 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	 * Create a classifier from the provided map. The keys are patterns, using
 	 * '?' as a single character and '*' as multi-character wildcard.
 	 * 
-	 * @param values
+	 * @param values the values to use in the {@link PatternMatcher}
 	 */
 	public PatternMatchingClassifier(Map<String, T> values) {
 		super();

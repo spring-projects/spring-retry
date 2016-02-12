@@ -40,7 +40,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	/**
 	 * Setter for optimistic.
 	 *
-	 * @param optimistic
+	 * @param optimistic should this retry policy be optimistic
 	 */
 	public void setOptimistic(boolean optimistic) {
 		this.optimistic = optimistic;
@@ -49,7 +49,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	/**
 	 * Setter for policies.
 	 *
-	 * @param policies
+	 * @param policies    the {@link RetryPolicy} policies
 	 */
 	public void setPolicies(RetryPolicy[] policies) {
 		this.policies = Arrays.asList(policies).toArray(new RetryPolicy[policies.length]);
@@ -60,6 +60,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 * created. If any of them cannot retry then return false, otherwise return
 	 * true.
 	 *
+	 * @param context the {@link RetryContext}
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	@Override
@@ -94,6 +95,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 * those later in the chain are closed before re-throwing).
 	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
+	 * @param context the {@link RetryContext}
 	 */
 	@Override
 	public void close(RetryContext context) {

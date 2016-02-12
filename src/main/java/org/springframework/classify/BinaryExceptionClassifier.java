@@ -50,7 +50,8 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	 * subclasses. The mapped value for these exceptions will be the one
 	 * provided (which will be the opposite of the default).
 	 *
-	 * @param value
+	 * @param exceptionClasses the exceptions to classify among
+	 * @param value the value to classify
 	 */
 	public BinaryExceptionClassifier(Collection<Class<? extends Throwable>> exceptionClasses, boolean value) {
 		this(!value);
@@ -66,6 +67,8 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	/**
 	 * Create a binary exception classifier with the default value false and
 	 * value mapping true for the provided classes and their subclasses.
+	 *
+	 * @param exceptionClasses the exception types to throw
 	 */
 	public BinaryExceptionClassifier(Collection<Class<? extends Throwable>> exceptionClasses) {
 		this(exceptionClasses, true);
@@ -74,8 +77,7 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	/**
 	 * Create a binary exception classifier using the given classification map
 	 * and a default classification of false.
-	 *
-	 * @param typeMap
+	 * @param typeMap the map of types
 	 */
 	public BinaryExceptionClassifier(Map<Class<? extends Throwable>, Boolean> typeMap) {
 		this(typeMap, false);
@@ -85,7 +87,8 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 	 * Create a binary exception classifier using the given classification map
 	 * and a default classification of false.
 	 *
-	 * @param typeMap
+	 * @param defaultValue the default value to use
+	 * @param typeMap the map of types to classify
 	 */
 	public BinaryExceptionClassifier(Map<Class<? extends Throwable>, Boolean> typeMap, boolean defaultValue) {
 		super(typeMap, defaultValue);

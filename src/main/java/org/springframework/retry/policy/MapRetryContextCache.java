@@ -26,7 +26,6 @@ import org.springframework.retry.RetryContext;
  * cache of contexts is synchronized.
  * 
  * @author Dave Syer
- * 
  */
 public class MapRetryContextCache implements RetryContextCache {
 
@@ -49,7 +48,7 @@ public class MapRetryContextCache implements RetryContextCache {
 	}
 
 	/**
-	 * @param defaultCapacity
+	 * @param defaultCapacity the default capacity
 	 */
 	public MapRetryContextCache(int defaultCapacity) {
 		super();

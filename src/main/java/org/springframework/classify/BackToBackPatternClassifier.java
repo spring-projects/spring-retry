@@ -64,7 +64,7 @@ public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 	 * Java Object. The object provided must have precisely one public method
 	 * that either has the <code>@Classifier</code> annotation or accepts a single argument
 	 * and outputs a String. This will be used to create an input classifier for
-	 * the router component. <br/>
+	 * the router component.
 	 * 
 	 * @param delegate the delegate object used to create a router classifier
 	 */

@@ -34,7 +34,7 @@ public class RetryCacheCapacityExceededException extends RetryException {
 	/**
 	 * Constructs a new instance with a message.
 	 * 
-	 * @param message
+	 * @param message the message sent when creating the exception
 	 */
 	public RetryCacheCapacityExceededException(String message) {
 		super(message);
@@ -44,7 +44,7 @@ public class RetryCacheCapacityExceededException extends RetryException {
 	 * Constructs a new instance with a message and nested exception.
 	 * 
 	 * @param msg the exception message.
-	 * 
+	 * @param nested the nested exception
 	 */
 	public RetryCacheCapacityExceededException(String msg, Throwable nested) {
 		super(msg, nested);

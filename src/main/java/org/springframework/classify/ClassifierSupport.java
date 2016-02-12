@@ -28,7 +28,7 @@ public class ClassifierSupport<C, T> implements Classifier<C, T> {
 	final private T defaultValue;
 
 	/**
-	 * @param defaultValue
+	 * @param defaultValue the default value
 	 */
 	public ClassifierSupport(T defaultValue) {
 		super();

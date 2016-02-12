@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
  * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
  * on a service if it fails. The injected {@link RetryOperations} is used to control the
  * number of retries. By default it will retry a fixed number of times, according to the
- * defaults in {@link RetryTemplate}.<br/>
+ * defaults in {@link RetryTemplate}.
  *
  * Hint about transaction boundaries. If you want to retry a failed transaction you need
  * to make sure that the transaction boundary is inside the retry, otherwise the

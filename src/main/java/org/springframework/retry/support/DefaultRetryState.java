@@ -58,6 +58,8 @@ public class DefaultRetryState implements RetryState {
 	/**
 	 * Defaults the force refresh flag to false.
 	 * @see DefaultRetryState#DefaultRetryState(Object, boolean, Classifier)
+	 * @param key the key
+	 * @param rollbackClassifier the rollback {@link Classifier}
 	 */
 	public DefaultRetryState(Object key, Classifier<? super Throwable, Boolean> rollbackClassifier) {
 		this(key, false, rollbackClassifier);
@@ -66,6 +68,8 @@ public class DefaultRetryState implements RetryState {
 	/**
 	 * Defaults the rollback classifier to null.
 	 * @see DefaultRetryState#DefaultRetryState(Object, boolean, Classifier)
+	 * @param key the key
+	 * @param forceRefresh whether to force a refresh
 	 */
 	public DefaultRetryState(Object key, boolean forceRefresh) {
 		this(key, forceRefresh, null);
@@ -74,7 +78,8 @@ public class DefaultRetryState implements RetryState {
 	/**
 	 * Defaults the force refresh flag (to false) and the rollback classifier
 	 * (to null).
-	 * 
+	 *
+	 * @param key the key to use
 	 * @see DefaultRetryState#DefaultRetryState(Object, boolean, Classifier)
 	 */
 	public DefaultRetryState(Object key) {

@@ -19,7 +19,7 @@ package org.springframework.retry.backoff;
 /**
  * Implementation of {@link BackOffPolicy} that pauses for a fixed period of time before
  * continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
- * <p/>
+ *
  * {@link #setBackOffPeriod(long)} is thread-safe and it is safe to call
  * {@link #setBackOffPeriod} during execution from multiple threads, however this may
  * cause a single retry operation to have pauses of different intervals.
@@ -60,6 +60,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 
 	/**
 	 * Set the back off period in milliseconds. Cannot be &lt; 1. Default value is 1000ms.
+	 * @param backOffPeriod the back off period
 	 */
 	public void setBackOffPeriod(long backOffPeriod) {
 		this.backOffPeriod = (backOffPeriod > 0 ? backOffPeriod : 1);

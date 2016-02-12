@@ -67,8 +67,8 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * Create a {@link SimpleRetryPolicy} with the specified number of retry
 	 * attempts.
 	 *
-	 * @param maxAttempts
-	 * @param retryableExceptions
+	 * @param maxAttempts the maximum number of attempts
+	 * @param retryableExceptions the map of exceptions that are retryable
 	 */
 	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions) {
 		this(maxAttempts, retryableExceptions, false);
@@ -79,9 +79,9 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * attempts. If traverseCauses is true, the exception causes will be traversed until
 	 * a match is found.
 	 *
-	 * @param maxAttempts
-	 * @param retryableExceptions
-	 * @param traverseCauses
+	 * @param maxAttempts the maximum number of attempts
+	 * @param retryableExceptions the map of exceptions that are retryable
+	 * @param traverseCauses is this clause traversable
 	 */
 	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses) {

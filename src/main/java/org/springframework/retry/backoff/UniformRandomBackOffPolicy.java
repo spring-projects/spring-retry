@@ -22,7 +22,7 @@ import java.util.Random;
 /**
  * Implementation of {@link BackOffPolicy} that pauses for a random period of
  * time before continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
- * <p/>
+ *
  * {@link #setMinBackOffPeriod(long)} is thread-safe and it is safe to call
  * {@link #setMaxBackOffPeriod(long)} during execution from multiple threads, however
  * this may cause a single retry operation to have pauses of different
@@ -69,6 +69,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	/**
 	 * Set the minimum back off period in milliseconds. Cannot be &lt; 1. Default value
 	 * is 500ms.
+	 *
+	 * @param backOffPeriod the backoff period
 	 */
 	public void setMinBackOffPeriod(long backOffPeriod) {
 		this.minBackOffPeriod = (backOffPeriod > 0 ? backOffPeriod : 1);
@@ -85,6 +87,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	/**
 	 * Set the maximum back off period in milliseconds. Cannot be &lt; 1. Default value
 	 * is 1500ms.
+	 * @param backOffPeriod the back off period
 	 */
 	public void setMaxBackOffPeriod(long backOffPeriod) {
 		this.maxBackOffPeriod = (backOffPeriod > 0 ? backOffPeriod : 1);

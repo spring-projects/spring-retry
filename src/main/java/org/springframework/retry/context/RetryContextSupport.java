@@ -61,11 +61,11 @@ public class RetryContextSupport extends AttributeAccessorSupport implements Ret
 
 	/**
 	 * Set the exception for the public interface {@link RetryContext}, and
-	 * also increment the retry count if the throwable is non-null.<br/>
+	 * also increment the retry count if the throwable is non-null.
 	 *
 	 * All {@link RetryPolicy} implementations should use this method when they
 	 * register the throwable. It should only be called once per retry attempt
-	 * because it increments a counter.<br/>
+	 * because it increments a counter.
 	 *
 	 * Use of this method is not enforced by the framework - it is a service
 	 * provider contract for authors of policies.

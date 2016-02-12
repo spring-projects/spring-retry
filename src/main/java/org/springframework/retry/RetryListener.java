@@ -33,7 +33,9 @@ public interface RetryListener {
 	 * {@link RetryOperations}. The whole retry can be vetoed by returning
 	 * false from this method, in which case a {@link TerminatedRetryException}
 	 * will be thrown.
-	 * 
+	 *
+	 * @param <T> the type of object returned by the callback
+	 * @param <E> the type of exception it declares may be thrown
 	 * @param context the current {@link RetryContext}.
 	 * @param callback the current {@link RetryCallback}.
 	 * @return true if the retry should proceed.
@@ -48,6 +50,8 @@ public interface RetryListener {
 	 * @param context the current {@link RetryContext}.
 	 * @param callback the current {@link RetryCallback}.
 	 * @param throwable the last exception that was thrown by the callback.
+	 * @param <E> the exception type
+	 * @param <T> the return value
 	 */
 	<T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable);
 
@@ -57,6 +61,8 @@ public interface RetryListener {
 	 * @param context the current {@link RetryContext}.
 	 * @param callback the current {@link RetryCallback}.
 	 * @param throwable the last exception that was thrown by the callback.
+	 * @param <T> the return value
+	 * @param <E> the exception to throw
 	 */
 	<T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable);
 }

@@ -56,7 +56,7 @@ public interface RetryPolicy {
 	 * Called once per retry attempt, after the callback fails.
 	 *
 	 * @param context the current status object.
-	 *
+	 * @param throwable the exception to throw
 	 */
 	void registerThrowable(RetryContext context, Throwable throwable);
 

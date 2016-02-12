@@ -40,15 +40,15 @@ import org.springframework.util.ObjectUtils;
  * be remembered in case the call fails. So the retry operation is stateful, and the item
  * that failed is tracked by its unique key (via {@link MethodArgumentsKeyGenerator})
  * until the retry is exhausted, at which point the {@link MethodInvocationRecoverer} is
- * called.<br/>
+ * called.
  *
  * The main use case for this is where the service is transactional, via a transaction
  * interceptor on the interceptor chain. In this case the retry (and recovery on
- * exhausted) always happens in a new transaction.<br/>
+ * exhausted) always happens in a new transaction.
  *
  * The injected {@link RetryOperations} is used to control the number of retries. By
  * default it will retry a fixed number of times, according to the defaults in
- * {@link RetryTemplate}.<br/>
+ * {@link RetryTemplate}.
  *
  * @author Dave Syer
  */

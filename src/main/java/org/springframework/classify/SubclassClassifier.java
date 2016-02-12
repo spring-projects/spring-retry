@@ -53,7 +53,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
 	 *
-	 * @param defaultValue
+	 * @param defaultValue the default value
 	 */
 	public SubclassClassifier(C defaultValue) {
 		this(new HashMap<Class<? extends T>, C>(), defaultValue);
@@ -62,7 +62,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
 	 *
-	 * @param defaultValue
+	 * @param defaultValue the default value
+	 * @param typeMap the map of types
 	 */
 	public SubclassClassifier(Map<Class<? extends T>, C> typeMap, C defaultValue) {
 		super();
@@ -95,6 +96,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * Return the value from the type map whose key is the class of the given
 	 * Throwable, or its nearest ancestor if a subclass.
 	 *
+	 * @return C the classified value
+	 * @param classifiable the classifiable thing
 	 */
 	public C classify(T classifiable) {
 
@@ -124,6 +127,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Return the default value supplied in the constructor (default false).
+	 *
+	 * @return C the default value
 	 */
 	final public C getDefault() {
 		return defaultValue;

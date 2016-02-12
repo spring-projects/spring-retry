@@ -30,7 +30,6 @@ import org.springframework.retry.RetryContext;
  * @see MapRetryContextCache for non-soft referenced version
  * 
  * @author Dave Syer
- * 
  */
 public class SoftReferenceMapRetryContextCache implements RetryContextCache {
 
@@ -54,7 +53,7 @@ public class SoftReferenceMapRetryContextCache implements RetryContextCache {
 	}
 
 	/**
-	 * @param defaultCapacity
+	 * @param defaultCapacity the default capacity
 	 */
 	public SoftReferenceMapRetryContextCache(int defaultCapacity) {
 		super();
