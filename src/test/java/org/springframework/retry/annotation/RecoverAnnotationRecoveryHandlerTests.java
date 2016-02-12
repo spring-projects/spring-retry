@@ -27,6 +27,8 @@ import org.springframework.retry.annotation.RecoverAnnotationRecoveryHandler;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.Method;
+
 /**
  * @author Dave Syer
  *
@@ -81,7 +83,32 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
 	}
 
+	@Test
+	public void inAccessibleRecoverMethods (){
+		Method foo = ReflectionUtils.findMethod(InAccessibleRecover.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new InAccessibleRecover(), foo);
+		assertEquals(1,
+				handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
+
+	}
+
+	private static class InAccessibleRecover {
+
+		@Retryable
+		private int foo (String n) {
+			throw new RuntimeException("error trying to foo('" + n + "')");
+		}
+
+		@Recover
+		private int bar(String n){
+			return 1 ;
+		}
+	}
+
 	protected static class DefaultRecover {
+
 		@Retryable
 		public int foo(String name) {
 			return 0;
@@ -153,5 +180,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		}
 
 	}
+
 
 }
