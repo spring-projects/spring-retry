@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
-import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -105,6 +104,7 @@ public class RetryTemplateTests {
 						Exception.class, true)));
 		final Object value = new Object();
 		Object result = retryTemplate.execute(callback, new RecoveryCallback<Object>() {
+			@Override
 			public Object recover(RetryContext context) throws Exception {
 				return value;
 			}
@@ -226,16 +226,17 @@ public class RetryTemplateTests {
 		try {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
 				public Object doWithRetry(RetryContext status) throws Exception {
 					status.setExhaustedOnly();
 					throw new IllegalStateException("Retry this operation");
 				}
 			});
 			fail("Expected ExhaustedRetryException");
-		} catch (ExhaustedRetryException ex) {
+		} catch (IllegalStateException ex) {
 			// Expected for internal retry policy (external would recover
 			// gracefully)
-			assertEquals("Retry this operation", ex.getCause().getMessage());
+			assertEquals("Retry this operation", ex.getMessage());
 		}
 	}
 
@@ -245,6 +246,7 @@ public class RetryTemplateTests {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setThrowLastExceptionOnExhausted(true);
 			retryTemplate.execute(new RetryCallback<Object, Throwable>() {
+				@Override
 				public Object doWithRetry(RetryContext status) throws Exception {
 					status.setExhaustedOnly();
 					throw new IllegalStateException("Retry this operation");
@@ -263,15 +265,17 @@ public class RetryTemplateTests {
 		RetryTemplate outer = new RetryTemplate();
 		final RetryTemplate inner = new RetryTemplate();
 		outer.execute(new RetryCallback<Object, Throwable>() {
+			@Override
 			public Object doWithRetry(RetryContext status) throws Throwable {
-				context = status;
-				count++;
+				RetryTemplateTests.this.context = status;
+				RetryTemplateTests.this.count++;
 				Object result = inner.execute(new RetryCallback<Object, Throwable>() {
+					@Override
 					public Object doWithRetry(RetryContext status) throws Throwable {
-						count++;
-						assertNotNull(context);
-						assertNotSame(status, context);
-						assertSame(context, status.getParent());
+						RetryTemplateTests.this.count++;
+						assertNotNull(RetryTemplateTests.this.context);
+						assertNotSame(status, RetryTemplateTests.this.context);
+						assertSame(RetryTemplateTests.this.context, status.getParent());
 						assertSame("The context should be the child", status,
 								RetrySynchronizationManager.getContext());
 						return null;
@@ -282,7 +286,7 @@ public class RetryTemplateTests {
 				return result;
 			}
 		});
-		assertEquals(2, count);
+		assertEquals(2, this.count);
 	}
 
 	@Test
@@ -291,6 +295,7 @@ public class RetryTemplateTests {
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		try {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new Error("Realllly bad!");
 				}
@@ -312,6 +317,7 @@ public class RetryTemplateTests {
 		});
 		try {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new RuntimeException("Realllly bad!");
 				}
@@ -326,12 +332,14 @@ public class RetryTemplateTests {
 	public void testBackOffInterrupted() throws Throwable {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setBackOffPolicy(new StatelessBackOffPolicy() {
+			@Override
 			protected void doBackOff() throws BackOffInterruptedException {
 				throw new BackOffInterruptedException("foo");
 			}
 		});
 		try {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new RuntimeException("Bad!");
 				}
@@ -364,6 +372,7 @@ public class RetryTemplateTests {
 		try {
 			tested.execute(new RetryCallback<Object, Exception>() {
 
+				@Override
 				public Object doWithRetry(RetryContext context) throws Exception {
 					throw new Exception("maybe next time!");
 				}
@@ -392,9 +401,10 @@ public class RetryTemplateTests {
 
 		private Exception exceptionToThrow = new Exception();
 
+		@Override
 		public Object doWithRetry(RetryContext status) throws Exception {
 			this.attempts++;
-			if (attempts < attemptsBeforeSuccess) {
+			if (this.attempts < this.attemptsBeforeSuccess) {
 				throw this.exceptionToThrow;
 			}
 			return null;
@@ -415,14 +425,16 @@ public class RetryTemplateTests {
 
 		public int startCalls;
 
+		@Override
 		public BackOffContext start(RetryContext status) {
-			startCalls++;
+			this.startCalls++;
 			return null;
 		}
 
+		@Override
 		public void backOff(BackOffContext backOffContext)
 				throws BackOffInterruptedException {
-			backOffCalls++;
+			this.backOffCalls++;
 		}
 	}
 }
