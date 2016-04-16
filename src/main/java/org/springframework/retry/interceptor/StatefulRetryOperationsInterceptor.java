@@ -22,6 +22,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.classify.Classifier;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -63,13 +64,14 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 	private RetryOperations retryOperations;
 
-
 	private String label;
+
+	private Classifier<? super Throwable, Boolean> rollbackClassifier;
 
 	public StatefulRetryOperationsInterceptor() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
-		retryOperations = retryTemplate;
+		this.retryOperations = retryTemplate;
 	}
 
 	public void setRetryOperations(RetryOperations retryTemplate) {
@@ -88,6 +90,17 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		this.recoverer = recoverer;
 	}
 
+	/**
+	 * Rollback classifier for the retry state. Default to null (meaning rollback
+	 * for all).
+	 *
+	 * @param rollbackClassifier the rollbackClassifier to set
+	 */
+	public void setRollbackClassifier(
+			Classifier<? super Throwable, Boolean> rollbackClassifier) {
+		this.rollbackClassifier = rollbackClassifier;
+	}
+
 	public void setKeyGenerator(MethodArgumentsKeyGenerator keyGenerator) {
 		this.keyGenerator = keyGenerator;
 	}
@@ -102,7 +115,8 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * been processed before.
 	 * @param newMethodArgumentsIdentifier the {@link NewMethodArgumentsIdentifier} to set
 	 */
-	public void setNewItemIdentifier(NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
+	public void setNewItemIdentifier(
+			NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 		this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
 	}
 
@@ -118,17 +132,16 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * @see MethodInvocationRecoverer#recover(Object[], Throwable)
 	 *
 	 */
+	@Override
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Executing proxied method in stateful retry: "
+		if (this.logger.isDebugEnabled()) {
+			this.logger.debug("Executing proxied method in stateful retry: "
 					+ invocation.getStaticPart() + "("
 					+ ObjectUtils.getIdentityHexString(invocation) + ")");
 		}
 
 		Object[] args = invocation.getArguments();
-		Assert.state(args.length > 0, "Stateful retry applied to method that takes no arguments: "
-				+ invocation.getStaticPart());
 		Object arg = args;
 		if (args.length == 1) {
 			arg = args[0];
@@ -136,15 +149,19 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		final Object item = arg;
 
 		RetryState retryState = new DefaultRetryState(
-				keyGenerator != null ? keyGenerator.getKey(args) : item,
-				newMethodArgumentsIdentifier != null && newMethodArgumentsIdentifier.isNew(args)
-		);
+				this.keyGenerator != null ? this.keyGenerator.getKey(args) : item,
+				this.newMethodArgumentsIdentifier != null
+						&& this.newMethodArgumentsIdentifier.isNew(args),
+				this.rollbackClassifier);
 
-		Object result = retryOperations.execute(new MethodInvocationRetryCallback(invocation, label),
-				recoverer != null ? new ItemRecovererCallback(args, recoverer) : null, retryState);
+		Object result = this.retryOperations.execute(
+				new MethodInvocationRetryCallback(invocation, label), this.recoverer != null
+						? new ItemRecovererCallback(args, this.recoverer) : null,
+				retryState);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Exiting proxied method in stateful retry with result: (" + result + ")");
+		if (this.logger.isDebugEnabled()) {
+			this.logger.debug("Exiting proxied method in stateful retry with result: ("
+					+ result + ")");
 		}
 
 		return result;
@@ -155,7 +172,8 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * @author Dave Syer
 	 *
 	 */
-	private static final class MethodInvocationRetryCallback implements RetryCallback<Object, Throwable> {
+	private static final class MethodInvocationRetryCallback
+			implements RetryCallback<Object, Throwable> {
 
 		private final MethodInvocation invocation;
 		private String label;
@@ -169,10 +187,11 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 			}
 		}
 
+		@Override
 		public Object doWithRetry(RetryContext context) throws Exception {
 			context.setAttribute(RetryContext.NAME, label);
 			try {
-				return invocation.proceed();
+				return this.invocation.proceed();
 			}
 			catch (Exception e) {
 				throw e;
@@ -199,13 +218,15 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		/**
 		 * @param args the item that failed.
 		 */
-		private ItemRecovererCallback(Object[] args, MethodInvocationRecoverer<?> recoverer) {
+		private ItemRecovererCallback(Object[] args,
+				MethodInvocationRecoverer<?> recoverer) {
 			this.args = Arrays.asList(args).toArray();
 			this.recoverer = recoverer;
 		}
 
+		@Override
 		public Object recover(RetryContext context) {
-			return recoverer.recover(args, context.getLastThrowable());
+			return this.recoverer.recover(this.args, context.getLastThrowable());
 		}
 
 	}

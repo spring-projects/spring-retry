@@ -16,6 +16,7 @@
 
 package org.springframework.retry.annotation;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -34,12 +34,14 @@ import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
+import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -175,9 +177,28 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryContextCache(this.retryContextCache);
-		template.setRetryPolicy(getRetryPolicy(retryable));
-		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 
+		CircuitBreaker circuit = AnnotationUtils.findAnnotation(method, CircuitBreaker.class);
+		if (circuit!=null) {
+			RetryPolicy policy = getRetryPolicy(circuit);
+			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
+			breaker.setOpenTimeout(circuit.openTimeout());
+			breaker.setResetTimeout(circuit.resetTimeout());
+			template.setRetryPolicy(breaker);
+			template.setBackOffPolicy(new NoBackOffPolicy());
+			String label = circuit.label();
+			if (!StringUtils.hasText(label))  {
+				label = method.toGenericString();
+			}
+			return RetryInterceptorBuilder.circuitBreaker()
+					.retryOperations(template)
+					.recoverer(getRecoverer(target, method))
+					.label(label)
+					.build();
+		}
+		RetryPolicy policy = getRetryPolicy(retryable);
+		template.setRetryPolicy(policy);
+		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		return RetryInterceptorBuilder.stateful()
 				.retryOperations(template)
 				.recoverer(getRecoverer(target, method))
@@ -207,15 +228,20 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		return new RecoverAnnotationRecoveryHandler<Object>(target, method);
 	}
 
-	private RetryPolicy getRetryPolicy(Retryable retryable) {
-		Class<? extends Throwable>[] includes = retryable.value();
+	private RetryPolicy getRetryPolicy(Annotation retryable) {
+		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(retryable);
+		@SuppressWarnings("unchecked")
+		Class<? extends Throwable>[] includes = (Class<? extends Throwable>[]) attrs.get("value");
 		if (includes.length == 0) {
-			includes = retryable.include();
+			@SuppressWarnings("unchecked")
+			Class<? extends Throwable>[] value = (Class<? extends Throwable>[]) attrs.get("include");
+			includes = value;
 		}
-		Class<? extends Throwable>[] excludes = retryable.exclude();
+		@SuppressWarnings("unchecked")
+		Class<? extends Throwable>[] excludes = (Class<? extends Throwable>[]) attrs.get("exclude");
 		if (includes.length == 0 && excludes.length == 0) {
 			SimpleRetryPolicy simple = new SimpleRetryPolicy();
-			simple.setMaxAttempts(retryable.maxAttempts());
+			simple.setMaxAttempts((Integer) attrs.get("maxAttempts"));
 			return simple;
 		}
 		Map<Class<? extends Throwable>, Boolean> policyMap = new HashMap<Class<? extends Throwable>, Boolean>();
@@ -225,7 +251,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		for (Class<? extends Throwable> type : excludes) {
 			policyMap.put(type, false);
 		}
-		return new SimpleRetryPolicy(retryable.maxAttempts(), policyMap, true);
+		return new SimpleRetryPolicy((Integer) attrs.get("maxAttempts"), policyMap, true);
 	}
 
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
@@ -239,8 +265,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			policy.setInitialInterval(min);
 			policy.setMultiplier(backoff.multiplier());
 			policy.setMaxInterval(max > min ? max : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
-			if (sleeper != null) {
-				policy.setSleeper(sleeper);
+			if (this.sleeper != null) {
+				policy.setSleeper(this.sleeper);
 			}
 			return policy;
 		}
@@ -248,15 +274,15 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
 			policy.setMinBackOffPeriod(min);
 			policy.setMaxBackOffPeriod(max);
-			if (sleeper != null) {
-				policy.setSleeper(sleeper);
+			if (this.sleeper != null) {
+				policy.setSleeper(this.sleeper);
 			}
 			return policy;
 		}
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
 		policy.setBackOffPeriod(min);
-		if (sleeper != null) {
-			policy.setSleeper(sleeper);
+		if (this.sleeper != null) {
+			policy.setSleeper(this.sleeper);
 		}
 		return policy;
 	}

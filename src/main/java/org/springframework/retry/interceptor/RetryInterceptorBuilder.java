@@ -16,6 +16,8 @@
 package org.springframework.retry.interceptor;
 
 import org.aopalliance.intercept.MethodInterceptor;
+import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryOperations;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -25,20 +27,20 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 
 /**
- * <p>Simplified facade to make it easier and simpler to build a
- * {@link StatefulRetryOperationsInterceptor} or
- * (stateless) {@link RetryOperationsInterceptor}
- * by providing a fluent interface to defining the behavior on error.
+ * <p>
+ * Simplified facade to make it easier and simpler to build a
+ * {@link StatefulRetryOperationsInterceptor} or (stateless)
+ * {@link RetryOperationsInterceptor} by providing a fluent interface to defining the
+ * behavior on error.
  * <p>
  * Typical example:
  * </p>
  *
  * <pre class="code">
- *	StatefulRetryOperationsInterceptor interceptor =
- *			RetryInterceptorBuilder.stateful()
- *				.maxAttempts(5)
- *				.backOffOptions(1, 2, 10) // initialInterval, multiplier, maxInterval
- *				.build();
+ * StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
+ * 		.maxAttempts(5).backOffOptions(1, 2, 10) // initialInterval, multiplier,
+ * 													// maxInterval
+ * 		.build();
  * </pre>
  *
  * @author James Carr
@@ -46,8 +48,8 @@ import org.springframework.util.Assert;
  * @author Artem Bilan
  * @since 1.1
  *
- * @param <T> The type of {@link org.aopalliance.intercept.MethodInterceptor}
- * returned by the builder's {@link #build()} method.
+ * @param <T> The type of {@link org.aopalliance.intercept.MethodInterceptor} returned by
+ * the builder's {@link #build()} method.
  */
 public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
@@ -76,6 +78,14 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
+	 * Create a builder for a circuit breaker retry interceptor.
+	 * @return The interceptor builder.
+	 */
+	public static CircuitBreakerInterceptorBuilder circuitBreaker() {
+		return new CircuitBreakerInterceptorBuilder();
+	}
+
+	/**
 	 * Create a builder for a stateless retry interceptor.
 	 * @return The interceptor builder.
 	 */
@@ -84,13 +94,14 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
-	 * Apply the retry operations - once this is set, other properties can no longer be set; can't
-	 * be set if other properties have been applied.
+	 * Apply the retry operations - once this is set, other properties can no longer be
+	 * set; can't be set if other properties have been applied.
 	 * @param retryOperations The retry operations.
 	 * @return this.
 	 */
 	public RetryInterceptorBuilder<T> retryOperations(RetryOperations retryOperations) {
-		Assert.isTrue(!this.templateAltered, "Cannot set retryOperations when the default has been modified");
+		Assert.isTrue(!this.templateAltered,
+				"Cannot set retryOperations when the default has been modified");
 		this.retryOperations = retryOperations;
 		return this;
 	}
@@ -102,8 +113,10 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	 * @return this.
 	 */
 	public RetryInterceptorBuilder<T> maxAttempts(int maxAttempts) {
-		Assert.isNull(this.retryOperations, "cannot alter the retry policy when a custom retryOperations has been set");
-		Assert.isTrue(!this.retryPolicySet, "cannot alter the retry policy when a custom retryPolicy has been set");
+		Assert.isNull(this.retryOperations,
+				"cannot alter the retry policy when a custom retryOperations has been set");
+		Assert.isTrue(!this.retryPolicySet,
+				"cannot alter the retry policy when a custom retryPolicy has been set");
 		this.simpleRetryPolicy.setMaxAttempts(maxAttempts);
 		this.retryTemplate.setRetryPolicy(this.simpleRetryPolicy);
 		this.templateAltered = true;
@@ -111,15 +124,19 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
-	 * Apply the backoff options. Cannot be used if a custom retry operations, or back off policy has been set.
+	 * Apply the backoff options. Cannot be used if a custom retry operations, or back off
+	 * policy has been set.
 	 * @param initialInterval The initial interval.
 	 * @param multiplier The multiplier.
 	 * @param maxInterval The max interval.
 	 * @return this.
 	 */
-	public RetryInterceptorBuilder<T> backOffOptions(long initialInterval, double multiplier, long maxInterval) {
-		Assert.isNull(this.retryOperations, "cannot set the back off policy when a custom retryOperations has been set");
-		Assert.isTrue(!this.backOffPolicySet, "cannot set the back off options when a back off policy has been set");
+	public RetryInterceptorBuilder<T> backOffOptions(long initialInterval,
+			double multiplier, long maxInterval) {
+		Assert.isNull(this.retryOperations,
+				"cannot set the back off policy when a custom retryOperations has been set");
+		Assert.isTrue(!this.backOffPolicySet,
+				"cannot set the back off options when a back off policy has been set");
 		ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
 		policy.setInitialInterval(initialInterval);
 		policy.setMultiplier(multiplier);
@@ -131,14 +148,16 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
-	 * Apply the retry policy - cannot be used if a custom retry template has been provided, or the max attempts or
-	 * back off options or policy have been applied.
+	 * Apply the retry policy - cannot be used if a custom retry template has been
+	 * provided, or the max attempts or back off options or policy have been applied.
 	 * @param policy The policy.
 	 * @return this.
 	 */
 	public RetryInterceptorBuilder<T> retryPolicy(RetryPolicy policy) {
-		Assert.isNull(this.retryOperations, "cannot set the retry policy when a custom retryOperations has been set");
-		Assert.isTrue(!this.templateAltered, "cannot set the retry policy if max attempts or back off policy or options changed");
+		Assert.isNull(this.retryOperations,
+				"cannot set the retry policy when a custom retryOperations has been set");
+		Assert.isTrue(!this.templateAltered,
+				"cannot set the retry policy if max attempts or back off policy or options changed");
 		this.retryTemplate.setRetryPolicy(policy);
 		this.retryPolicySet = true;
 		this.templateAltered = true;
@@ -146,13 +165,16 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
-	 * Apply the back off policy. Cannot be used if a custom retry operations, or back off policy has been applied.
+	 * Apply the back off policy. Cannot be used if a custom retry operations, or back off
+	 * policy has been applied.
 	 * @param policy The policy.
 	 * @return this.
 	 */
 	public RetryInterceptorBuilder<T> backOffPolicy(BackOffPolicy policy) {
-		Assert.isNull(this.retryOperations, "cannot set the back off policy when a custom retryOperations has been set");
-		Assert.isTrue(!this.backOffOptionsSet, "cannot set the back off policy when the back off policy options have been set");
+		Assert.isNull(this.retryOperations,
+				"cannot set the back off policy when a custom retryOperations has been set");
+		Assert.isTrue(!this.backOffOptionsSet,
+				"cannot set the back off policy when the back off policy options have been set");
 		this.retryTemplate.setBackOffPolicy(policy);
 		this.templateAltered = true;
 		this.backOffPolicySet = true;
@@ -171,11 +193,11 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 	public abstract T build();
 
-
 	private RetryInterceptorBuilder() {
 	}
 
-	public static class StatefulRetryInterceptorBuilder extends RetryInterceptorBuilder<StatefulRetryOperationsInterceptor> {
+	public static class StatefulRetryInterceptorBuilder
+			extends RetryInterceptorBuilder<StatefulRetryOperationsInterceptor> {
 
 		private final StatefulRetryOperationsInterceptor interceptor = new StatefulRetryOperationsInterceptor();
 
@@ -185,12 +207,15 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 		private String label;
 
+		private Classifier<? super Throwable, Boolean> rollbackClassifier;
+
 		/**
 		 * Stateful retry requires items to be identifiable.
 		 * @param keyGenerator The key generator.
 		 * @return this.
 		 */
-		public StatefulRetryInterceptorBuilder keyGenerator(MethodArgumentsKeyGenerator keyGenerator) {
+		public StatefulRetryInterceptorBuilder keyGenerator(
+				MethodArgumentsKeyGenerator keyGenerator) {
 			this.keyGenerator = keyGenerator;
 			return this;
 		}
@@ -200,8 +225,22 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		 * @param newMethodArgumentsIdentifier The new item identifier.
 		 * @return this.
 		 */
-		public StatefulRetryInterceptorBuilder newMethodArgumentsIdentifier(NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
+		public StatefulRetryInterceptorBuilder newMethodArgumentsIdentifier(
+				NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 			this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
+			return this;
+		}
+
+		/**
+		 * Control the rollback of an ongoing transaction. In a stateful retry, normally
+		 * all exceptions cause a rollback (i.e. re-throw).
+		 * @param rollbackClassifier The rollback classifier (return true for exceptions
+		 * that should be re-thrown).
+		 * @return this.
+		 */
+		public StatefulRetryInterceptorBuilder rollbackFor(
+				Classifier<? super Throwable, Boolean> rollbackClassifier) {
+			this.rollbackClassifier = rollbackClassifier;
 			return this;
 		}
 
@@ -238,7 +277,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		}
 
 		@Override
-		public StatefulRetryInterceptorBuilder recoverer(MethodInvocationRecoverer<?> recoverer) {
+		public StatefulRetryInterceptorBuilder recoverer(
+				MethodInvocationRecoverer<?> recoverer) {
 			super.recoverer(recoverer);
 			return this;
 		}
@@ -262,6 +302,9 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			if (this.keyGenerator != null) {
 				this.interceptor.setKeyGenerator(this.keyGenerator);
 			}
+			if (this.rollbackClassifier != null) {
+				this.interceptor.setRollbackClassifier(this.rollbackClassifier);
+			}
 			if (this.newMethodArgumentsIdentifier != null) {
 				this.interceptor.setNewItemIdentifier(this.newMethodArgumentsIdentifier);
 			}
@@ -276,8 +319,69 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 	}
 
+	public static class CircuitBreakerInterceptorBuilder
+			extends RetryInterceptorBuilder<StatefulRetryOperationsInterceptor> {
 
-	public static class StatelessRetryInterceptorBuilder extends RetryInterceptorBuilder<RetryOperationsInterceptor> {
+		private final StatefulRetryOperationsInterceptor interceptor = new StatefulRetryOperationsInterceptor();
+
+		private MethodArgumentsKeyGenerator keyGenerator;
+
+		@Override
+		public CircuitBreakerInterceptorBuilder retryOperations(
+				RetryOperations retryOperations) {
+			super.retryOperations(retryOperations);
+			return this;
+		}
+
+		@Override
+		public CircuitBreakerInterceptorBuilder maxAttempts(int maxAttempts) {
+			super.maxAttempts(maxAttempts);
+			return this;
+		}
+
+		@Override
+		public CircuitBreakerInterceptorBuilder retryPolicy(RetryPolicy policy) {
+			super.retryPolicy(policy);
+			return this;
+		}
+
+		@Override
+		public CircuitBreakerInterceptorBuilder recoverer(
+				MethodInvocationRecoverer<?> recoverer) {
+			super.recoverer(recoverer);
+			return this;
+		}
+
+		public CircuitBreakerInterceptorBuilder label(String label) {
+			super.recoverer(this.recoverer);
+			return this;
+		}
+
+		@Override
+		public StatefulRetryOperationsInterceptor build() {
+			if (this.recoverer != null) {
+				this.interceptor.setRecoverer(this.recoverer);
+			}
+			if (this.retryOperations != null) {
+				this.interceptor.setRetryOperations(this.retryOperations);
+			}
+			else {
+				this.interceptor.setRetryOperations(this.retryTemplate);
+			}
+			if (this.keyGenerator != null) {
+				this.interceptor.setKeyGenerator(this.keyGenerator);
+			}
+			this.interceptor.setRollbackClassifier(new BinaryExceptionClassifier(false));
+			return this.interceptor;
+		}
+
+		private CircuitBreakerInterceptorBuilder() {
+		}
+
+	}
+
+	public static class StatelessRetryInterceptorBuilder
+			extends RetryInterceptorBuilder<RetryOperationsInterceptor> {
 
 		private final RetryOperationsInterceptor interceptor = new RetryOperationsInterceptor();
 		private String label;

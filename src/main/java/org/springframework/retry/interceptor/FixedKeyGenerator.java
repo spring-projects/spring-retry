@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.retry.interceptor;
 
 /**
- * Interface that allows method parameters to be identified and tagged by a
- * unique key.
- *
  * @author Dave Syer
  *
  */
-public interface MethodArgumentsKeyGenerator {
+public class FixedKeyGenerator implements MethodArgumentsKeyGenerator {
 
-	/**
-	 * Get a unique identifier for the item that can be used to cache it between
-	 * calls if necessary, and then identify it later.
-	 *
-	 * @param item the current method arguments (may be null if there are none).
-	 * @return a unique identifier.
-	 */
-	Object getKey(Object[] item);
+	private String label;
+
+	public FixedKeyGenerator(String label) {
+		this.label = label;
+	}
+
+	@Override
+	public Object getKey(Object[] item) {
+		return this.label;
+	}
 
 }
