@@ -22,7 +22,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -64,6 +63,9 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 	private RetryOperations retryOperations;
 
+
+	private String label;
+
 	public StatefulRetryOperationsInterceptor() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
@@ -88,6 +90,10 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 	public void setKeyGenerator(MethodArgumentsKeyGenerator keyGenerator) {
 		this.keyGenerator = keyGenerator;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	/**
@@ -134,7 +140,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 				newMethodArgumentsIdentifier != null && newMethodArgumentsIdentifier.isNew(args)
 		);
 
-		Object result = retryOperations.execute(new MethodInvocationRetryCallback(invocation),
+		Object result = retryOperations.execute(new MethodInvocationRetryCallback(invocation, label),
 				recoverer != null ? new ItemRecovererCallback(args, recoverer) : null, retryState);
 
 		if (logger.isDebugEnabled()) {
@@ -152,12 +158,19 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	private static final class MethodInvocationRetryCallback implements RetryCallback<Object, Throwable> {
 
 		private final MethodInvocation invocation;
+		private String label;
 
-		private MethodInvocationRetryCallback(MethodInvocation invocation) {
+		private MethodInvocationRetryCallback(MethodInvocation invocation, String label) {
 			this.invocation = invocation;
+			if (label!=null) {
+				this.label = label;
+			} else {
+				this.label = invocation.getMethod().toGenericString();
+			}
 		}
 
 		public Object doWithRetry(RetryContext context) throws Exception {
+			context.setAttribute(RetryContext.STATS_NAME, label);
 			try {
 				return invocation.proceed();
 			}

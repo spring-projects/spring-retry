@@ -16,7 +16,6 @@
 package org.springframework.retry.interceptor;
 
 import org.aopalliance.intercept.MethodInterceptor;
-
 import org.springframework.retry.RetryOperations;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -184,6 +183,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 		private NewMethodArgumentsIdentifier newMethodArgumentsIdentifier;
 
+		private String label;
+
 		/**
 		 * Stateful retry requires items to be identifiable.
 		 * @param keyGenerator The key generator.
@@ -242,6 +243,11 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			return this;
 		}
 
+		public StatefulRetryInterceptorBuilder label(String label) {
+			this.label = label;
+			return this;
+		}
+
 		@Override
 		public StatefulRetryOperationsInterceptor build() {
 			if (this.recoverer != null) {
@@ -259,6 +265,9 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			if (this.newMethodArgumentsIdentifier != null) {
 				this.interceptor.setNewItemIdentifier(this.newMethodArgumentsIdentifier);
 			}
+			if (this.label != null) {
+				this.interceptor.setLabel(this.label);
+			}
 			return this.interceptor;
 		}
 
@@ -271,6 +280,12 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	public static class StatelessRetryInterceptorBuilder extends RetryInterceptorBuilder<RetryOperationsInterceptor> {
 
 		private final RetryOperationsInterceptor interceptor = new RetryOperationsInterceptor();
+		private String label;
+
+		public StatelessRetryInterceptorBuilder label(String label) {
+			this.label = label;
+			return this;
+		}
 
 		@Override
 		public RetryOperationsInterceptor build() {
@@ -282,6 +297,9 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			}
 			else {
 				this.interceptor.setRetryOperations(this.retryTemplate);
+			}
+			if (this.label != null) {
+				this.interceptor.setLabel(this.label);
 			}
 			return this.interceptor;
 		}

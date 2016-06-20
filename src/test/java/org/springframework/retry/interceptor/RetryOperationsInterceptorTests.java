@@ -141,7 +141,7 @@ public class RetryOperationsInterceptorTests {
 		try {
 			interceptor.invoke(new MethodInvocation() {
 				public Method getMethod() {
-					return null;
+					return ClassUtils.getMethod(RetryOperationsInterceptorTests.class, "testIllegalMethodInvocationType");
 				}
 
 				public Object[] getArguments() {

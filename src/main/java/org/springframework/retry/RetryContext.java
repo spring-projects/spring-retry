@@ -19,9 +19,8 @@ package org.springframework.retry;
 import org.springframework.core.AttributeAccessor;
 
 /**
- * Low-level access to ongoing retry operation. Normally not needed by clients,
- * but can be used to alter the course of the retry, e.g. force an early
- * termination.
+ * Low-level access to ongoing retry operation. Normally not needed by clients, but can be
+ * used to alter the course of the retry, e.g. force an early termination.
  * 
  * @author Dave Syer
  * 
@@ -29,8 +28,15 @@ import org.springframework.core.AttributeAccessor;
 public interface RetryContext extends AttributeAccessor {
 
 	/**
-	 * Signal to the framework that no more attempts should be made to try or
-	 * retry the current {@link RetryCallback}.
+	 * Retry context attribute name for reporting key. Can be used for reporting purposes,
+	 * for instance in a retry listener, to accumulate data about the performance of a
+	 * retry.
+	 */
+	String STATS_NAME = "stats.name";
+
+	/**
+	 * Signal to the framework that no more attempts should be made to try or retry the
+	 * current {@link RetryCallback}.
 	 */
 	void setExhaustedOnly();
 
@@ -49,9 +55,8 @@ public interface RetryContext extends AttributeAccessor {
 	RetryContext getParent();
 
 	/**
-	 * Counts the number of retry attempts. Before the first attempt this
-	 * counter is zero, and before the first and subsequent attempts it should
-	 * increment accordingly.
+	 * Counts the number of retry attempts. Before the first attempt this counter is zero,
+	 * and before the first and subsequent attempts it should increment accordingly.
 	 * 
 	 * @return the number of retries.
 	 */
@@ -60,9 +65,9 @@ public interface RetryContext extends AttributeAccessor {
 	/**
 	 * Accessor for the exception object that caused the current retry.
 	 * 
-	 * @return the last exception that caused a retry, or possibly null. It will
-	 * be null if this is the first attempt, but also if the enclosing policy
-	 * decides not to provide it (e.g. because of concerns about memory usage).
+	 * @return the last exception that caused a retry, or possibly null. It will be null
+	 * if this is the first attempt, but also if the enclosing policy decides not to
+	 * provide it (e.g. because of concerns about memory usage).
 	 */
 	Throwable getLastThrowable();
 

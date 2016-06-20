@@ -48,6 +48,12 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	private MethodInvocationRecoverer<?> recoverer;
 
+	private String label;
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
 	public void setRetryOperations(RetryOperations retryTemplate) {
 		Assert.notNull(retryTemplate, "'retryOperations' cannot be null.");
 		this.retryOperations = retryTemplate;
@@ -59,9 +65,19 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
+		String name;
+		if (label!=null) {
+			name = label;
+		} else {
+			name = invocation.getMethod().toGenericString();
+		}
+		final String label = name;
+
 		RetryCallback<Object, Throwable> retryCallback = new RetryCallback<Object, Throwable>() {
 
 			public Object doWithRetry(RetryContext context) throws Exception {
+				
+				context.setAttribute(RetryContext.STATS_NAME, label);
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to
