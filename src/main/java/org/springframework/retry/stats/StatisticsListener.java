@@ -37,7 +37,7 @@ public class StatisticsListener extends RetryListenerSupport {
 			RetryCallback<T, E> callback, Throwable throwable) {
 		String name = getName(context);
 		if (name != null) {
-			if (!isExhausted(context)) {
+			if (!isExhausted(context) || isGlobal(context)) {
 				// If exhausted and stateful then the retry callback was not called. If
 				// exhausted and stateless it was called, but the started counter was
 				// already incremented.
@@ -67,6 +67,10 @@ public class StatisticsListener extends RetryListenerSupport {
 			}
 			repository.addError(name);
 		}
+	}
+
+	private boolean isGlobal(RetryContext context) {
+		return context.hasAttribute("state.global");
 	}
 
 	private boolean isExhausted(RetryContext context) {
