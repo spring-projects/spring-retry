@@ -371,10 +371,12 @@ public class RetryTemplate implements RetryOperations {
 			if (succeeded) {
 				this.retryContextCache.remove(state.getKey());
 				retryPolicy.close(context);
+				context.setAttribute(RetryContext.CLOSED, true);
 			}
 		}
 		else {
 			retryPolicy.close(context);
+			context.setAttribute(RetryContext.CLOSED, true);
 		}
 	}
 
@@ -417,14 +419,14 @@ public class RetryTemplate implements RetryOperations {
 
 		Object key = state.getKey();
 		if (state.isForceRefresh()) {
-			return doOpenInternal(retryPolicy);
+			return doOpenInternal(retryPolicy, state);
 		}
 
 		// If there is no cache hit we can avoid the possible expense of the
 		// cache re-hydration.
 		if (!this.retryContextCache.containsKey(key)) {
 			// The cache is only used if there is a failure.
-			return doOpenInternal(retryPolicy);
+			return doOpenInternal(retryPolicy, state);
 		}
 
 		RetryContext context = this.retryContextCache.get(key);
@@ -437,15 +439,23 @@ public class RetryTemplate implements RetryOperations {
 			}
 			// The cache could have been expired in between calls to
 			// containsKey(), so we have to live with this:
-			return doOpenInternal(retryPolicy);
+			return doOpenInternal(retryPolicy, state);
 		}
 
 		return context;
 
 	}
 
+	private RetryContext doOpenInternal(RetryPolicy retryPolicy, RetryState state) {
+		RetryContext context = retryPolicy.open(RetrySynchronizationManager.getContext());
+		if (state!=null) {
+			context.setAttribute(RetryContext.STATE_KEY, state.getKey());
+		}
+		return context;
+	}
+
 	private RetryContext doOpenInternal(RetryPolicy retryPolicy) {
-		return retryPolicy.open(RetrySynchronizationManager.getContext());
+		return doOpenInternal(retryPolicy, null);
 	}
 
 	/**
@@ -465,10 +475,12 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	protected <T> T handleRetryExhausted(RecoveryCallback<T> recoveryCallback,
 			RetryContext context, RetryState state) throws Throwable {
+		context.setAttribute(RetryContext.EXHAUSTED, true);
 		if (state != null) {
 			this.retryContextCache.remove(state.getKey());
 		}
 		if (recoveryCallback != null) {
+			context.setAttribute(RetryContext.RECOVERED, true);
 			return recoveryCallback.recover(context);
 		}
 		if (state != null) {

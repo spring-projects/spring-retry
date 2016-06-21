@@ -170,7 +170,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		}
 
 		public Object doWithRetry(RetryContext context) throws Exception {
-			context.setAttribute(RetryContext.STATS_NAME, label);
+			context.setAttribute(RetryContext.NAME, label);
 			try {
 				return invocation.proceed();
 			}

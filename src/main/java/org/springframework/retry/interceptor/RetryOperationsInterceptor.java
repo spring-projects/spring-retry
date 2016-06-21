@@ -77,7 +77,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 			public Object doWithRetry(RetryContext context) throws Exception {
 				
-				context.setAttribute(RetryContext.STATS_NAME, label);
+				context.setAttribute(RetryContext.NAME, label);
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to

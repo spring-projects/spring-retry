@@ -26,7 +26,7 @@ package org.springframework.retry;
 public interface RetryStatistics {
 
 	/**
-	 * @return the number of completed retry attempts (successful or not).
+	 * @return the number of completed successful retry attempts.
 	 */
 	int getCompleteCount();
 
@@ -53,6 +53,13 @@ public interface RetryStatistics {
 	 * @return the number of retry attempts that failed overall.
 	 */
 	int getAbortCount();
+
+	/**
+	 * Get the number of times a recovery callback was applied.
+	 * 
+	 * @return the number of recovered attempts.
+	 */
+	int getRecoveryCount();
 
 	/**
 	 * Get an identifier for the retry block for reporting purposes.

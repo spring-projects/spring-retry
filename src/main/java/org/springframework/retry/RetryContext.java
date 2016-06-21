@@ -32,7 +32,27 @@ public interface RetryContext extends AttributeAccessor {
 	 * for instance in a retry listener, to accumulate data about the performance of a
 	 * retry.
 	 */
-	String STATS_NAME = "stats.name";
+	String NAME = "context.name";
+
+	/**
+	 * Retry context attribute name for state key. Can be used to identify a stateful retry from its context.
+	 */
+	String STATE_KEY = "context.state";
+
+	/**
+	 * Retry context attribute that is non-null (and true) if the context has been closed.
+	 */
+	String CLOSED = "context.closed";
+
+	/**
+	 * Retry context attribute that is non-null (and true) if the recovery path was taken.
+	 */
+	String RECOVERED = "context.recovered";
+
+	/**
+	 * Retry context attribute that is non-null (and true) if the retry was exhausted.
+	 */
+	String EXHAUSTED = "context.exhausted";
 
 	/**
 	 * Signal to the framework that no more attempts should be made to try or retry the
