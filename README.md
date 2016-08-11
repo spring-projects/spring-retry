@@ -275,7 +275,7 @@ Here is an example of declarative iteration using Spring AOP to repeat a service
 </aop:config>
 
 <bean id="retryAdvice"
-    class="org.springframework.batch.retry.interceptor.RetryOperationsInterceptor"/>
+    class="org.springframework.retry.interceptor.RetryOperationsInterceptor"/>
 ```
 
 The example above uses a default `RetryTemplate` inside the interceptor. To change the policies or listeners, you only need to inject an instance of `RetryTemplate` into the interceptor.
