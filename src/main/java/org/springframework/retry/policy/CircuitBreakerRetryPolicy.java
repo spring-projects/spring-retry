@@ -101,8 +101,14 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			this.policy = policy;
 			this.timeout = timeout;
 			this.openWindow = openWindow;
-			this.context = policy.open(parent);
+			this.context = createDelegateContext(policy, parent);
 			setAttribute("state.global", true);
+		}
+
+		private RetryContext createDelegateContext(RetryPolicy policy,
+				RetryContext parent) {
+			RetryContext context = policy.open(parent);
+			return context;
 		}
 
 		public boolean isOpen() {
@@ -111,7 +117,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			if (!retryable) {
 				if (time > this.timeout) {
 					logger.trace("Closing");
-					this.context = this.policy.open(getParent());
+					this.context = createDelegateContext(policy, getParent());
 					this.start = System.currentTimeMillis();
 					retryable = this.policy.canRetry(this.context);
 				}
@@ -128,7 +134,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 				if (time > this.openWindow) {
 					logger.trace("Resetting context");
 					this.start = System.currentTimeMillis();
-					this.context = this.policy.open(getParent());
+					this.context = createDelegateContext(policy, getParent());
 				}
 			}
 			if (logger.isTraceEnabled()) {
