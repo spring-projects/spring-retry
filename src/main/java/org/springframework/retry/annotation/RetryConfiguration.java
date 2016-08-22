@@ -19,6 +19,7 @@ package org.springframework.retry.annotation;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,6 +40,7 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
@@ -67,6 +69,9 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 
 	@Autowired(required = false)
 	private RetryContextCache retryContextCache;
+
+	@Autowired(required = false)
+	private List<RetryListener> retryListeners;
 
 	@Autowired(required = false)
 	private MethodArgumentsKeyGenerator methodArgumentsKeyGenerator;
@@ -126,6 +131,9 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 		AnnotationAwareRetryOperationsInterceptor interceptor = new AnnotationAwareRetryOperationsInterceptor();
 		if (retryContextCache != null) {
 			interceptor.setRetryContextCache(retryContextCache);
+		}
+		if (retryListeners != null) {
+			interceptor.setListeners(retryListeners);
 		}
 		if (methodArgumentsKeyGenerator != null) {
 			interceptor.setKeyGenerator(methodArgumentsKeyGenerator);

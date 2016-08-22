@@ -18,6 +18,8 @@ package org.springframework.retry.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +30,9 @@ import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -74,6 +78,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private BeanFactory beanFactory;
 
+	private RetryListener[] listeners;
+
 	/**
 	 * @param sleeper the sleeper to set
 	 */
@@ -102,6 +108,16 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	 */
 	public void setNewItemIdentifier(NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 		this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
+	}
+
+	/**
+	 * Retry listeners to apply to all operations.
+	 * @param listeners the listeners 
+	 */
+	public void setListeners(Collection<RetryListener> listeners) {
+		ArrayList<RetryListener> retryListeners = new ArrayList<RetryListener>(listeners);
+		AnnotationAwareOrderComparator.sort(retryListeners);
+		this.listeners = retryListeners.toArray(new RetryListener[0]);
 	}
 
 	@Override
@@ -167,15 +183,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
+		RetryTemplate template = createTemplate();
+		template.setRetryPolicy(getRetryPolicy(retryable));
+		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		return RetryInterceptorBuilder.stateless()
-				.retryPolicy(getRetryPolicy(retryable))
-				.backOffPolicy(getBackoffPolicy(retryable.backoff()))
+				.retryOperations(template)
 				.recoverer(getRecoverer(target, method))
 				.build();
 	}
 
 	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
-		RetryTemplate template = new RetryTemplate();
+		RetryTemplate template = createTemplate();
 		template.setRetryContextCache(this.retryContextCache);
 
 		CircuitBreaker circuit = AnnotationUtils.findAnnotation(method, CircuitBreaker.class);
@@ -205,6 +223,12 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				.keyGenerator(this.methodArgumentsKeyGenerator)
 				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
 				.build();
+	}
+
+	private RetryTemplate createTemplate() {
+		RetryTemplate template = new RetryTemplate();
+		template.setListeners(listeners);
+		return template;
 	}
 
 	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method) {

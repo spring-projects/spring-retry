@@ -208,7 +208,7 @@ public class RetryTemplate implements RetryOperations {
 	@Override
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
 			RecoveryCallback<T> recoveryCallback, RetryState retryState)
-					throws E, ExhaustedRetryException {
+			throws E, ExhaustedRetryException {
 		return doExecute(retryCallback, recoveryCallback, retryState);
 	}
 
@@ -227,7 +227,7 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	protected <T, E extends Throwable> T doExecute(RetryCallback<T, E> retryCallback,
 			RecoveryCallback<T> recoveryCallback, RetryState state)
-					throws E, ExhaustedRetryException {
+			throws E, ExhaustedRetryException {
 
 		RetryPolicy retryPolicy = this.retryPolicy;
 		BackOffPolicy backOffPolicy = this.backOffPolicy;
@@ -291,14 +291,15 @@ public class RetryTemplate implements RetryOperations {
 
 					lastException = e;
 
-					doOnErrorInterceptors(retryCallback, context, e);
-
 					try {
 						registerThrowable(retryPolicy, state, context, e);
 					}
 					catch (Exception ex) {
 						throw new TerminatedRetryException("Could not register throwable",
 								ex);
+					}
+					finally {
+						doOnErrorInterceptors(retryCallback, context, e);
 					}
 
 					if (canRetry(retryPolicy, context) && !context.isExhaustedOnly()) {
@@ -469,7 +470,7 @@ public class RetryTemplate implements RetryOperations {
 
 	private RetryContext doOpenInternal(RetryPolicy retryPolicy, RetryState state) {
 		RetryContext context = retryPolicy.open(RetrySynchronizationManager.getContext());
-		if (state!=null) {
+		if (state != null) {
 			context.setAttribute(RetryContext.STATE_KEY, state.getKey());
 		}
 		return context;
