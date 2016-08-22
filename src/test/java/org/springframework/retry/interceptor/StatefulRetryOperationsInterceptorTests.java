@@ -32,6 +32,9 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.retry.ExhaustedRetryException;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -51,14 +54,25 @@ public class StatefulRetryOperationsInterceptorTests {
 
 	private Transformer transformer;
 
+	private RetryContext context;
+
 	private static int count;
 
 	@Before
 	public void setUp() throws Exception {
 		interceptor = new StatefulRetryOperationsInterceptor();
-		service = (Service) ProxyFactory.getProxy(Service.class, new SingletonTargetSource(new ServiceImpl()));
-		transformer = (Transformer) ProxyFactory.getProxy(Transformer.class, new SingletonTargetSource(
-				new TransformerImpl()));
+		retryTemplate.registerListener(new RetryListenerSupport() {
+			@Override
+			public <T, E extends Throwable> void close(RetryContext context,
+					RetryCallback<T, E> callback, Throwable throwable) {
+				StatefulRetryOperationsInterceptorTests.this.context = context;
+			}
+		});
+		interceptor.setRetryOperations(retryTemplate);
+		service = (Service) ProxyFactory.getProxy(Service.class,
+				new SingletonTargetSource(new ServiceImpl()));
+		transformer = (Transformer) ProxyFactory.getProxy(Transformer.class,
+				new SingletonTargetSource(new TransformerImpl()));
 		count = 0;
 	}
 
@@ -71,9 +85,27 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
+	}
+
+	@Test
+	public void testDefaultInterceptorWithLabel() throws Exception {
+		interceptor.setLabel("FOO");
+		((Advised) service).addAdvice(interceptor);
+		try {
+			service.service("foo");
+			fail("Expected Exception.");
+		}
+		catch (Exception e) {
+			String message = e.getMessage();
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
+		}
+		assertEquals(1, count);
+		assertEquals("FOO", context.getAttribute(RetryContext.NAME));
 	}
 
 	@Test
@@ -85,7 +117,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 	}
@@ -101,7 +134,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 	}
@@ -117,15 +151,17 @@ public class StatefulRetryOperationsInterceptorTests {
 			}
 		});
 		interceptor.setRetryOperations(retryTemplate);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 		try {
 			service.service("foo");
 			fail("Expected Exception.");
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		service.service("foo");
@@ -137,15 +173,17 @@ public class StatefulRetryOperationsInterceptorTests {
 	public void testTransformerWithSuccessfulRetry() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 		try {
 			transformer.transform("foo");
 			fail("Expected Exception.");
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		Collection<String> result = transformer.transform("foo");
@@ -164,7 +202,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		try {
@@ -174,7 +213,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		catch (ExhaustedRetryException e) {
 			// expected
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Retry exhausted"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Retry exhausted"));
 		}
 		assertEquals(1, count);
 	}
@@ -190,7 +230,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Object>() {
@@ -214,7 +255,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message,
+					message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {

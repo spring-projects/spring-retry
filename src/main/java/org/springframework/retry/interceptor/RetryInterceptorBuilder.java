@@ -326,6 +326,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 		private MethodArgumentsKeyGenerator keyGenerator;
 
+		private String label;
+
 		@Override
 		public CircuitBreakerInterceptorBuilder retryOperations(
 				RetryOperations retryOperations) {
@@ -353,7 +355,7 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		}
 
 		public CircuitBreakerInterceptorBuilder label(String label) {
-			super.recoverer(this.recoverer);
+			this.label = label;
 			return this;
 		}
 
@@ -370,6 +372,9 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			}
 			if (this.keyGenerator != null) {
 				this.interceptor.setKeyGenerator(this.keyGenerator);
+			}
+			if (this.label != null) {
+				this.interceptor.setLabel(this.label);
 			}
 			this.interceptor.setRollbackClassifier(new BinaryExceptionClassifier(false));
 			return this.interceptor;
