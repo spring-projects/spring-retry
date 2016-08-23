@@ -227,7 +227,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private RetryTemplate createTemplate() {
 		RetryTemplate template = new RetryTemplate();
-		template.setListeners(listeners);
+		if (listeners!=null) {
+			template.setListeners(listeners);
+		}
 		return template;
 	}
 
