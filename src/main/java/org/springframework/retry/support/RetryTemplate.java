@@ -555,7 +555,7 @@ public class RetryTemplate implements RetryOperations {
 			return rethrow;
 		}
 		else {
-			throw new RetryException("Exception in batch process", throwable);
+			throw new RetryException("Exception in retry", throwable);
 		}
 	}
 
