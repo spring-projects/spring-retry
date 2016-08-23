@@ -402,14 +402,13 @@ public class RetryTemplate implements RetryOperations {
 		}
 	}
 
-	/**
-	 * @param retryPolicy the retry policy
-	 * @param state the retry state
-	 * @param context the retry context
-	 * @param e the exception thrown
-	 */
 	protected void registerThrowable(RetryPolicy retryPolicy, RetryState state,
 			RetryContext context, Throwable e) {
+		registerContext(context, state);
+		retryPolicy.registerThrowable(context, e);
+	}
+
+	private void registerContext(RetryContext context, RetryState state) {
 		if (state != null) {
 			Object key = state.getKey();
 			if (context.getRetryCount() > 0 && !this.retryContextCache.containsKey(key)) {
@@ -420,7 +419,6 @@ public class RetryTemplate implements RetryOperations {
 			}
 			this.retryContextCache.put(key, context);
 		}
-		retryPolicy.registerThrowable(context, e);
 	}
 
 	/**
@@ -472,6 +470,9 @@ public class RetryTemplate implements RetryOperations {
 		RetryContext context = retryPolicy.open(RetrySynchronizationManager.getContext());
 		if (state != null) {
 			context.setAttribute(RetryContext.STATE_KEY, state.getKey());
+		}
+		if (context.hasAttribute(GLOBAL_STATE)) {
+			registerContext(context, state);
 		}
 		return context;
 	}
