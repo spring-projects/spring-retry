@@ -25,6 +25,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.aop.IntroductionInterceptor;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -54,6 +55,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Sparkbit.pl
  * @since 1.1
  *
  */
@@ -122,33 +124,44 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 	}
 
-	private MethodInterceptor getDelegate(Object target, Method method) {
-		if (!this.delegates.containsKey(method)) {
-			synchronized (this.delegates) {
-				if (!this.delegates.containsKey(method)) {
-					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
-					if (retryable == null) {
-						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
-					}
-					if (retryable == null) {
-						return this.delegates.put(method, null);
-					}
-					MethodInterceptor delegate;
-					if (StringUtils.hasText(retryable.interceptor())) {
-						delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
-					}
-					else if (retryable.stateful()) {
-						delegate = getStatefulInterceptor(target, method, retryable);
-					}
-					else {
-						delegate = getStatelessInterceptor(target, method, retryable);
-					}
-					this.delegates.put(method, delegate);
-				}
-			}
-		}
-		return this.delegates.get(method);
-	}
+    private MethodInterceptor getDelegate(Object target, Method method) {
+        if (!this.delegates.containsKey(method)) {
+            synchronized (this.delegates) {
+                if (!this.delegates.containsKey(method)) {
+                    Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
+                    if (retryable == null){
+                        try {
+                            Method originalMethod = AopProxyUtils.ultimateTargetClass(target).getMethod(method.getName(), method.getParameterTypes());
+                            retryable = AnnotationUtils.findAnnotation(originalMethod, Retryable.class);
+                        } catch (NoSuchMethodException e) {
+                            //do nothing
+                        }
+                    }
+                    if (retryable == null) {
+                        retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
+                    }
+                    if (retryable == null) {
+                        retryable = AnnotationUtils.findAnnotation(AopProxyUtils.ultimateTargetClass(target), Retryable.class);
+                    }
+                    if (retryable == null) {
+                        return this.delegates.put(method, null);
+                    }
+                    MethodInterceptor delegate;
+                    if (StringUtils.hasText(retryable.interceptor())) {
+                        delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
+                    }
+                    else if (retryable.stateful()) {
+                        delegate = getStatefulInterceptor(target, method, retryable);
+                    }
+                    else {
+                        delegate = getStatelessInterceptor(target, method, retryable);
+                    }
+                    this.delegates.put(method, delegate);
+                }
+            }
+        }
+        return this.delegates.get(method);
+    }
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
 		return RetryInterceptorBuilder.stateless()
