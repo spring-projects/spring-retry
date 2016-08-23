@@ -148,8 +148,9 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		}
 		final Object item = arg;
 
+		Object key = this.keyGenerator != null ? this.keyGenerator.getKey(args) : item;
 		RetryState retryState = new DefaultRetryState(
-				this.keyGenerator != null ? this.keyGenerator.getKey(args) : item,
+				key,
 				this.newMethodArgumentsIdentifier != null
 						&& this.newMethodArgumentsIdentifier.isNew(args),
 				this.rollbackClassifier);
