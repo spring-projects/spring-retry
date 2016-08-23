@@ -55,7 +55,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
 
 /**
- * WrappeMethodInterceptorr interceptor that interprets the retry metadata on the method it is invoking and
+ * Interceptor that parses the retry metadata on the method it is invoking and
  * delegates to an appropriate RetryOperationsInterceptor.
  *
  * @author Dave Syer
@@ -217,8 +217,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryPolicy policy = getRetryPolicy(retryable);
 		template.setRetryPolicy(policy);
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
+		String label = retryable.label();
+		if (!StringUtils.hasText(label))  {
+			label = method.toGenericString();
+		}
 		return RetryInterceptorBuilder.stateful()
 				.retryOperations(template)
+				.label(label)
 				.recoverer(getRecoverer(target, method))
 				.keyGenerator(this.methodArgumentsKeyGenerator)
 				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)

@@ -35,6 +35,9 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
@@ -50,6 +53,8 @@ public class RetryOperationsInterceptorTests {
 
 	private ServiceImpl target;
 
+	private RetryContext context;
+
 	private static int count;
 
 	private static int transactionCount;
@@ -57,6 +62,15 @@ public class RetryOperationsInterceptorTests {
 	@Before
 	public void setUp() throws Exception {
 		interceptor = new RetryOperationsInterceptor();
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.registerListener(new RetryListenerSupport() {
+			@Override
+			public <T, E extends Throwable> void close(RetryContext context,
+					RetryCallback<T, E> callback, Throwable throwable) {
+				RetryOperationsInterceptorTests.this.context = context;
+			}
+		});
+		interceptor.setRetryOperations(retryTemplate);
 		target = new ServiceImpl();
 		service = (Service) ProxyFactory.getProxy(Service.class, new SingletonTargetSource(target));
 		count = 0;
@@ -71,10 +85,20 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
+	public void testDefaultInterceptorWithLabel() throws Exception {
+		interceptor.setLabel("FOO");
+		((Advised) service).addAdvice(interceptor);
+		service.service();
+		assertEquals(2, count);
+		assertEquals("FOO", context.getAttribute(RetryContext.NAME));
+	}
+
+	@Test
 	public void testDefaultInterceptorWithRecovery() throws Exception {
 		RetryTemplate template = new RetryTemplate();
-		template.setRetryPolicy(new SimpleRetryPolicy(1, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		template.setRetryPolicy(new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 		interceptor.setRetryOperations(template);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Void>() {
 			public Void recover(Object[] args, Throwable cause) {
@@ -97,8 +121,9 @@ public class RetryOperationsInterceptorTests {
 			}
 		});
 		RetryTemplate template = new RetryTemplate();
-		template.setRetryPolicy(new SimpleRetryPolicy(2, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		template.setRetryPolicy(new SimpleRetryPolicy(2,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 		interceptor.setRetryOperations(template);
 		service.service();
 		assertEquals(2, count);
@@ -123,8 +148,9 @@ public class RetryOperationsInterceptorTests {
 
 	@Test
 	public void testOutsideTransaction() throws Exception {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(ClassUtils
-				.addResourcePathToPackagePath(getClass(), "retry-transaction-test.xml"));
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				ClassUtils.addResourcePathToPackagePath(getClass(),
+						"retry-transaction-test.xml"));
 		Object object = context.getBean("bean");
 		assertNotNull(object);
 		assertTrue(object instanceof Service);
@@ -141,7 +167,8 @@ public class RetryOperationsInterceptorTests {
 		try {
 			interceptor.invoke(new MethodInvocation() {
 				public Method getMethod() {
-					return ClassUtils.getMethod(RetryOperationsInterceptorTests.class, "testIllegalMethodInvocationType");
+					return ClassUtils.getMethod(RetryOperationsInterceptorTests.class,
+							"testIllegalMethodInvocationType");
 				}
 
 				public Object[] getArguments() {
@@ -163,8 +190,10 @@ public class RetryOperationsInterceptorTests {
 			fail("IllegalStateException expected");
 		}
 		catch (IllegalStateException e) {
-			assertTrue("Exception message should contain MethodInvocation: " + e.getMessage(), e.getMessage().indexOf(
-					"MethodInvocation") >= 0);
+			assertTrue(
+					"Exception message should contain MethodInvocation: "
+							+ e.getMessage(),
+					e.getMessage().indexOf("MethodInvocation") >= 0);
 		}
 	}
 
@@ -186,13 +215,15 @@ public class RetryOperationsInterceptorTests {
 		}
 
 		public void doTansactional() throws Exception {
-			if (TransactionSynchronizationManager.isActualTransactionActive() && !enteredTransaction) {
+			if (TransactionSynchronizationManager.isActualTransactionActive()
+					&& !enteredTransaction) {
 				transactionCount++;
-				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-					public void beforeCompletion() {
-						enteredTransaction = false;
-					}
-				});
+				TransactionSynchronizationManager
+						.registerSynchronization(new TransactionSynchronizationAdapter() {
+							public void beforeCompletion() {
+								enteredTransaction = false;
+							}
+						});
 				enteredTransaction = true;
 			}
 			count++;

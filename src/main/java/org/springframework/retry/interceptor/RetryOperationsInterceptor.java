@@ -25,6 +25,7 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
@@ -66,7 +67,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
 		String name;
-		if (label!=null) {
+		if (StringUtils.hasText(label)) {
 			name = label;
 		} else {
 			name = invocation.getMethod().toGenericString();

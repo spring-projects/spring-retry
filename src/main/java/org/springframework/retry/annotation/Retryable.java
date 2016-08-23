@@ -64,6 +64,14 @@ public @interface Retryable {
 	Class<? extends Throwable>[] exclude() default {};
 
 	/**
+	 * A unique label for the statistics reporting. Defaults to the
+	 * method signature where the annotation is declared.
+	 *
+	 * @return the label for the statistics
+	 */
+	String label() default "";
+
+	/**
 	 * Flag to say that the retry is stateful: i.e. exceptions are re-thrown,
 	 * but the retry policy is applied with the same policy to subsequent
 	 * invocations with the same arguments. If false then retryable exceptions
