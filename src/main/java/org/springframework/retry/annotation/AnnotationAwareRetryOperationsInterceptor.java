@@ -189,6 +189,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		return RetryInterceptorBuilder.stateless()
 				.retryOperations(template)
+				.label(retryable.label())
 				.recoverer(getRecoverer(target, method))
 				.build();
 	}
@@ -220,9 +221,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		template.setRetryPolicy(policy);
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		String label = retryable.label();
-		if (!StringUtils.hasText(label))  {
-			label = method.toGenericString();
-		}
 		return RetryInterceptorBuilder.stateful()
 				.retryOperations(template)
 				.label(label)

@@ -69,6 +69,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 	private boolean backOffOptionsSet;
 
+	protected String label;
+
 	/**
 	 * Create a builder for a stateful retry interceptor.
 	 * @return The interceptor builder.
@@ -188,6 +190,11 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	 */
 	public RetryInterceptorBuilder<T> recoverer(MethodInvocationRecoverer<?> recoverer) {
 		this.recoverer = recoverer;
+		return this;
+	}
+
+	public RetryInterceptorBuilder<T> label(String label) {
+		this.label = label;
 		return this;
 	}
 
@@ -326,8 +333,6 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 		private MethodArgumentsKeyGenerator keyGenerator;
 
-		private String label;
-
 		@Override
 		public CircuitBreakerInterceptorBuilder retryOperations(
 				RetryOperations retryOperations) {
@@ -356,11 +361,6 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		public CircuitBreakerInterceptorBuilder recoverer(
 				MethodInvocationRecoverer<?> recoverer) {
 			super.recoverer(recoverer);
-			return this;
-		}
-
-		public CircuitBreakerInterceptorBuilder label(String label) {
-			this.label = label;
 			return this;
 		}
 
@@ -394,12 +394,6 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			extends RetryInterceptorBuilder<RetryOperationsInterceptor> {
 
 		private final RetryOperationsInterceptor interceptor = new RetryOperationsInterceptor();
-		private String label;
-
-		public StatelessRetryInterceptorBuilder label(String label) {
-			this.label = label;
-			return this;
-		}
 
 		@Override
 		public RetryOperationsInterceptor build() {
