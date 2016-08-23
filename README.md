@@ -280,7 +280,23 @@ Here is an example of declarative iteration using Spring AOP to repeat a service
 
 The example above uses a default `RetryTemplate` inside the interceptor. To change the policies or listeners, you only need to inject an instance of `RetryTemplate` into the interceptor.
 
-### Code of Conduct
+## Contributing
+
+Spring Retry is released under the non-restrictive Apache 2.0 license,
+and follows a very standard Github development process, using Github
+tracker for issues and merging pull requests into master. If you want
+to contribute even something trivial please do not hesitate, but
+follow the guidelines below.
+
+Before we accept a non-trivial patch or pull request we will need you
+to sign the https://cla.pivotal.io/[contributor's agreement].  Signing
+the contributor's agreement does not grant anyone commit rights to the
+main repository, but it does mean that we can accept your
+contributions, and you will get an author credit if we do.  Active
+contributors might be asked to join the core team, and given the
+ability to merge pull requests.
+
+## Code of Conduct
 This project adheres to the [Contributor Covenant](https://github.com/spring-projects/spring-retry/blob/master/CODE_OF_CONDUCT.adoc).
 By participating, you  are expected to uphold this code. Please report unacceptable behavior to
 spring-code-of-conduct@pivotal.io.
