@@ -91,8 +91,8 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	}
 
 	/**
-	 * Rollback classifier for the retry state. Default to null (meaning rollback
-	 * for all).
+	 * Rollback classifier for the retry state. Default to null (meaning rollback for
+	 * all).
 	 *
 	 * @param rollbackClassifier the rollbackClassifier to set
 	 */
@@ -141,24 +141,26 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 					+ ObjectUtils.getIdentityHexString(invocation) + ")");
 		}
 
-		Object[] args = invocation.getArguments();
-		Object arg = args;
-		if (args.length == 1) {
-			arg = args[0];
-		}
-		final Object item = arg;
+		String name = invocation.getMethod().toGenericString();
 
-		Object key = this.keyGenerator != null ? this.keyGenerator.getKey(args) : item;
-		RetryState retryState = new DefaultRetryState(
-				key,
+		Object[] args = invocation.getArguments();
+		Object defaultKey = Arrays.asList(args);
+		if (args.length == 1) {
+			defaultKey = args[0];
+		}
+
+		Object key = Arrays.asList(name, this.keyGenerator != null
+				? this.keyGenerator.getKey(invocation.getArguments()) : defaultKey );
+		RetryState retryState = new DefaultRetryState(key,
 				this.newMethodArgumentsIdentifier != null
 						&& this.newMethodArgumentsIdentifier.isNew(args),
 				this.rollbackClassifier);
 
-		Object result = this.retryOperations.execute(
-				new MethodInvocationRetryCallback(invocation, label), this.recoverer != null
-						? new ItemRecovererCallback(args, this.recoverer) : null,
-				retryState);
+		Object result = this.retryOperations
+				.execute(new MethodInvocationRetryCallback(invocation, label),
+						this.recoverer != null
+								? new ItemRecovererCallback(args, this.recoverer) : null,
+						retryState);
 
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Exiting proxied method in stateful retry with result: ("
@@ -181,9 +183,10 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 		private MethodInvocationRetryCallback(MethodInvocation invocation, String label) {
 			this.invocation = invocation;
-			if (label!=null) {
+			if (label != null) {
 				this.label = label;
-			} else {
+			}
+			else {
 				this.label = invocation.getMethod().toGenericString();
 			}
 		}

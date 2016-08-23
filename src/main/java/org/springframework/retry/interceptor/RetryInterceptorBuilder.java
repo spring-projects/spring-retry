@@ -347,6 +347,11 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			return this;
 		}
 
+		public CircuitBreakerInterceptorBuilder keyGenerator(MethodArgumentsKeyGenerator keyGenerator) {
+			this.keyGenerator = keyGenerator;
+			return this;
+		}
+
 		@Override
 		public CircuitBreakerInterceptorBuilder recoverer(
 				MethodInvocationRecoverer<?> recoverer) {

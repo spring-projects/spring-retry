@@ -60,12 +60,12 @@ public class CircuitBreakerInterceptorStatisticsTests {
 
 	@Test
 	public void testCircuitOpenWhenNotRetryable() throws Throwable {
-		Object result = callback.service();
+		Object result = callback.service("one");
 		RetryStatistics stats = repository.findOne("test");
 		// System.err.println(stats);
 		assertEquals(1, stats.getStartedCount());
 		assertEquals(RECOVERED, result);
-		result = callback.service();
+		result = callback.service("two");
 		assertEquals(RECOVERED, result);
 		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
 		assertEquals("There should only be one error because the circuit is now open", 1,
@@ -101,7 +101,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		private RetryContext status;
 
 		@CircuitBreaker(label = "test", maxAttempts = 1)
-		public Object service() throws Exception {
+		public Object service(String input) throws Exception {
 			this.status = RetrySynchronizationManager.getContext();
 			Integer attempts = (Integer) status.getAttribute("attempts");
 			if (attempts == null) {

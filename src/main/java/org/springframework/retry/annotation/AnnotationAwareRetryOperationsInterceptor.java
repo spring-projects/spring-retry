@@ -41,6 +41,7 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
+import org.springframework.retry.interceptor.FixedKeyGenerator;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
@@ -209,6 +210,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				label = method.toGenericString();
 			}
 			return RetryInterceptorBuilder.circuitBreaker()
+					.keyGenerator(new FixedKeyGenerator("circuit"))
 					.retryOperations(template)
 					.recoverer(getRecoverer(target, method))
 					.label(label)
