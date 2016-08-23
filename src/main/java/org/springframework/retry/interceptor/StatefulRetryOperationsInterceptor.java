@@ -33,6 +33,7 @@ import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
@@ -141,7 +142,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 					+ ObjectUtils.getIdentityHexString(invocation) + ")");
 		}
 
-		String name = invocation.getMethod().toGenericString();
+		String name = StringUtils.hasText(label) ? label : invocation.getMethod().toGenericString();
 
 		Object[] args = invocation.getArguments();
 		Object defaultKey = Arrays.asList(args);
@@ -183,7 +184,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 		private MethodInvocationRetryCallback(MethodInvocation invocation, String label) {
 			this.invocation = invocation;
-			if (label != null) {
+			if (StringUtils.hasText(label)) {
 				this.label = label;
 			}
 			else {

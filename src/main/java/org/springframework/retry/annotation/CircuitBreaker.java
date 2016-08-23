@@ -75,16 +75,16 @@ public @interface CircuitBreaker {
 	 * to give the downstream component a chance to respond again.
 	 *
 	 * @return the timeout before an open circuit is reset in milliseconds, defaults to
-	 * 20000
+	 * 5000
 	 */
-	long resetTimeout() default 20000;
+	long resetTimeout() default 5000;
 
 	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component.
 	 *
 	 * @return the timeout before an closed circuit is opened in milliseconds, defaults to
-	 * 5000
+	 * 20000
 	 */
 	long openTimeout() default 20000;
 

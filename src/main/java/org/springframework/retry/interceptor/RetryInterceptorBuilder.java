@@ -212,8 +212,6 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 		private NewMethodArgumentsIdentifier newMethodArgumentsIdentifier;
 
-		private String label;
-
 		private Classifier<? super Throwable, Boolean> rollbackClassifier;
 
 		/**
@@ -287,11 +285,6 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		public StatefulRetryInterceptorBuilder recoverer(
 				MethodInvocationRecoverer<?> recoverer) {
 			super.recoverer(recoverer);
-			return this;
-		}
-
-		public StatefulRetryInterceptorBuilder label(String label) {
-			this.label = label;
 			return this;
 		}
 

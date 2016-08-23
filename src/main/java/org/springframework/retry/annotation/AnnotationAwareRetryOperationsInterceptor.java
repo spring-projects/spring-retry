@@ -222,11 +222,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		String label = retryable.label();
 		return RetryInterceptorBuilder.stateful()
+				.keyGenerator(this.methodArgumentsKeyGenerator)
+				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
 				.retryOperations(template)
 				.label(label)
 				.recoverer(getRecoverer(target, method))
-				.keyGenerator(this.methodArgumentsKeyGenerator)
-				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
 				.build();
 	}
 
