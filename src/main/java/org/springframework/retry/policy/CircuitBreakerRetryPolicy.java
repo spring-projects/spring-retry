@@ -31,8 +31,8 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	private static Log logger = LogFactory.getLog(CircuitBreakerRetryPolicy.class);
 
 	private final RetryPolicy delegate;
-	private long resetTimeout = 5000;
-	private long openTimeout = 20000;
+	private long resetTimeout = 20000;
+	private long openTimeout = 5000;
 
 	public CircuitBreakerRetryPolicy(RetryPolicy delegate) {
 		this.delegate = delegate;
