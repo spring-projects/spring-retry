@@ -462,6 +462,10 @@ public class RetryTemplate implements RetryOperations {
 			return doOpenInternal(retryPolicy, state);
 		}
 
+		// Start with a clean slate for state that others may be inspecting
+		context.removeAttribute(RetryContext.CLOSED);
+		context.removeAttribute(RetryContext.EXHAUSTED);
+		context.removeAttribute(RetryContext.RECOVERED);
 		return context;
 
 	}

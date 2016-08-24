@@ -18,13 +18,15 @@ package org.springframework.retry.stats;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.core.AttributeAccessorSupport;
 import org.springframework.retry.RetryStatistics;
 
 /**
  * @author Dave Syer
  *
  */
-public class DefaultRetryStatistics implements RetryStatistics {
+@SuppressWarnings("serial")
+public class DefaultRetryStatistics extends AttributeAccessorSupport implements RetryStatistics, MutableRetryStatistics {
 
 	private String name;
 	private AtomicInteger startedCount = new AtomicInteger();
@@ -104,22 +106,27 @@ public class DefaultRetryStatistics implements RetryStatistics {
 		this.abortCount.set(abortCount);
 	}
 
+	@Override
 	public void incrementStartedCount() {
 		this.startedCount.incrementAndGet();
 	}
 
+	@Override
 	public void incrementCompleteCount() {
 		this.completeCount.incrementAndGet();
 	}
 
+	@Override
 	public void incrementRecoveryCount() {
 		this.recoveryCount.incrementAndGet();
 	}
 
+	@Override
 	public void incrementErrorCount() {
 		this.errorCount.incrementAndGet();
 	}
 
+	@Override
 	public void incrementAbortCount() {
 		this.abortCount.incrementAndGet();
 	}

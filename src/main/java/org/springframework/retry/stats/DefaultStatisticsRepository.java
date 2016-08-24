@@ -28,13 +28,18 @@ import org.springframework.retry.RetryStatistics;
  */
 public class DefaultStatisticsRepository implements StatisticsRepository {
 
-	private ConcurrentMap<String, DefaultRetryStatistics> map = new ConcurrentHashMap<String, DefaultRetryStatistics>();
+	private ConcurrentMap<String, MutableRetryStatistics> map = new ConcurrentHashMap<String, MutableRetryStatistics>();
+	private RetryStatisticsFactory factory = new DefaultRetryStatisticsFactory();
+
+	public void setRetryStatisticsFactory(RetryStatisticsFactory factory) {
+		this.factory = factory;
+	}
 
 	@Override
 	public RetryStatistics findOne(String name) {
 		return map.get(name);
 	}
-	
+
 	@Override
 	public Iterable<RetryStatistics> findAll() {
 		return new ArrayList<RetryStatistics>(map.values());
@@ -65,10 +70,10 @@ public class DefaultStatisticsRepository implements StatisticsRepository {
 		getStatistics(name).incrementAbortCount();
 	}
 
-	private DefaultRetryStatistics getStatistics(String name) {
-		DefaultRetryStatistics stats;
+	private MutableRetryStatistics getStatistics(String name) {
+		MutableRetryStatistics stats;
 		if (!map.containsKey(name)) {
-			map.putIfAbsent(name, new DefaultRetryStatistics(name));
+			map.putIfAbsent(name, factory.create(name));
 		}
 		stats = map.get(name);
 		return stats;

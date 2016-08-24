@@ -16,9 +16,12 @@
 
 package org.springframework.retry.stats;
 
+import org.springframework.core.AttributeAccessor;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryStatistics;
 import org.springframework.retry.listener.RetryListenerSupport;
+import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 
 /**
  * @author Dave Syer
@@ -51,6 +54,14 @@ public class StatisticsListener extends RetryListenerSupport {
 			}
 			else if (isClosed(context)) {
 				repository.addComplete(name);
+			}
+			RetryStatistics stats = repository.findOne(name);
+			if (stats instanceof AttributeAccessor) {
+				if (context.hasAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)) {
+					((AttributeAccessor) stats).setAttribute(
+							CircuitBreakerRetryPolicy.CIRCUIT_OPEN,
+							context.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+				}
 			}
 		}
 	}

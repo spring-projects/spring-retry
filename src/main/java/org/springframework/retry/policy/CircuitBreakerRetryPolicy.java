@@ -28,6 +28,8 @@ import org.springframework.retry.context.RetryContextSupport;
  */
 public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
+	public static final String CIRCUIT_OPEN = "circuite.open";
+
 	private static Log logger = LogFactory.getLog(CircuitBreakerRetryPolicy.class);
 
 	private final RetryPolicy delegate;
@@ -122,9 +124,9 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 					retryable = this.policy.canRetry(this.context);
 				}
 				else if (time < this.openWindow) {
-					if ((Boolean) getAttribute("open") == false) {
+					if ((Boolean) getAttribute(CIRCUIT_OPEN) == false) {
 						logger.trace("Opening circuit");
-						setAttribute("open", true);
+						setAttribute(CIRCUIT_OPEN, true);
 					}
 					this.start = System.currentTimeMillis();
 					return true;
@@ -140,7 +142,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Open: " + !retryable);
 			}
-			setAttribute("open", !retryable);
+			setAttribute(CIRCUIT_OPEN, !retryable);
 			return !retryable;
 		}
 
