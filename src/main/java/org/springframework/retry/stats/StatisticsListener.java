@@ -57,10 +57,12 @@ public class StatisticsListener extends RetryListenerSupport {
 			}
 			RetryStatistics stats = repository.findOne(name);
 			if (stats instanceof AttributeAccessor) {
-				if (context.hasAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)) {
-					((AttributeAccessor) stats).setAttribute(
-							CircuitBreakerRetryPolicy.CIRCUIT_OPEN,
-							context.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+				AttributeAccessor accessor = (AttributeAccessor) stats;
+				for (String key : new String[] { CircuitBreakerRetryPolicy.CIRCUIT_OPEN,
+						CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT }) {
+					if (context.hasAttribute(key)) {
+						accessor.setAttribute(key, context.getAttribute(key));
+					}
 				}
 			}
 		}

@@ -25,7 +25,6 @@ import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
-import org.springframework.retry.RetryStatistics;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.DefaultRetryState;
@@ -69,7 +68,7 @@ public class CircuitBreakerStatisticsTests {
 				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		Object result = this.retryTemplate.execute(this.callback, this.recovery,
 				this.state);
-		RetryStatistics stats = repository.findOne("test");
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		// System.err.println(stats);
 		assertEquals(1, stats.getStartedCount());
 		assertEquals(RECOVERED, result);
@@ -77,6 +76,9 @@ public class CircuitBreakerStatisticsTests {
 		assertEquals(RECOVERED, result);
 		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
 		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
+		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+		// Both recoveries are through a short circuit because we used NeverRetryPolicy
+		assertEquals(2, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
 	}
 
 	@Test
@@ -92,9 +94,10 @@ public class CircuitBreakerStatisticsTests {
 			this.retryTemplate.execute(this.callback, this.state);
 		} catch (Exception e) {
 		}
-		RetryStatistics stats = repository.findOne("test");
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		assertEquals("There should be two recoveries", 2, stats.getAbortCount());
 		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
+		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 	}
 
 	protected static class MockRetryCallback implements RetryCallback<Object, Exception> {

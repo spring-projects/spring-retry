@@ -16,6 +16,8 @@
 
 package org.springframework.retry.policy;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.retry.RetryContext;
@@ -28,7 +30,9 @@ import org.springframework.retry.context.RetryContextSupport;
  */
 public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
-	public static final String CIRCUIT_OPEN = "circuite.open";
+	public static final String CIRCUIT_OPEN = "circuit.open";
+
+	public static final String CIRCUIT_SHORT_COUNT = "circuit.shortCount";
 
 	private static Log logger = LogFactory.getLog(CircuitBreakerRetryPolicy.class);
 
@@ -65,7 +69,11 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	public boolean canRetry(RetryContext context) {
 		CircuitBreakerRetryContext circuit = (CircuitBreakerRetryContext) context;
 		if (circuit.isOpen()) {
+			circuit.incrementShortCircuitCount();
 			return false;
+		}
+		else {
+			circuit.reset();
 		}
 		return this.delegate.canRetry(circuit.context);
 	}
@@ -96,6 +104,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 		private volatile long start = System.currentTimeMillis();
 		private final long timeout;
 		private final long openWindow;
+		private final AtomicInteger shortCircuitCount = new AtomicInteger();
 
 		public CircuitBreakerRetryContext(RetryContext parent, RetryPolicy policy,
 				long timeout, long openWindow) {
@@ -107,9 +116,19 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			setAttribute("state.global", true);
 		}
 
+		public void reset() {
+			shortCircuitCount.set(0);
+		}
+
+		public void incrementShortCircuitCount() {
+			shortCircuitCount.incrementAndGet();
+			setAttribute(CIRCUIT_SHORT_COUNT, shortCircuitCount.get());
+		}
+
 		private RetryContext createDelegateContext(RetryPolicy policy,
 				RetryContext parent) {
 			RetryContext context = policy.open(parent);
+			reset();
 			return context;
 		}
 

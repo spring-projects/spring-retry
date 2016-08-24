@@ -27,6 +27,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetrySynchronizationManager;
 
 /**
@@ -47,21 +48,21 @@ public class CircuitBreakerTests {
 		}
 		catch (Exception e) {
 		}
-		assertFalse((Boolean)service.getContext().getAttribute("open"));
+		assertFalse((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		try {
 			service.service();
 			fail("Expected exception");
 		}
 		catch (Exception e) {
 		}
-		assertFalse((Boolean)service.getContext().getAttribute("open"));
+		assertFalse((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		try {
 			service.service();
 			fail("Expected exception");
 		}
 		catch (Exception e) {
 		}
-		assertTrue((Boolean)service.getContext().getAttribute("open"));
+		assertTrue((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		assertEquals(3, service.getCount());
 		try {
 			service.service();
