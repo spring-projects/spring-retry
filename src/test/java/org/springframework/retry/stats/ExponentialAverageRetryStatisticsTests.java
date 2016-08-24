@@ -17,6 +17,7 @@
 package org.springframework.retry.stats;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -32,6 +33,13 @@ public class ExponentialAverageRetryStatisticsTests {
 
 	private ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(
 			"test");
+
+	@Test
+	public void pointless() throws Exception {
+		stats.setName("spam");
+		assertEquals("spam", stats.getName());
+		assertNotNull(stats.toString());
+	}
 
 	@Test
 	public void attributes() throws Exception {

@@ -42,16 +42,6 @@ public class DefaultRetryStatistics extends AttributeAccessorSupport implements 
 		this.name = name;
 	}
 
-	public DefaultRetryStatistics(String name, int startedCount, int completeCount,
-			int recoveryCount, int errorCount, int abortCount) {
-		this.name = name;
-		this.startedCount =  new AtomicInteger(startedCount);
-		this.completeCount  = new AtomicInteger(completeCount);
-		this.recoveryCount  = new AtomicInteger(recoveryCount);
-		this.errorCount  = new AtomicInteger(errorCount);
-		this.abortCount  = new AtomicInteger(abortCount);
-	}
-
 	@Override
 	public int getCompleteCount() {
 		return completeCount.get();
