@@ -19,8 +19,10 @@ package org.springframework.retry.policy;
 import org.springframework.retry.RetryContext;
 
 /**
- * Simple map-like abstraction for stateful retry policies to use when storing
- * and retrieving {@link RetryContext} instances.
+ * Simple map-like abstraction for stateful retry policies to use when storing and
+ * retrieving {@link RetryContext} instances. A null key should never be passed in by the
+ * caller, but if it is then implementations are free to discard the context instead of
+ * saving it (null key means "no information").
  * 
  * @author Dave Syer
  * 
