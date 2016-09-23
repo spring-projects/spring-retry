@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -52,6 +53,7 @@ import org.springframework.util.StringUtils;
  * {@link RetryTemplate}.
  *
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
@@ -150,8 +152,9 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 			defaultKey = args[0];
 		}
 
-		Object key = Arrays.asList(name, this.keyGenerator != null
-				? this.keyGenerator.getKey(invocation.getArguments()) : defaultKey );
+		Object generatedKey = this.keyGenerator != null ? this.keyGenerator.getKey(invocation.getArguments()) : null;
+		Object key = this.keyGenerator == null || generatedKey != null
+				? Arrays.asList(name, generatedKey != null ? generatedKey : defaultKey ) : null;
 		RetryState retryState = new DefaultRetryState(key,
 				this.newMethodArgumentsIdentifier != null
 						&& this.newMethodArgumentsIdentifier.isNew(args),
