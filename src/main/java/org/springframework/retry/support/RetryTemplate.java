@@ -411,13 +411,16 @@ public class RetryTemplate implements RetryOperations {
 	private void registerContext(RetryContext context, RetryState state) {
 		if (state != null) {
 			Object key = state.getKey();
-			if (context.getRetryCount() > 0 && !this.retryContextCache.containsKey(key)) {
-				throw new RetryException(
-						"Inconsistent state for failed item key: cache key has changed. "
-								+ "Consider whether equals() or hashCode() for the key might be inconsistent, "
-								+ "or if you need to supply a better key");
+			if (key != null) {
+				if (context.getRetryCount() > 0
+						&& !this.retryContextCache.containsKey(key)) {
+					throw new RetryException(
+							"Inconsistent state for failed item key: cache key has changed. "
+									+ "Consider whether equals() or hashCode() for the key might be inconsistent, "
+									+ "or if you need to supply a better key");
+				}
+				this.retryContextCache.put(key, context);
 			}
-			this.retryContextCache.put(key, context);
 		}
 	}
 

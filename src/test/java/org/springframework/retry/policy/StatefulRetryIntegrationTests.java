@@ -52,8 +52,9 @@ public class StatefulRetryIntegrationTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		MapRetryContextCache cache = new MapRetryContextCache();
 		retryTemplate.setRetryContextCache(cache);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 
 		assertFalse(cache.containsKey("foo"));
 
@@ -94,8 +95,9 @@ public class StatefulRetryIntegrationTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		MapRetryContextCache cache = new MapRetryContextCache();
 		retryTemplate.setRetryContextCache(cache);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
 
 		assertFalse(cache.containsKey("foo"));
 
@@ -136,8 +138,7 @@ public class StatefulRetryIntegrationTests {
 						throw new Exception("Fail");
 					}
 				}, new RecoveryCallback<String>() {
-					public String recover(RetryContext context)
-							throws Exception {
+					public String recover(RetryContext context) throws Exception {
 						return null;
 					}
 				}, retryState);
@@ -151,11 +152,42 @@ public class StatefulRetryIntegrationTests {
 		assertTrue(times.get(2) - times.get(1) >= 150);
 	}
 
+	@Test
+	public void testExternalRetryWithFailAndNoRetryWhenKeyIsNull() throws Throwable {
+		MockRetryCallback callback = new MockRetryCallback();
+
+		RetryState retryState = new DefaultRetryState(null);
+
+		RetryTemplate retryTemplate = new RetryTemplate();
+		MapRetryContextCache cache = new MapRetryContextCache();
+		retryTemplate.setRetryContextCache(cache);
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						Exception.class, true)));
+
+		try {
+			retryTemplate.execute(callback, retryState);
+			// The first failed attempt...
+			fail("Expected RuntimeException");
+		}
+		catch (RuntimeException e) {
+			assertEquals(null, e.getMessage());
+		}
+
+		retryTemplate.execute(callback, retryState);
+		// The second attempt is successful by design...
+
+		// Callback is called twice because its state is null: the recovery path should
+		// not be called...
+		assertEquals(2, callback.attempts);
+	}
+
 	/**
 	 * @author Dave Syer
 	 * 
 	 */
-	private static final class MockRetryCallback implements RetryCallback<String, Exception> {
+	private static final class MockRetryCallback
+			implements RetryCallback<String, Exception> {
 		int attempts = 0;
 
 		public String doWithRetry(RetryContext context) throws Exception {
