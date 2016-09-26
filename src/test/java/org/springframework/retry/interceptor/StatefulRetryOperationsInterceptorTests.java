@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 package org.springframework.retry.interceptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,27 +33,33 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.retry.ExhaustedRetryException;
+import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryOperations;
 import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
 
 /**
  * @author Dave Syer
- * 
+ * @author Gary Russell
+ *
  */
 public class StatefulRetryOperationsInterceptorTests {
 
 	private StatefulRetryOperationsInterceptor interceptor;
 
-	private RetryTemplate retryTemplate = new RetryTemplate();
+	private final RetryTemplate retryTemplate = new RetryTemplate();
 
 	private Service service;
 
@@ -69,9 +80,9 @@ public class StatefulRetryOperationsInterceptorTests {
 			}
 		});
 		interceptor.setRetryOperations(retryTemplate);
-		service = (Service) ProxyFactory.getProxy(Service.class,
+		service = ProxyFactory.getProxy(Service.class,
 				new SingletonTargetSource(new ServiceImpl()));
-		transformer = (Transformer) ProxyFactory.getProxy(Transformer.class,
+		transformer = ProxyFactory.getProxy(Transformer.class,
 				new SingletonTargetSource(new TransformerImpl()));
 		count = 0;
 	}
@@ -145,6 +156,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		((Advised) service).addAdvice(interceptor);
 		final List<String> list = new ArrayList<String>();
 		((Advised) service).addAdvice(new MethodInterceptor() {
+			@Override
 			public Object invoke(MethodInvocation invocation) throws Throwable {
 				list.add("chain");
 				return invocation.proceed();
@@ -231,6 +243,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Object>() {
+			@Override
 			public Object recover(Object[] data, Throwable cause) {
 				count++;
 				return null;
@@ -238,6 +251,21 @@ public class StatefulRetryOperationsInterceptorTests {
 		});
 		service.service("foo");
 		assertEquals(2, count);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testKeyGeneratorReturningNull() throws Throwable {
+		this.interceptor.setKeyGenerator(mock(MethodArgumentsKeyGenerator.class));
+		this.interceptor.setLabel("foo");
+		RetryOperations template = mock(RetryOperations.class);
+		this.interceptor.setRetryOperations(template);
+		MethodInvocation invocation = mock(MethodInvocation.class);
+		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
+		this.interceptor.invoke(invocation);
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		assertNull(captor.getValue().getKey());
 	}
 
 	@Test
@@ -256,6 +284,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {
+			@Override
 			public Collection<String> recover(Object[] data, Throwable cause) {
 				count++;
 				return Collections.singleton((String) data[0]);
@@ -272,6 +301,7 @@ public class StatefulRetryOperationsInterceptorTests {
 
 	public static class ServiceImpl implements Service {
 
+		@Override
 		public void service(String in) throws Exception {
 			count++;
 			if (count < 2) {
@@ -287,6 +317,7 @@ public class StatefulRetryOperationsInterceptorTests {
 
 	public static class TransformerImpl implements Transformer {
 
+		@Override
 		public Collection<String> transform(String in) throws Exception {
 			count++;
 			if (count < 2) {
