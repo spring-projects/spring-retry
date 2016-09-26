@@ -43,6 +43,7 @@ import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
 import org.springframework.retry.policy.RetryContextCache;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
@@ -171,6 +172,18 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 		@Override
 		public boolean matches(Method method, Class<?> targetClass) {
 			return getClassFilter().matches(targetClass) || this.methodResolver.matches(method, targetClass);
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if (this == other) {
+				return true;
+			}
+			if (!(other instanceof AnnotationClassOrMethodPointcut)) {
+				return false;
+			}
+			AnnotationClassOrMethodPointcut otherAdvisor = (AnnotationClassOrMethodPointcut) other;
+			return ObjectUtils.nullSafeEquals(this.methodResolver, otherAdvisor.methodResolver);
 		}
 
 	}
