@@ -144,17 +144,13 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 					+ ObjectUtils.getIdentityHexString(invocation) + ")");
 		}
 
-		String name = StringUtils.hasText(label) ? label : invocation.getMethod().toGenericString();
-
 		Object[] args = invocation.getArguments();
 		Object defaultKey = Arrays.asList(args);
 		if (args.length == 1) {
 			defaultKey = args[0];
 		}
 
-		Object generatedKey = this.keyGenerator != null ? this.keyGenerator.getKey(invocation.getArguments()) : null;
-		Object key = this.keyGenerator == null || generatedKey != null
-				? Arrays.asList(name, generatedKey != null ? generatedKey : defaultKey ) : null;
+		Object key = createKey(invocation, defaultKey);
 		RetryState retryState = new DefaultRetryState(key,
 				this.newMethodArgumentsIdentifier != null
 						&& this.newMethodArgumentsIdentifier.isNew(args),
@@ -173,6 +169,21 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 		return result;
 
+	}
+
+	private Object createKey(final MethodInvocation invocation, Object defaultKey) {
+		Object generatedKey = defaultKey;
+		if (this.keyGenerator != null) {
+			generatedKey = this.keyGenerator.getKey(invocation.getArguments());
+		}
+		if (generatedKey == null) {
+			// If there's a generator and he still says the key is null, that means he
+			// really doesn't want to retry.
+			return null;
+		}
+		String name = StringUtils.hasText(label) ? label
+				: invocation.getMethod().toGenericString();
+		return Arrays.asList(name, generatedKey);
 	}
 
 	/**
