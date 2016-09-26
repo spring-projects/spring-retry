@@ -19,8 +19,6 @@ package org.springframework.retry.stats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -48,9 +46,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback);
 			assertEquals(x, callback.attempts);
 			RetryStatistics stats = repository.findOne("test");
@@ -70,9 +66,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			for (int i = 0; i < x; i++) {
 				try {
 					retryTemplate.execute(callback, state);
@@ -98,9 +92,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			try {
 				retryTemplate.execute(callback);
 			}
@@ -124,9 +116,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			for (int i = 0; i < x+1; i++) {
 				try {
 					retryTemplate.execute(callback, state);
@@ -152,9 +142,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback, new RecoveryCallback<Object>() {
 				@Override
 				public Object recover(RetryContext context) throws Exception {
@@ -179,9 +167,7 @@ public class StatisticsListenerTests {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
-			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x,
-					Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-							Exception.class, true)));
+			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			for (int i = 0; i < x+1; i++) {
 				try {
 					retryTemplate.execute(callback, new RecoveryCallback<Object>() {

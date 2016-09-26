@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -96,9 +95,7 @@ public class RetryOperationsInterceptorTests {
 	@Test
 	public void testDefaultInterceptorWithRecovery() throws Exception {
 		RetryTemplate template = new RetryTemplate();
-		template.setRetryPolicy(new SimpleRetryPolicy(1,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		template.setRetryPolicy(new SimpleRetryPolicy(1));
 		interceptor.setRetryOperations(template);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Void>() {
 			public Void recover(Object[] args, Throwable cause) {
@@ -121,9 +118,7 @@ public class RetryOperationsInterceptorTests {
 			}
 		});
 		RetryTemplate template = new RetryTemplate();
-		template.setRetryPolicy(new SimpleRetryPolicy(2,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		template.setRetryPolicy(new SimpleRetryPolicy(2));
 		interceptor.setRetryOperations(template);
 		service.service();
 		assertEquals(2, count);

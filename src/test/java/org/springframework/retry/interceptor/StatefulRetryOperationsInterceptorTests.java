@@ -151,9 +151,7 @@ public class StatefulRetryOperationsInterceptorTests {
 			}
 		});
 		interceptor.setRetryOperations(retryTemplate);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		try {
 			service.service("foo");
 			fail("Expected Exception.");
@@ -173,9 +171,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	public void testTransformerWithSuccessfulRetry() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
 		interceptor.setRetryOperations(retryTemplate);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		try {
 			transformer.transform("foo");
 			fail("Expected Exception.");

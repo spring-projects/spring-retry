@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -52,9 +51,7 @@ public class StatefulRetryIntegrationTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		MapRetryContextCache cache = new MapRetryContextCache();
 		retryTemplate.setRetryContextCache(cache);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 
 		assertFalse(cache.containsKey("foo"));
 
@@ -95,9 +92,7 @@ public class StatefulRetryIntegrationTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		MapRetryContextCache cache = new MapRetryContextCache();
 		retryTemplate.setRetryContextCache(cache);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 
 		assertFalse(cache.containsKey("foo"));
 
@@ -161,9 +156,7 @@ public class StatefulRetryIntegrationTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		MapRetryContextCache cache = new MapRetryContextCache();
 		retryTemplate.setRetryContextCache(cache);
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 
 		try {
 			retryTemplate.execute(callback, retryState);

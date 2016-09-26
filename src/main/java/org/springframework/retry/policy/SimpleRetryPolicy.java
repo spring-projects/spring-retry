@@ -56,10 +56,19 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the default number of retry
-	 * attempts.
+	 * attempts, retrying all exceptions.
 	 */
 	public SimpleRetryPolicy() {
 		this(DEFAULT_MAX_ATTEMPTS, Collections
+				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true));
+	}
+
+	/**
+	 * Create a {@link SimpleRetryPolicy} with the specified number of retry
+	 * attempts, retrying all exceptions.
+	 */
+	public SimpleRetryPolicy(int maxAttempts) {
+		this(maxAttempts, Collections
 				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true));
 	}
 

@@ -18,7 +18,6 @@ package org.springframework.retry.support;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -80,8 +79,7 @@ public class RetryTemplate implements RetryOperations {
 
 	private volatile BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
-	private volatile RetryPolicy retryPolicy = new SimpleRetryPolicy(3, Collections
-			.<Class<? extends Throwable>, Boolean>singletonMap(Exception.class, true));
+	private volatile RetryPolicy retryPolicy = new SimpleRetryPolicy(3);
 
 	private volatile RetryListener[] listeners = new RetryListener[0];
 
