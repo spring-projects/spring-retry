@@ -80,14 +80,32 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * a match is found.
 	 *
 	 * @param maxAttempts the maximum number of attempts
-	 * @param retryableExceptions the map of exceptions that are retryable
+	 * @param retryableExceptions the map of exceptions that are retryable based on the
+	 * map value (true/false).
 	 * @param traverseCauses is this clause traversable
 	 */
 	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses) {
+		this(maxAttempts, retryableExceptions, traverseCauses, false);
+	}
+
+	/**
+	 * Create a {@link SimpleRetryPolicy} with the specified number of retry
+	 * attempts. If traverseCauses is true, the exception causes will be traversed until
+	 * a match is found. The default value indicates whether to retry or not for exceptions
+	 * (or super classes) are not found in the map.
+	 *
+	 * @param maxAttempts the maximum number of attempts
+	 * @param retryableExceptions the map of exceptions that are retryable based on the
+	 * map value (true/false).
+	 * @param traverseCauses is this clause traversable
+	 * @param defaultValue the default action.
+	 */
+	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
+			boolean traverseCauses, boolean defaultValue) {
 		super();
 		this.maxAttempts = maxAttempts;
-		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions);
+		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions, defaultValue);
 		this.retryableClassifier.setTraverseCauses(traverseCauses);
 	}
 
