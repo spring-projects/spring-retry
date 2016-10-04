@@ -54,6 +54,23 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
+	public void testWithExceptionDefaultAlwaysRetry() throws Exception {
+
+		// We retry any exceptions except...
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, Collections
+				.<Class<? extends Throwable>, Boolean> singletonMap(IllegalStateException.class, false), true, true);
+		RetryContext context = policy.open(null);
+
+		// ...so we can't retry this one...
+		policy.registerThrowable(context, new IllegalStateException());
+		assertFalse(policy.canRetry(context));
+
+		// ...and we can retry this one...
+		policy.registerThrowable(context, new IllegalArgumentException());
+		assertTrue(policy.canRetry(context));
+	}
+
+	@Test
 	public void testRetryLimitInitialState() throws Exception {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
