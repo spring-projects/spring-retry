@@ -22,8 +22,12 @@ public class ProxyApplicationTests {
 
 	@Test
 	// See gh-53
-	public void contextLoads() {
+	public void contextLoads() throws Exception {
 		int count = count();
+		runAndClose();
+		runAndClose();
+		// Let the JVM catch up
+		Thread.sleep(500L);
 		runAndClose();
 		int base = count();
 		runAndClose();
