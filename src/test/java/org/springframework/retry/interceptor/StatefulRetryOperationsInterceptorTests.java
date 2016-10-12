@@ -268,6 +268,28 @@ public class StatefulRetryOperationsInterceptorTests {
 		assertNull(captor.getValue().getKey());
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testKeyGeneratorAndRawKey() throws Throwable {
+		this.interceptor.setKeyGenerator(new MethodArgumentsKeyGenerator() {
+
+			@Override
+			public Object getKey(Object[] item) {
+				return "bar";
+			}
+		});
+		this.interceptor.setLabel("foo");
+		this.interceptor.setUseRawKey(true);
+		RetryOperations template = mock(RetryOperations.class);
+		this.interceptor.setRetryOperations(template);
+		MethodInvocation invocation = mock(MethodInvocation.class);
+		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
+		this.interceptor.invoke(invocation);
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		assertEquals("bar", captor.getValue().getKey());
+	}
+
 	@Test
 	public void testTransformerRecoveryAfterTooManyAttempts() throws Exception {
 		((Advised) transformer).addAdvice(interceptor);
