@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
-	<version>1.2.0.BUILD-SNAPSHOT</version>
+	<version>1.2.0.RC1</version>
 	<name>Spring Retry</name>
 	<description><![CDATA[Spring Retry provides an abstraction around retrying failed operations, with an emphasis on declarative control of the process and policy-based bahaviour that is easy to extend and customize.  For instance, you can configure a plain POJO operation to retry if it fails, based on the type of exception, and with a fixed or exponential backoff.
     ]]></description>
@@ -21,7 +21,7 @@
 	<packaging>jar</packaging>
 	<properties>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
-		<spring.framework.version>4.2.6.RELEASE</spring.framework.version>
+		<spring.framework.version>4.3.3.RELEASE</spring.framework.version>
 	</properties>
 	<profiles>
 		<profile>
