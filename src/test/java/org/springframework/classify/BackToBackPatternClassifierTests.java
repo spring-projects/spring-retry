@@ -50,8 +50,8 @@ public class BackToBackPatternClassifierTests {
 	@Test
 	public void testCreateFromConstructor() {
 		classifier = new BackToBackPatternClassifier<String, String>(
-				new PatternMatchingClassifier<String>(Collections.singletonMap(
-						"oof", "bucket")),
+				new PatternMatchingClassifier<String>(
+						Collections.singletonMap("oof", "bucket")),
 				new PatternMatchingClassifier<String>(map));
 		assertEquals("spam", classifier.classify("oof"));
 	}
@@ -66,6 +66,24 @@ public class BackToBackPatternClassifierTests {
 		});
 		classifier.setMatcherMap(map);
 		assertEquals("spam", classifier.classify("oof"));
+	}
+
+	@Test
+	public void testSingleMethodWithNoAnnotation() {
+		classifier = new BackToBackPatternClassifier<String, String>();
+		classifier.setRouterDelegate(new RouterDelegate());
+		classifier.setMatcherMap(map);
+		assertEquals("spam", classifier.classify("oof"));
+	}
+
+	private class RouterDelegate
+			implements org.springframework.classify.Classifier<Object, String> {
+
+		@Override
+		public String classify(Object classifiable) {
+			return "bucket";
+		}
+
 	}
 
 }
