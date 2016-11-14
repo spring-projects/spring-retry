@@ -32,6 +32,7 @@ import org.springframework.retry.context.RetryContextSupport;
  * @author Michael Minella
  *
  */
+@SuppressWarnings("serial")
 public class CompositeRetryPolicy implements RetryPolicy {
 
 	RetryPolicy[] policies = new RetryPolicy[0];
@@ -129,7 +130,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 		for (RetryPolicy policy : this.policies) {
 			list.add(policy.open(parent));
 		}
-		return new CompositeRetryContext(parent, list);
+		return new CompositeRetryContext(parent, list, this.policies);
 	}
 
 	/**
@@ -148,16 +149,15 @@ public class CompositeRetryPolicy implements RetryPolicy {
 		((RetryContextSupport) context).registerThrowable(throwable);
 	}
 
-	@SuppressWarnings("serial")
-	private class CompositeRetryContext extends RetryContextSupport {
+	private static class CompositeRetryContext extends RetryContextSupport {
 		RetryContext[] contexts;
 
 		RetryPolicy[] policies;
 
-		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts) {
+		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts, RetryPolicy[] policies) {
 			super(parent);
 			this.contexts = contexts.toArray(new RetryContext[contexts.size()]);
-			this.policies = CompositeRetryPolicy.this.policies;
+			this.policies = policies;
 		}
 
 	}

@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  * @author Gary Russell
  *
  */
+@SuppressWarnings("serial")
 public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
@@ -182,7 +183,6 @@ public class SimpleRetryPolicy implements RetryPolicy {
 		return new SimpleRetryContext(parent);
 	}
 
-	@SuppressWarnings("serial")
 	private static class SimpleRetryContext extends RetryContextSupport {
 		public SimpleRetryContext(RetryContext parent) {
 			super(parent);

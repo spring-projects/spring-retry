@@ -17,8 +17,8 @@
 package org.springframework.classify;
 
 /**
- * Interface for a classifier. At its simplest a {@link Classifier} is just a
- * map from objects of one type to objects of another type.
+ * Interface for a classifier. At its simplest a {@link Classifier} is just a map from
+ * objects of one type to objects of another type.
  * 
  * @author Dave Syer
  * 
@@ -26,12 +26,12 @@ package org.springframework.classify;
 public interface Classifier<C, T> {
 
 	/**
-	 * Classify the given object and return an object of a different type,
-	 * possibly an enumerated type.
+	 * Classify the given object and return an object of a different type, possibly an
+	 * enumerated type.
 	 * 
 	 * @param classifiable the input object. Can be null.
-	 * @return an object. Can be null, but implementations should declare if
-	 * this is the case.
+	 * @return an object. Can be null, but implementations should declare if this is the
+	 * case.
 	 */
 	T classify(C classifiable);
 

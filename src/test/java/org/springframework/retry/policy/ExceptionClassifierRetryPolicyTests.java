@@ -103,6 +103,7 @@ public class ExceptionClassifierRetryPolicyTests {
 
 	int count = 0;
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testClose() throws Exception {
 		policy.setExceptionClassifier(new Classifier<Throwable, RetryPolicy>() {

@@ -16,6 +16,8 @@
 
 package org.springframework.retry;
 
+import java.io.Serializable;
+
 /**
  * A {@link RetryPolicy} is responsible for allocating and managing resources
  * needed by {@link RetryOperations}. The {@link RetryPolicy} allows retry
@@ -27,7 +29,7 @@ package org.springframework.retry;
  * @author Dave Syer
  *
  */
-public interface RetryPolicy {
+public interface RetryPolicy extends Serializable {
 
 	/**
 	 * @param context the current retry status

@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
  * @author Dave Syer
  *
  */
+@SuppressWarnings("serial")
 public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(new NeverRetryPolicy());
@@ -102,7 +103,6 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 		((RetryContextSupport) context).registerThrowable(throwable);
 	}
 
-	@SuppressWarnings("serial")
 	private static class ExceptionClassifierRetryContext extends RetryContextSupport implements RetryPolicy {
 
 		final private Classifier<Throwable, RetryPolicy> exceptionClassifier;

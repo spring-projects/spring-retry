@@ -27,6 +27,7 @@ import org.springframework.retry.context.RetryContextSupport;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class TimeoutRetryPolicy implements RetryPolicy {
 
 	/**
@@ -75,7 +76,6 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 		// otherwise no-op - we only time out, otherwise retry everything...
 	}
 
-	@SuppressWarnings("serial")
 	private static class TimeoutRetryContext extends RetryContextSupport {
 		private long timeout;
 

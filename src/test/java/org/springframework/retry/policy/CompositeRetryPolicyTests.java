@@ -50,6 +50,7 @@ public class CompositeRetryPolicyTests {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testNonTrivialPolicies() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
@@ -63,6 +64,7 @@ public class CompositeRetryPolicyTests {
 		assertFalse(policy.canRetry(context));
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testNonTrivialPoliciesWithThrowable() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
@@ -84,6 +86,7 @@ public class CompositeRetryPolicyTests {
 		assertFalse("Should be still able to retry", policy.canRetry(context));
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testNonTrivialPoliciesClose() throws Exception {
 		final List<String> list = new ArrayList<String>();
@@ -103,6 +106,7 @@ public class CompositeRetryPolicyTests {
 		assertEquals(2, list.size());
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testExceptionOnPoliciesClose() throws Exception {
 		final List<String> list = new ArrayList<String>();
@@ -150,6 +154,7 @@ public class CompositeRetryPolicyTests {
 		assertSame(context, child.getParent());
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testOptimistic() throws Exception {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();

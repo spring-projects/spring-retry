@@ -294,6 +294,7 @@ public class RetryTemplateTests {
 		}
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testFailedPolicy() throws Throwable {
 		RetryTemplate retryTemplate = new RetryTemplate();

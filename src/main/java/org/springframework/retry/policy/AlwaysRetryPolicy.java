@@ -26,6 +26,7 @@ import org.springframework.retry.RetryPolicy;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class AlwaysRetryPolicy extends NeverRetryPolicy {
 
 	/**

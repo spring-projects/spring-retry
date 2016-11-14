@@ -15,10 +15,11 @@
  */
 package org.springframework.classify;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
+
 import org.springframework.classify.annotation.Classifier;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dave Syer

@@ -28,6 +28,7 @@ import org.springframework.retry.context.RetryContextSupport;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class NeverRetryPolicy implements RetryPolicy {
 
 	/**
@@ -80,7 +81,6 @@ public class NeverRetryPolicy implements RetryPolicy {
 	 * @author Dave Syer
 	 * 
 	 */
-	@SuppressWarnings("serial")
 	private static class NeverRetryContext extends RetryContextSupport {
 		private boolean finished = false;
 

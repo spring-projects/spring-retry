@@ -16,6 +16,7 @@
 
 package org.springframework.retry.policy;
 
+@SuppressWarnings("serial")
 public class MockRetryPolicySupport extends AlwaysRetryPolicy {
 
 }

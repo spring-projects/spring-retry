@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
@@ -28,6 +29,7 @@ import org.springframework.retry.context.RetryContextSupport;
  * @author Dave Syer
  *
  */
+@SuppressWarnings("serial")
 public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 	public static final String CIRCUIT_OPEN = "circuit.open";
@@ -39,6 +41,10 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	private final RetryPolicy delegate;
 	private long resetTimeout = 20000;
 	private long openTimeout = 5000;
+	
+	public CircuitBreakerRetryPolicy() {
+		this(new SimpleRetryPolicy());
+	}
 
 	public CircuitBreakerRetryPolicy(RetryPolicy delegate) {
 		this.delegate = delegate;
@@ -97,7 +103,6 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 		this.delegate.registerThrowable(circuit.context, throwable);
 	}
 
-	@SuppressWarnings("serial")
 	static class CircuitBreakerRetryContext extends RetryContextSupport {
 		private volatile RetryContext context;
 		private final RetryPolicy policy;

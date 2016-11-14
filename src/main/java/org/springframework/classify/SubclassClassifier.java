@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Gary Russell
  *
  */
+@SuppressWarnings("serial")
 public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	private ConcurrentMap<Class<? extends T>, C> classified = new ConcurrentHashMap<Class<? extends T>, C>();
@@ -144,7 +145,6 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @author Dave Syer
 	 *
 	 */
-	@SuppressWarnings("serial")
 	private static class ClassComparator implements Comparator<Class<?>>, Serializable {
 		/**
 		 * @return 1 if arg0 is assignable from arg1, -1 otherwise
