@@ -152,16 +152,13 @@ Failures are inherently either retryable or not - if the same exception is alway
 
 Spring Retry provides some simple general purpose implementations of stateless RetryPolicy, for example a `SimpleRetryPolicy`, and the `TimeoutRetryPolicy` used in the example above.
 
-The `SimpleRetryPolicy` just allows a retry on any of a named list of exception types, up to a fixed number of times. It also has a list of "fatal" exceptions that should never be retried, and this list overrides the retryable list so that it can be used to give finer control over the retry behavior:
+The `SimpleRetryPolicy` just allows a retry on any of a named list of exception types, up to a fixed number of times:
 
 ```java
-SimpleRetryPolicy policy = new SimpleRetryPolicy();
 // Set the max attempts including the initial attempt before retrying
-policy.setMaxAttempts(5);
-// Retry on all exceptions (this is the default)
+// and retry on all exceptions (this is the default):
+SimpleRetryPolicy policy = new SimpleRetryPolicy(5, Collections.singletonMap(Exception.class, true));
 policy.setRetryableExceptions(new Class[] {Exception.class});
-// ... but never retry IllegalStateException
-policy.setFatalExceptions(new Class[] {IllegalStateException.class});
 
 // Use the policy...
 RetryTemplate template = new RetryTemplate();
