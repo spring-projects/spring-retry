@@ -158,7 +158,6 @@ The `SimpleRetryPolicy` just allows a retry on any of a named list of exception 
 // Set the max attempts including the initial attempt before retrying
 // and retry on all exceptions (this is the default):
 SimpleRetryPolicy policy = new SimpleRetryPolicy(5, Collections.singletonMap(Exception.class, true));
-policy.setRetryableExceptions(new Class[] {Exception.class});
 
 // Use the policy...
 RetryTemplate template = new RetryTemplate();
