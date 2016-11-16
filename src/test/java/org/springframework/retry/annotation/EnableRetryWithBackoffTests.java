@@ -121,6 +121,7 @@ public class EnableRetryWithBackoffTests {
 
 	}
 
+	@SuppressWarnings("serial")
 	protected static class PeriodSleeper implements Sleeper {
 
 		private List<Long> periods = new ArrayList<Long>();

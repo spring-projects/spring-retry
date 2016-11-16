@@ -171,6 +171,7 @@ public class EnableRetryTests {
 	@EnableRetry
 	protected static class TestConfiguration {
 
+		@SuppressWarnings("serial")
 		@Bean
 		public Sleeper sleeper() {
 			return new Sleeper() {

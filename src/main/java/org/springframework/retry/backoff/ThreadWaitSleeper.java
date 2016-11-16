@@ -22,6 +22,7 @@ package org.springframework.retry.backoff;
  * @author Artem Bilan
  * @since 1.1
  */
+@SuppressWarnings("serial")
 public class ThreadWaitSleeper implements Sleeper {
 
 	@Override

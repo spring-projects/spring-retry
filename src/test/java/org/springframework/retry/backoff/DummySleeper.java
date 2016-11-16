@@ -25,6 +25,7 @@ import java.util.List;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class DummySleeper implements Sleeper {
 
 	private List<Long> backOffs = new ArrayList<Long>();

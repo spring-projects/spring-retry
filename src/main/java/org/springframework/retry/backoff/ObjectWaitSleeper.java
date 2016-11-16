@@ -22,6 +22,7 @@ package org.springframework.retry.backoff;
  * @author Dave Syer
  *
  */
+@SuppressWarnings("serial")
 @Deprecated
 public class ObjectWaitSleeper implements Sleeper {
 

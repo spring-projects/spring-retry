@@ -349,6 +349,7 @@ public class RetryTemplateTests {
 		tested.setRetryPolicy(new SimpleRetryPolicy(1));
 
 		BackOffPolicy bop = createStrictMock(BackOffPolicy.class);
+		@SuppressWarnings("serial")
 		BackOffContext backOffContext = new BackOffContext() {
 		};
 		tested.setBackOffPolicy(bop);

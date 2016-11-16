@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.retry.policy;
+package org.springframework.retry.backoff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
-import org.springframework.retry.RetryContext;
-import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SerializationUtils;
 
@@ -45,44 +44,48 @@ import static org.junit.Assert.assertTrue;
  *
  */
 @RunWith(Parameterized.class)
-public class RetryContextSerializationTests {
-	
-	private static Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
+public class BackOffPolicySerializationTests {
 
-	private RetryPolicy policy;
+	private static Log logger = LogFactory.getLog(BackOffPolicySerializationTests.class);
 
-	@Parameters
+	private BackOffPolicy policy;
+
+	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<Object[]>();
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
-		scanner.addIncludeFilter(new AssignableTypeFilter(RetryPolicy.class));
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+				true);
+		scanner.addIncludeFilter(new AssignableTypeFilter(BackOffPolicy.class));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Test.*")));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Mock.*")));
-		Set<BeanDefinition> candidates = scanner.findCandidateComponents("org.springframework.retry.policy");
+		scanner.addExcludeFilter(
+				new RegexPatternTypeFilter(Pattern.compile(".*Configuration.*")));
+		Set<BeanDefinition> candidates = scanner
+				.findCandidateComponents("org.springframework.retry");
 		for (BeanDefinition beanDefinition : candidates) {
 			try {
-				result.add(new Object[] { BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
-			} catch (Exception e) {
-				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName());
+				result.add(new Object[] { BeanUtils.instantiate(ClassUtils
+						.resolveClassName(beanDefinition.getBeanClassName(), null)) });
+			}
+			catch (Exception e) {
+				logger.warn(
+						"Cannot create instance of " + beanDefinition.getBeanClassName());
 			}
 		}
 		return result;
 	}
 
-	public RetryContextSerializationTests(RetryPolicy policy) {
+	public BackOffPolicySerializationTests(BackOffPolicy policy) {
 		this.policy = policy;
 	}
 
 	@Test
 	public void testSerializationCycleForContext() {
-		assertTrue(SerializationUtils.deserialize(
-				SerializationUtils.serialize(policy.open(null))) instanceof RetryContext);
-	}
-
-	@Test
-	public void testSerializationCycleForPolicy() {
-		assertTrue(SerializationUtils.deserialize(
-				SerializationUtils.serialize(policy)) instanceof RetryPolicy);
+		BackOffContext context = policy.start(new RetryContextSupport(null));
+		if (context != null) {
+			assertTrue(SerializationUtils.deserialize(
+					SerializationUtils.serialize(context)) instanceof BackOffContext);
+		}
 	}
 
 }

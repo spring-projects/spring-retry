@@ -15,13 +15,15 @@
  */
 package org.springframework.retry.backoff;
 
+import java.io.Serializable;
+
 /**
  * Strategy interface for backoff policies to delegate the pausing of execution.
  * 
  * @author Dave Syer
  * 
  */
-public interface Sleeper {
+public interface Sleeper extends Serializable {
 
 	/**
 	 * Pause for the specified period using whatever means available.

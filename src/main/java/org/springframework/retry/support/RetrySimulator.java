@@ -106,7 +106,8 @@ public class RetrySimulator {
 	static class FailingRetryException extends Exception {
     }
 
-    static class StealingSleeper implements Sleeper {
+    @SuppressWarnings("serial")
+	static class StealingSleeper implements Sleeper {
         private final List<Long> sleeps = new ArrayList<Long>();
 
         public void sleep(long backOffPeriod) throws InterruptedException {
