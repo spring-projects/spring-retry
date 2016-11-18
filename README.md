@@ -217,7 +217,7 @@ Note that when there is more than one listener, they are in a list, so there is 
 
 ## Declarative Retry
 
-Sometimes there is some business processing that you know you want to retry every time it happens. The classic example of this is the remote service call. Spring Retry provides an AOP interceptor that wraps a method call in a `RetryOperations` for just this purpose. The `RetryOperationsInterceptor` executes the intercepted method and retries on failure according to the `RetryPolicy` in the provided `RepeatTemplate`.
+Sometimes there is some business processing that you know you want to retry every time it happens. The classic example of this is the remote service call. Spring Retry provides an AOP interceptor that wraps a method call in a `RetryOperations` for just this purpose. The `RetryOperationsInterceptor` executes the intercepted method and retries on failure according to the `RetryPolicy` in the provided `RetryTemplate`.
 
 ### Java Configuration for Retry Proxies
 
