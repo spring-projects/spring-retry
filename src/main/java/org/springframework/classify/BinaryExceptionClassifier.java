@@ -15,7 +15,6 @@
  */
 package org.springframework.classify;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +33,7 @@ import java.util.Map;
  *
  */
 @SuppressWarnings("serial")
-public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boolean> implements Serializable {
+public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boolean> {
 
 	private boolean traverseCauses;
 

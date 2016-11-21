@@ -24,6 +24,7 @@ import java.util.Map;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 
 	private Classifier<C, String> router;

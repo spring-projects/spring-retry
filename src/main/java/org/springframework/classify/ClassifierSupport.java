@@ -16,8 +16,6 @@
 
 package org.springframework.classify;
 
-import java.io.Serializable;
-
 /**
  * Base class for {@link Classifier} implementations. Provides default behaviour
  * and some convenience members, like constants.
@@ -26,7 +24,7 @@ import java.io.Serializable;
  * 
  */
 @SuppressWarnings("serial")
-public class ClassifierSupport<C, T> implements Classifier<C, T>, Serializable {
+public class ClassifierSupport<C, T> implements Classifier<C, T> {
 
 	final private T defaultValue;
 

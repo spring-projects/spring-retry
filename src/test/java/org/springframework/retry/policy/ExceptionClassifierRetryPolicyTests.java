@@ -68,6 +68,7 @@ public class ExceptionClassifierRetryPolicyTests {
 		assertTrue(policy.canRetry(context));
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testClassifierOperates() throws Exception {
 

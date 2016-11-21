@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 
 	private MethodInvoker invoker;

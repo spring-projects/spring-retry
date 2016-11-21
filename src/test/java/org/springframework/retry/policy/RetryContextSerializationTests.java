@@ -30,6 +30,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.classify.SubclassClassifier;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
@@ -51,7 +52,7 @@ public class RetryContextSerializationTests {
 
 	private RetryPolicy policy;
 
-	@Parameters
+	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<Object[]>();
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
@@ -63,9 +64,12 @@ public class RetryContextSerializationTests {
 			try {
 				result.add(new Object[] { BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
 			} catch (Exception e) {
-				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName());
+				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName(), e);
 			}
 		}
+		ExceptionClassifierRetryPolicy extra = new ExceptionClassifierRetryPolicy();
+		extra.setExceptionClassifier(new SubclassClassifier<Throwable, RetryPolicy>(new AlwaysRetryPolicy()));
+		result.add(new Object[] { extra });
 		return result;
 	}
 

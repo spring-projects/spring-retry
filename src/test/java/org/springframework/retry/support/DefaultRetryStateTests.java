@@ -32,6 +32,7 @@ public class DefaultRetryStateTests {
 	 * Test method for
 	 * {@link org.springframework.retry.support.DefaultRetryState#DefaultRetryState(java.lang.Object, boolean, org.springframework.classify.Classifier)}.
 	 */
+	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectBooleanClassifierOfQsuperThrowableBoolean() {
 		DefaultRetryState state = new DefaultRetryState("foo", true, new Classifier<Throwable, Boolean>() {
@@ -48,6 +49,7 @@ public class DefaultRetryStateTests {
 	 * Test method for
 	 * {@link org.springframework.retry.support.DefaultRetryState#DefaultRetryState(java.lang.Object, org.springframework.classify.Classifier)}.
 	 */
+	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectClassifierOfQsuperThrowableBoolean() {
 		DefaultRetryState state = new DefaultRetryState("foo", new Classifier<Throwable, Boolean>() {

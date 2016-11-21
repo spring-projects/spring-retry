@@ -79,6 +79,7 @@ public class ClassifierAdapterTests {
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 
+	@SuppressWarnings({ "serial" })
 	@Test
 	public void testClassifierAdapterClassifier() {
 		adapter = new ClassifierAdapter<String, Integer>(
@@ -112,6 +113,7 @@ public class ClassifierAdapterTests {
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 
+	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyWithClassifier() {
 		adapter.setDelegate(new org.springframework.classify.Classifier<String, Integer>() {

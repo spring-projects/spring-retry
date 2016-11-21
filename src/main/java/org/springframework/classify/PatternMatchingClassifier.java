@@ -27,6 +27,7 @@ import java.util.Map;
  * @author Dave Syer
  * 
  */
+@SuppressWarnings("serial")
 public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 
 	private PatternMatcher<T> values;

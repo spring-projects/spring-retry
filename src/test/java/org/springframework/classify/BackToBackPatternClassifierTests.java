@@ -76,6 +76,7 @@ public class BackToBackPatternClassifierTests {
 		assertEquals("spam", classifier.classify("oof"));
 	}
 
+	@SuppressWarnings("serial")
 	private class RouterDelegate
 			implements org.springframework.classify.Classifier<Object, String> {
 
