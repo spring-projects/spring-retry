@@ -402,15 +402,15 @@ public class RetryTemplate implements RetryOperations {
 
 	protected void registerThrowable(RetryPolicy retryPolicy, RetryState state,
 			RetryContext context, Throwable e) {
-		registerContext(context, state);
 		retryPolicy.registerThrowable(context, e);
+		registerContext(context, state);
 	}
 
 	private void registerContext(RetryContext context, RetryState state) {
 		if (state != null) {
 			Object key = state.getKey();
 			if (key != null) {
-				if (context.getRetryCount() > 0
+				if (context.getRetryCount() > 1
 						&& !this.retryContextCache.containsKey(key)) {
 					throw new RetryException(
 							"Inconsistent state for failed item key: cache key has changed. "

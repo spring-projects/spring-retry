@@ -39,6 +39,7 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SerializationUtils;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Parameterized.class)
 public class RetryContextSerializationTests {
-	
+
 	private static Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
 
 	private RetryPolicy policy;
@@ -62,7 +63,8 @@ public class RetryContextSerializationTests {
 		Set<BeanDefinition> candidates = scanner.findCandidateComponents("org.springframework.retry.policy");
 		for (BeanDefinition beanDefinition : candidates) {
 			try {
-				result.add(new Object[] { BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
+				result.add(new Object[] {
+						BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
 			} catch (Exception e) {
 				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName(), e);
 			}
@@ -79,14 +81,17 @@ public class RetryContextSerializationTests {
 
 	@Test
 	public void testSerializationCycleForContext() {
-		assertTrue(SerializationUtils.deserialize(
-				SerializationUtils.serialize(policy.open(null))) instanceof RetryContext);
+		RetryContext context = policy.open(null);
+		assertEquals(0, context.getRetryCount());
+		policy.registerThrowable(context, new RuntimeException());
+		assertEquals(1, context.getRetryCount());
+		assertEquals(1,
+				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount());
 	}
 
 	@Test
 	public void testSerializationCycleForPolicy() {
-		assertTrue(SerializationUtils.deserialize(
-				SerializationUtils.serialize(policy)) instanceof RetryPolicy);
+		assertTrue(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy);
 	}
 
 }

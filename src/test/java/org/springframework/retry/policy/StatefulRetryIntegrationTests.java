@@ -113,6 +113,41 @@ public class StatefulRetryIntegrationTests {
 		assertFalse(cache.containsKey("foo"));
 
 		assertEquals(2, callback.attempts);
+		assertEquals(1, callback.context.getRetryCount());
+		assertEquals("bar", result);
+	}
+
+	@Test
+	public void testExternalRetryWithSuccessOnRetryAndSerializedContext() throws Throwable {
+		MockRetryCallback callback = new MockRetryCallback();
+
+		RetryState retryState = new DefaultRetryState("foo");
+
+		RetryTemplate retryTemplate = new RetryTemplate();
+		RetryContextCache cache = new SerializedMapRetryContextCache();
+		retryTemplate.setRetryContextCache(cache);
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
+
+		assertFalse(cache.containsKey("foo"));
+
+		Object result = "start_foo";
+		try {
+			result = retryTemplate.execute(callback, retryState);
+			// The first failed attempt we expect to retry...
+			fail("Expected RuntimeException");
+		}
+		catch (RuntimeException e) {
+			assertNull(e.getMessage());
+		}
+
+		assertTrue(cache.containsKey("foo"));
+
+		result = retryTemplate.execute(callback, retryState);
+
+		assertFalse(cache.containsKey("foo"));
+
+		assertEquals(2, callback.attempts);
+		assertEquals(1, callback.context.getRetryCount());
 		assertEquals("bar", result);
 	}
 
@@ -182,9 +217,11 @@ public class StatefulRetryIntegrationTests {
 	private static final class MockRetryCallback
 			implements RetryCallback<String, Exception> {
 		int attempts = 0;
-
+		RetryContext context;
+		
 		public String doWithRetry(RetryContext context) throws Exception {
 			attempts++;
+			this.context = context;
 			if (attempts < 2) {
 				throw new RuntimeException();
 			}
