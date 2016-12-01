@@ -298,6 +298,8 @@ public void service3() {
 
 These use the familier Spring SpEL expression syntax (`#{...}`).
 
+Expressions can contain property placeholders such as `#{${max.delay}}` or `#{@exceptionChecker.${retry.method}(#root)}`
+
 - `exceptionExpression` is evaluated against the thrown exception as the `#root` object.
 - `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once, during initialization; there is no root object for the evaluation but they can reference other beans in the context.
 
