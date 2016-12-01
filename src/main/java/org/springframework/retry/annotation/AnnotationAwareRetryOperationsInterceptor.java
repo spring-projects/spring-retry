@@ -31,6 +31,7 @@ import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -288,11 +289,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
 		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
 		if (StringUtils.hasText(maxAttemptsExpression)) {
-			maxAttempts = PARSER.parseExpression(maxAttemptsExpression, PARSER_CONTEXT).getValue(this.evaluationContext,
-					Integer.class);
+			maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression), PARSER_CONTEXT)
+					.getValue(this.evaluationContext, Integer.class);
 		}
 		if (includes.length == 0 && excludes.length == 0) {
-			SimpleRetryPolicy simple = hasExpression ? new ExpressionRetryPolicy(exceptionExpression)
+			SimpleRetryPolicy simple = hasExpression ? new ExpressionRetryPolicy(resolve(exceptionExpression))
 															.withBeanFactory(this.beanFactory)
 													 : new SimpleRetryPolicy();
 			simple.setMaxAttempts(maxAttempts);
@@ -317,17 +318,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
 		if (StringUtils.hasText(backoff.delayExpression())) {
-			min = PARSER.parseExpression(backoff.delayExpression(), PARSER_CONTEXT).getValue(this.evaluationContext,
-					Long.class);
+			min = PARSER.parseExpression(resolve(backoff.delayExpression()), PARSER_CONTEXT)
+					.getValue(this.evaluationContext, Long.class);
 		}
 		long max = backoff.maxDelay();
 		if (StringUtils.hasText(backoff.maxDelayExpression())) {
-			max = PARSER.parseExpression(backoff.maxDelayExpression(), PARSER_CONTEXT).getValue(this.evaluationContext,
-					Long.class);
+			max = PARSER.parseExpression(resolve(backoff.maxDelayExpression()), PARSER_CONTEXT)
+					.getValue(this.evaluationContext, Long.class);
 		}
 		double multiplier = backoff.multiplier();
 		if (StringUtils.hasText(backoff.multiplierExpression())) {
-			multiplier = PARSER.parseExpression(backoff.multiplierExpression(), PARSER_CONTEXT)
+			multiplier = PARSER.parseExpression(resolve(backoff.multiplierExpression()), PARSER_CONTEXT)
 					.getValue(this.evaluationContext, Double.class);
 		}
 		if (multiplier > 0) {
@@ -358,6 +359,18 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			policy.setSleeper(this.sleeper);
 		}
 		return policy;
+	}
+
+	/**
+	 * Resolve the specified value if possible.
+	 *
+	 * @see ConfigurableBeanFactory#resolveEmbeddedValue
+	 */
+	private String resolve(String value) {
+		if (this.beanFactory != null && this.beanFactory instanceof ConfigurableBeanFactory) {
+			return ((ConfigurableBeanFactory) this.beanFactory).resolveEmbeddedValue(value);
+		}
+		return value;
 	}
 
 }

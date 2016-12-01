@@ -24,6 +24,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Properties;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
@@ -214,6 +216,18 @@ public class EnableRetryTests {
 	@Configuration
 	@EnableRetry
 	protected static class TestConfiguration {
+
+		@Bean
+		public static PropertySourcesPlaceholderConfigurer pspc() {
+			PropertySourcesPlaceholderConfigurer pspc = new PropertySourcesPlaceholderConfigurer();
+			Properties properties = new Properties();
+			properties.setProperty("one", "1");
+			properties.setProperty("five", "5");
+			properties.setProperty("onePointOne", "1.1");
+			properties.setProperty("retryMethod", "shouldRetry");
+			pspc.setProperties(properties);
+			return pspc;
+		}
 
 		@SuppressWarnings("serial")
 		@Bean
@@ -447,9 +461,10 @@ public class EnableRetryTests {
 			throw new RuntimeException("this cannot be retried");
 		}
 
-		@Retryable(exceptionExpression="#{@exceptionChecker.shouldRetry(#root)}",
+		@Retryable(exceptionExpression="#{@exceptionChecker.${retryMethod}(#root)}",
 				maxAttemptsExpression = "#{@integerFiveBean}",
-			backoff = @Backoff(delayExpression = "#{1}", maxDelayExpression = "#{5}", multiplierExpression = "#{1.1}"))
+			backoff = @Backoff(delayExpression = "#{${one}}", maxDelayExpression = "#{${five}}",
+				multiplierExpression = "#{${onePointOne}}"))
 		public void service3() {
 			if (count++ < 8) {
 				throw new RuntimeException();
