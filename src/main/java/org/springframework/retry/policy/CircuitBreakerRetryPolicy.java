@@ -41,7 +41,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	private final RetryPolicy delegate;
 	private long resetTimeout = 20000;
 	private long openTimeout = 5000;
-	
+
 	public CircuitBreakerRetryPolicy() {
 		this(new SimpleRetryPolicy());
 	}
@@ -123,6 +123,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 		public void reset() {
 			shortCircuitCount.set(0);
+			setAttribute(CIRCUIT_SHORT_COUNT, shortCircuitCount.get());
 		}
 
 		public void incrementShortCircuitCount() {

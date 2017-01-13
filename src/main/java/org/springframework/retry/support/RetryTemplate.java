@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -508,8 +509,9 @@ public class RetryTemplate implements RetryOperations {
 			this.retryContextCache.remove(state.getKey());
 		}
 		if (recoveryCallback != null) {
+			T recovered = recoveryCallback.recover(context);
 			context.setAttribute(RetryContext.RECOVERED, true);
-			return recoveryCallback.recover(context);
+			return recovered;
 		}
 		if (state != null) {
 			this.logger
