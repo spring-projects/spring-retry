@@ -32,7 +32,8 @@ import org.springframework.util.ClassUtils;
  * so e.g.
  *
  * <pre>
- * retryTemplate = new RetryTemplate(new SimpleRetryPolicy(3));
+ * retryTemplate = new RetryTemplate();
+ * retryTemplate.setRetryPolicy(new SimpleRetryPolicy(3, singletonMap(Throwable.class, true)));
  * retryTemplate.execute(callback);
  * </pre>
  *
