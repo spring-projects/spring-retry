@@ -258,7 +258,7 @@ The `@EnableRetry` annotation also looks for beans of type `Sleeper` and other s
 
 The `@EnableRetry` annotation creates proxies for `@Retryable` beans, and the proxies (so the bean instances in the application) have the `Retryable` interface added to them. This is purely a marker interface, but might be useful for other tools looking to apply retry advice (they should usually not bother if the bean already implements `Retryable`).
 
-Recovery method can be supplied, in case you want to take an alternative code path when the retry is exhausted. Methods should be declared in the same class as the `@Retryable` and marged `@Recover`. The arguments for the recovery method can optionally include the exception that was thrown, and also optionally the arguments passed to the orginal retryable method (or a partial list of them as long as none are omitted). Example:
+Recovery method can be supplied, in case you want to take an alternative code path when the retry is exhausted. Methods should be declared in the same class as the `@Retryable` and marged `@Recover`. The return type must match the `@Retryable` method. The arguments for the recovery method can optionally include the exception that was thrown, and also optionally the arguments passed to the orginal retryable method (or a partial list of them as long as none are omitted). Example:
 
 ```java
 @Service
