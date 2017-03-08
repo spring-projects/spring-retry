@@ -118,4 +118,10 @@ public @interface Retryable {
 	 */
 	String exceptionExpression() default "";
 
+	/**
+	 * Bean names of retry listeners to use instead of default ones defined in Spring context
+	 * @return retry listeners bean names
+	 */
+	String[] listeners() default {};
+
 }
