@@ -217,7 +217,7 @@ Sometimes there is some business processing that you know you want to retry ever
 
 ### Java Configuration for Retry Proxies
 
-Add the `@EnableRetry` annotation to one of your `@Configuration` classes and use `@Retryable` on the methods (or type level for all methods) that you want to retry. Example
+Add the `@EnableRetry` annotation to one of your `@Configuration` classes and use `@Retryable` on the methods (or type level for all methods) that you want to retry. You can also specify any number of retry listeners. Example
 
 ```java
 @Configuration
@@ -227,6 +227,14 @@ public class Application {
     @Bean
     public Service service() {
         return new Service();
+    }
+    
+    @Bean public RetryListener retryListener1() {
+        return new RetryListener() {...}
+    }
+    
+    @Bean public RetryListener retryListener2() {
+        return new RetryListener() {...}
     }
 
 }
