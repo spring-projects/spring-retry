@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
-	<version>1.2.1.RELEASE</version>
+	<version>1.2.2.BUILD-SNAPSHOT</version>
 	<name>Spring Retry</name>
 	<description><![CDATA[Spring Retry provides an abstraction around retrying failed operations, with an emphasis on declarative control of the process and policy-based bahaviour that is easy to extend and customize.  For instance, you can configure a plain POJO operation to retry if it fails, based on the type of exception, and with a fixed or exponential backoff.
     ]]></description>
