@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+   <profiles>
+	   <profile>
+		   <id>release</id>
+		   <activation><activeByDefault>true</activeByDefault></activation>
+		   <properties>
+			   <gpg.passphrase>${env.passphrase}</gpg.passphrase>
+		   </properties>
+	   </profile>
+   </profiles>
+   <servers>
+    <server>
+      <id>sonatype-nexus-staging</id>
+      <username>${env.sonatype_username}</username>
+      <password>${env.sonatype_password}</password>
+    </server>
+	<server>
+	  <id>repo.spring.io</id>
+	  <username>${env.spring_username}</username>
+	  <password>${env.spring_password}</password>
+	</server>
+  </servers>
+</settings>
