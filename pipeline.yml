@@ -31,10 +31,12 @@ jobs:
           repository: springio/spring-ci-base
       inputs:
         - name: source
+      caches:
+        - path: source/.m2
       run:
         dir: source
         path: ./mvnw
-        args: [install, "-s", ".mvn/settings.xml"]
+        args: [install, "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
     params:
       TERM: dumb
       passphrase: {{passphrase}}
@@ -51,10 +53,12 @@ jobs:
           repository: springio/spring-ci-base
       inputs:
         - name: source
+      caches:
+        - path: source/.m2
       run:
         dir: source
         path: ./mvnw
-        args: [install, "-Dspring.framework.version=5.0.0.RC2", "-s", ".mvn/settings.xml"]
+        args: [install, "-Dspring.framework.version=5.0.0.RC2", "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
     params:
       TERM: dumb
       passphrase: {{passphrase}}
@@ -72,10 +76,12 @@ jobs:
           repository: springio/spring-ci-base
       inputs:
         - name: source
+      caches:
+        - path: source/.m2
       run:
         dir: source
         path: ./mvnw
-        args: [clean, deploy, "-DskipTests", "-s", ".mvn/settings.xml"]
+        args: [clean, deploy, "-DskipTests", "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
     params:
       TERM: dumb
       passphrase: {{passphrase}}
