@@ -35,8 +35,13 @@ jobs:
         - path: source/.m2
       run:
         dir: source
-        path: ./mvnw
-        args: [install, "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw install -s .mvn/settings.xml
     params:
       TERM: dumb
       passphrase: {{passphrase}}
@@ -57,8 +62,13 @@ jobs:
         - path: source/.m2
       run:
         dir: source
-        path: ./mvnw
-        args: [install, "-Dspring.framework.version=5.0.0.RC2", "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw install -s .mvn/settings.xml -Dspring.framework.version=5.0.0.RC2
     params:
       TERM: dumb
       passphrase: {{passphrase}}
@@ -80,8 +90,13 @@ jobs:
         - path: source/.m2
       run:
         dir: source
-        path: ./mvnw
-        args: [clean, deploy, "-DskipTests", "-s", ".mvn/settings.xml", "-Dmaven.repo.local=.m2"]
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw deploy -DskipTests -s .mvn/settings.xml
     params:
       TERM: dumb
       passphrase: {{passphrase}}
