@@ -169,6 +169,17 @@ public class EnableRetryTests {
 	}
 
 	@Test
+	public void testImplementation() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		NotAnnotatedInterface service = context.getBean(NotAnnotatedInterface.class);
+		service.service1();
+		service.service2();
+		assertEquals(5, service.getCount());
+		context.close();
+	}
+
+
+	@Test
 	public void testExpression() throws Exception {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfiguration.class);
@@ -319,6 +330,11 @@ public class EnableRetryTests {
 		@Bean
 		public TheInterface anInterface() {
 			return new TheClass();
+		}
+
+		@Bean
+		public NotAnnotatedInterface notAnnotatedInterface() {
+			return new RetryableImplementation();
 		}
 
 	}
@@ -537,5 +553,42 @@ public class EnableRetryTests {
 		}
 
 	}
+
+	public static interface NotAnnotatedInterface {
+
+		void service1();
+
+		void service2();
+
+		int getCount();
+
+	}
+
+	@Retryable
+	public static class RetryableImplementation implements NotAnnotatedInterface {
+
+		private int count = 0;
+
+		@Override
+		public void service1() {
+			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public void service2() {
+			if (count++ < 4) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public int getCount() {
+			return count;
+		}
+
+	}
+
 
 }
