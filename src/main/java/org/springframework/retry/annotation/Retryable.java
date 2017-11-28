@@ -93,9 +93,9 @@ public @interface Retryable {
 	String maxAttemptsExpression() default "";
 
 	/**
-	 * Specify the backoff properties for retrying this operation. The default is no
-	 * backoff, but it can be a good idea to pause between attempts (even at the cost of
-	 * blocking a thread).
+	 * Specify the backoff properties for retrying this operation. The default is a
+	 * simple {@link Backoff} specification with no properties - see it's documentation
+	 * for defaults.
 	 * @return a backoff specification
 	 */
 	Backoff backoff() default @Backoff();
