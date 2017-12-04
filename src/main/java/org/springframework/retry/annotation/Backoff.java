@@ -65,7 +65,7 @@ public @interface Backoff {
 	long delay() default 0;
 
 	/**
-	 * The maximimum wait (in milliseconds) between retries. If less than the
+	 * The maximum wait (in milliseconds) between retries. If less than the
 	 * {@link #delay()} then ignored.
 	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
@@ -90,7 +90,7 @@ public @interface Backoff {
 	String delayExpression() default "";
 
 	/**
-	 * An expression evaluating to the maximimum wait (in milliseconds) between retries.
+	 * An expression evaluating to the maximum wait (in milliseconds) between retries.
 	 * If less than the {@link #delay()} then ignored.
 	 * Overrides {@link #maxDelay()}
 	 *
