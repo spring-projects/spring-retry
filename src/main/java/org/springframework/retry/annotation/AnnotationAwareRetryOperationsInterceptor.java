@@ -195,7 +195,12 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private Retryable findAnnotationOnTarget(Object target, Method method) {
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			return AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+			Retryable retryable = AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+			if (retryable == null) {
+				retryable = AnnotationUtils.findAnnotation(targetMethod.getDeclaringClass(), Retryable.class);
+			}
+
+			return retryable;
 		}
 		catch (Exception e) {
 			return null;
