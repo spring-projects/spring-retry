@@ -31,7 +31,7 @@ import java.lang.reflect.Method;
 
 /**
  * @author Dave Syer
- *
+ * @author Aldo Sinanaj
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -91,6 +91,28 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				new InAccessibleRecover(), foo);
 		assertEquals(1,
 				handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void specificReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> fooHandler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new InheritanceReturnTypeRecover(), ReflectionUtils.findMethod(InheritanceReturnTypeRecover.class,
+				"foo", String.class));
+		assertEquals(1,
+				fooHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
+		assertEquals(2,
+				fooHandler.recover(new Object[] { "Aldo" }, new IllegalStateException("Planned")));
+
+	}
+
+	@Test
+	public void parentReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> barHandler = new RecoverAnnotationRecoveryHandler<Double>(
+				new InheritanceReturnTypeRecover(), ReflectionUtils.findMethod(InheritanceReturnTypeRecover.class,
+				"bar", String.class));
+		assertEquals(3,
+				barHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
 
 	}
 
@@ -181,5 +203,33 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	}
 
+	protected static class InheritanceReturnTypeRecover {
+
+		@Retryable
+		public Integer foo(String name) {
+			return 0;
+		}
+
+		@Retryable
+		public Double bar(String name) {
+			return 0.0;
+		}
+
+		@Recover
+		public Integer baz(RuntimeException re, String name) {
+			return 1;
+		}
+
+		@Recover
+		public Integer qux(IllegalStateException re, String name) {
+			return 2;
+		}
+
+		@Recover
+		public Number quux(RuntimeException re, String name) {
+			return 3;
+		}
+
+	}
 
 }
