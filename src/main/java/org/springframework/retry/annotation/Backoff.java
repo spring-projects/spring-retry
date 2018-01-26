@@ -16,14 +16,14 @@
 
 package org.springframework.retry.annotation;
 
+import org.springframework.context.annotation.Import;
+import org.springframework.retry.backoff.BackOffPolicy;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.springframework.context.annotation.Import;
-import org.springframework.retry.backoff.BackOffPolicy;
 
 /**
  * Collects metadata for a {@link BackOffPolicy}. Features:
@@ -92,15 +92,10 @@ public @interface Backoff {
 	String delayExpression() default "";
 
 	/**
-<<<<<<< HEAD
 	 * An expression evaluating to the maximum wait (in milliseconds) between retries.
-	 * If less than the {@link #delay()} then ignored.
-=======
-	 * An expression evaluating to the maximimum wait (in milliseconds) between retries.
 	 * If less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied.
->>>>>>> Fix @Backoff JavaDocs - maxDelay
 	 * Overrides {@link #maxDelay()}
 	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
