@@ -33,6 +33,11 @@ class Service {
 
 Call the "service" method and if it fails with a `RemoteAccessException` then it will retry (up to three times by default), and then execute the "recover" method if unsuccessful. There are various options in the `@Retryable` annotation attributes for including and excluding exception types, limiting the number of retries and the policy for backoff.
 
+The declarative approach to applying retry handling using the `@Retryable` annotation shown above has an additional 
+runtime dependency on AOP classes. For details on how to resolve this dependency in your project see the 
+['Java Configuration for Retry Proxies'](#javaConfigForRetryProxies) section below.
+
+
 ## Building
 
 Requires Java 1.7 and Maven 3.0.5 (or greater)
@@ -215,7 +220,8 @@ Note that when there is more than one listener, they are in a list, so there is 
 
 Sometimes there is some business processing that you know you want to retry every time it happens. The classic example of this is the remote service call. Spring Retry provides an AOP interceptor that wraps a method call in a `RetryOperations` for just this purpose. The `RetryOperationsInterceptor` executes the intercepted method and retries on failure according to the `RetryPolicy` in the provided `RepeatTemplate`.
 
-### Java Configuration for Retry Proxies
+
+### <a name="javaConfigForRetryProxies"></a> Java Configuration for Retry Proxies
 
 Add the `@EnableRetry` annotation to one of your `@Configuration` classes and use `@Retryable` on the methods (or type level for all methods) that you want to retry. You can also specify any number of retry listeners. Example
 
@@ -311,6 +317,19 @@ Expressions can contain property placeholders such as `#{${max.delay}}` or `#{@e
 - `exceptionExpression` is evaluated against the thrown exception as the `#root` object.
 - `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once, during initialization; there is no root object for the evaluation but they can reference other beans in the context.
 
+#### Additional Dependencies
+The declarative approach to applying retry handling using the `@Retryable` annotation shown above has an additional 
+runtime dependency on AOP classes that need to be declared in your project. If your app is implemented using Spring 
+Boot, this dependency is best resolved using the Spring Boot starter for AOP. For example, for Gradle, add the following 
+line to your build.gradle -
+```
+    runtime('org.springframework.boot:spring-boot-starter-aop')
+```
+For non-Boot apps, declare a runtime dependency on the latest version of AspectJ's aspectjweaver module. For example, 
+for Gradle, add the following line to your build.gradle -   
+```
+    runtime('org.aspectj:aspectjweaver:1.8.13')
+```
 
 ### XML Configuration
 
@@ -339,7 +358,7 @@ to contribute even something trivial please do not hesitate, but
 follow the guidelines below.
 
 Before we accept a non-trivial patch or pull request we will need you
-to sign the https://cla.pivotal.io/[contributor's agreement].  Signing
+to sign the [contributor's agreement](https://cla.pivotal.io/).  Signing
 the contributor's agreement does not grant anyone commit rights to the
 main repository, but it does mean that we can accept your
 contributions, and you will get an author credit if we do.  Active
