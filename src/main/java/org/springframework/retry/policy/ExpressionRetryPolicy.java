@@ -83,10 +83,11 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 * @param retryableExceptions the exceptions
 	 * @param traverseCauses true to examine causes
 	 * @param expressionString the expression.
+	 * @param defaultValue the default action
 	 */
 	public ExpressionRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
-			boolean traverseCauses, String expressionString) {
-		super(maxAttempts, retryableExceptions, traverseCauses);
+			boolean traverseCauses, String expressionString, boolean defaultValue) {
+		super(maxAttempts, retryableExceptions, traverseCauses, defaultValue);
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
 		this.expression = new SpelExpressionParser().parseExpression(expressionString, PARSER_CONTEXT);
 	}

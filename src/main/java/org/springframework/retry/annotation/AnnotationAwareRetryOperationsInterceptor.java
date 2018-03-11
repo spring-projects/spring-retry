@@ -348,12 +348,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		for (Class<? extends Throwable> type : excludes) {
 			policyMap.put(type, false);
 		}
+		boolean retryNotExcluded = includes.length == 0;
 		if (hasExpression) {
-			return new ExpressionRetryPolicy(maxAttempts, policyMap, true, exceptionExpression)
+			return new ExpressionRetryPolicy(maxAttempts, policyMap, true, exceptionExpression, retryNotExcluded)
 					.withBeanFactory(this.beanFactory);
 		}
 		else {
-			return new SimpleRetryPolicy(maxAttempts, policyMap, true);
+			return new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
 		}
 	}
 
