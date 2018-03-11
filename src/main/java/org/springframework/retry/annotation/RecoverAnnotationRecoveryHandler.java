@@ -40,6 +40,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * 
  * @author Dave Syer
  * @author Josh Long
+ * @author Aldo Sinanaj
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -116,8 +117,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 						Recover recover = AnnotationUtils.findAnnotation(method,
 								Recover.class);
 						if (recover != null
-								&& failingMethod.getReturnType().isAssignableFrom(
-										method.getReturnType())) {
+								&& method.getReturnType().isAssignableFrom(
+										failingMethod.getReturnType())) {
 							Class<?>[] parameterTypes = method.getParameterTypes();
 							if (parameterTypes.length > 0
 									&& Throwable.class
@@ -136,6 +137,19 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 					}
 				});
 		classifier.setTypeMap(types);
+		optionallyFilterMethodsBy(failingMethod.getReturnType());
+	}
+
+	private void optionallyFilterMethodsBy(Class<?> returnClass) {
+		Map<Method, SimpleMetadata> filteredMethods = new HashMap<Method, SimpleMetadata>();
+		for (Method method : methods.keySet()) {
+			if (method.getReturnType() == returnClass) {
+				filteredMethods.put(method, methods.get(method));
+			}
+		}
+		if (filteredMethods.size() > 0) {
+			methods = filteredMethods;
+		}
 	}
 
 	private static class SimpleMetadata {

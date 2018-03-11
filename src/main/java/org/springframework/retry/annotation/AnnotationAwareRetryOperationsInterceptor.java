@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
-	private final Map<Method, MethodInterceptor> delegates = new HashMap<Method, MethodInterceptor>();
+	private final Map<Object, Map<Method, MethodInterceptor>> delegates =
+			new HashMap<Object, Map<Method, MethodInterceptor>>();
 
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
@@ -157,9 +158,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {
-		if (!this.delegates.containsKey(method)) {
+		if (!this.delegates.containsKey(target) || !this.delegates.get(target).containsKey(method)) {
 			synchronized (this.delegates) {
-				if (!this.delegates.containsKey(method)) {
+				if (!this.delegates.containsKey(target)) {
+					this.delegates.put(target, new HashMap<Method, MethodInterceptor>());
+				}
+				Map<Method, MethodInterceptor> delegatesForTarget = this.delegates.get(target);
+				if (!delegatesForTarget.containsKey(method)) {
 					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
 					if (retryable == null) {
 						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
@@ -168,7 +173,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 						retryable = findAnnotationOnTarget(target, method);
 					}
 					if (retryable == null) {
-						return this.delegates.put(method, null);
+						return delegatesForTarget.put(method, null);
 					}
 					MethodInterceptor delegate;
 					if (StringUtils.hasText(retryable.interceptor())) {
@@ -180,17 +185,22 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					else {
 						delegate = getStatelessInterceptor(target, method, retryable);
 					}
-					this.delegates.put(method, delegate);
+					delegatesForTarget.put(method, delegate);
 				}
 			}
 		}
-		return this.delegates.get(method);
+		return this.delegates.get(target).get(method);
 	}
 
 	private Retryable findAnnotationOnTarget(Object target, Method method) {
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			return AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+			Retryable retryable = AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+			if (retryable == null) {
+				retryable = AnnotationUtils.findAnnotation(targetMethod.getDeclaringClass(), Retryable.class);
+			}
+
+			return retryable;
 		}
 		catch (Exception e) {
 			return null;

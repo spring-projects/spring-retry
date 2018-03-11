@@ -16,19 +16,25 @@
 
 package org.springframework.retry.stats;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
+import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.NeverRetryPolicy;
+import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Dave Syer
@@ -45,6 +51,7 @@ public class CircuitBreakerStatisticsTests {
 
 	private StatisticsRepository repository = new DefaultStatisticsRepository();
 	private StatisticsListener listener = new StatisticsListener(repository);
+	private RetryContextCache cache;
 
 	@Before
 	public void init() {
@@ -56,7 +63,9 @@ public class CircuitBreakerStatisticsTests {
 			}
 		};
 		this.retryTemplate = new RetryTemplate();
-		retryTemplate.setListeners(new RetryListener[] {listener});
+		this.cache = new MapRetryContextCache();
+		this.retryTemplate.setRetryContextCache(this.cache);
+		retryTemplate.setListeners(new RetryListener[] { listener });
 		this.callback.setAttemptsBeforeSuccess(1);
 		// No rollback by default (so exceptions are not rethrown)
 		this.state = new DefaultRetryState("retry", new BinaryExceptionClassifier(false));
@@ -68,17 +77,44 @@ public class CircuitBreakerStatisticsTests {
 				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		Object result = this.retryTemplate.execute(this.callback, this.recovery,
 				this.state);
-		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
-		// System.err.println(stats);
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository
+				.findOne("test");
 		assertEquals(1, stats.getStartedCount());
 		assertEquals(RECOVERED, result);
 		result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(RECOVERED, result);
 		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
-		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
+		assertEquals("There should only be one error because the circuit is now open", 1,
+				stats.getErrorCount());
 		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		// Both recoveries are through a short circuit because we used NeverRetryPolicy
-		assertEquals(2, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
+		assertEquals(2,
+				stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
+		resetAndAssert(this.cache, stats);
+	}
+
+	@Test
+	public void testFailedRecoveryCountsAsAbort() throws Throwable {
+		this.retryTemplate
+				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		this.recovery = new RecoveryCallback<Object>() {
+			@Override
+			public Object recover(RetryContext context) throws Exception {
+				throw new ExhaustedRetryException("Planned exhausted");
+			}
+		};
+		try {
+			this.retryTemplate.execute(this.callback, this.recovery, this.state);
+			fail("Expected ExhaustedRetryException");
+		}
+		catch (ExhaustedRetryException e) {
+			// Fine
+		}
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository
+				.findOne("test");
+		assertEquals(1, stats.getStartedCount());
+		assertEquals(1, stats.getAbortCount());
+		assertEquals(0, stats.getRecoveryCount());
 	}
 
 	@Test
@@ -88,16 +124,32 @@ public class CircuitBreakerStatisticsTests {
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 		}
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
-		} catch (Exception e) {
 		}
-		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
-		assertEquals("There should be two recoveries", 2, stats.getAbortCount());
-		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
+		catch (Exception e) {
+		}
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository
+				.findOne("test");
+		assertEquals("There should be two aborts", 2, stats.getAbortCount());
+		assertEquals("There should only be one error because the circuit is now open", 1,
+				stats.getErrorCount());
 		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+		resetAndAssert(this.cache, stats);
+	}
+
+	private void resetAndAssert(RetryContextCache cache, MutableRetryStatistics stats) {
+		reset(cache.get("retry"));
+		listener.close(cache.get("retry"), callback, null);
+		assertEquals(0,
+				stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
+	}
+
+	private void reset(RetryContext retryContext) {
+		ReflectionTestUtils.invokeMethod(retryContext, "reset");
 	}
 
 	protected static class MockRetryCallback implements RetryCallback<Object, Exception> {
@@ -122,7 +174,7 @@ public class CircuitBreakerStatisticsTests {
 		}
 
 		public boolean isOpen() {
-			return status != null && status.getAttribute("open")==Boolean.TRUE;
+			return status != null && status.getAttribute("open") == Boolean.TRUE;
 		}
 
 		public void setAttemptsBeforeSuccess(int attemptsBeforeSuccess) {

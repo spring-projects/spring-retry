@@ -16,12 +16,6 @@
 
 package org.springframework.retry.annotation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +23,7 @@ import java.util.Properties;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
 
+import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -40,6 +35,12 @@ import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Dave Syer
@@ -148,7 +149,8 @@ public class EnableRetryTests {
 
 	@Test
 	public void testExternalInterceptor() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
 		InterceptableService service = context.getBean(InterceptableService.class);
 		service.service();
 		assertEquals(5, service.getCount());
@@ -157,7 +159,8 @@ public class EnableRetryTests {
 
 	@Test
 	public void testInterface() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
 		TheInterface service = context.getBean(TheInterface.class);
 		service.service1();
 		service.service2();
@@ -166,8 +169,20 @@ public class EnableRetryTests {
 	}
 
 	@Test
-	public void testExpression() throws Exception {
+	public void testImplementation() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		NotAnnotatedInterface service = context.getBean(NotAnnotatedInterface.class);
+		service.service1();
+		service.service2();
+		assertEquals(5, service.getCount());
+		context.close();
+	}
+
+
+	@Test
+	public void testExpression() throws Exception {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
 		ExpressionService service = context.getBean(ExpressionService.class);
 		service.service1();
 		assertEquals(3, service.getCount());
@@ -182,12 +197,12 @@ public class EnableRetryTests {
 		service.service3();
 		assertEquals(9, service.getCount());
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
-		AnnotationAwareRetryOperationsInterceptor advice =
-				(AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(config).getPropertyValue("advice");
+		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
+				config).getPropertyValue("advice");
 		@SuppressWarnings("unchecked")
-		Map<Method, MethodInterceptor> delegates = (Map<Method, MethodInterceptor>) new DirectFieldAccessor(advice)
-				.getPropertyValue("delegates");
-		MethodInterceptor interceptor = delegates
+		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
+				advice).getPropertyValue("delegates");
+		MethodInterceptor interceptor = delegates.get(target(service))
 				.get(ExpressionService.class.getDeclaredMethod("service3"));
 		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
 				.getPropertyValue("retryOperations");
@@ -197,9 +212,22 @@ public class EnableRetryTests {
 		assertEquals(1, backOff.getInitialInterval());
 		assertEquals(5, backOff.getMaxInterval());
 		assertEquals(1.1, backOff.getMultiplier(), 0.1);
-		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor.getPropertyValue("retryPolicy");
+		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor
+				.getPropertyValue("retryPolicy");
 		assertEquals(5, retryPolicy.getMaxAttempts());
 		context.close();
+	}
+
+	private Object target(Object target) {
+		if (!AopUtils.isAopProxy(target)) {
+			return target;
+		}
+		try {
+			return target(((Advised)target).getTargetSource().getTarget());
+		}
+		catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Configuration
@@ -271,9 +299,7 @@ public class EnableRetryTests {
 
 		@Bean
 		public MethodInterceptor retryInterceptor() {
-			return RetryInterceptorBuilder.stateless()
-					.maxAttempts(5)
-					.build();
+			return RetryInterceptorBuilder.stateless().maxAttempts(5).build();
 		}
 
 		@Bean
@@ -304,6 +330,11 @@ public class EnableRetryTests {
 		@Bean
 		public TheInterface anInterface() {
 			return new TheClass();
+		}
+
+		@Bean
+		public NotAnnotatedInterface notAnnotatedInterface() {
+			return new RetryableImplementation();
 		}
 
 	}
@@ -448,23 +479,20 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
 		public void service1() {
 			if (count++ < 2) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
-		@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
 		public void service2() {
 			count++;
 			throw new RuntimeException("this cannot be retried");
 		}
 
-		@Retryable(exceptionExpression="#{@exceptionChecker.${retryMethod}(#root)}",
-				maxAttemptsExpression = "#{@integerFiveBean}",
-			backoff = @Backoff(delayExpression = "#{${one}}", maxDelayExpression = "#{${five}}",
-				multiplierExpression = "#{${onePointOne}}"))
+		@Retryable(exceptionExpression = "#{@exceptionChecker.${retryMethod}(#root)}", maxAttemptsExpression = "#{@integerFiveBean}", backoff = @Backoff(delayExpression = "#{${one}}", maxDelayExpression = "#{${five}}", multiplierExpression = "#{${onePointOne}}"))
 		public void service3() {
 			if (count++ < 8) {
 				throw new RuntimeException();
@@ -525,5 +553,42 @@ public class EnableRetryTests {
 		}
 
 	}
+
+	public static interface NotAnnotatedInterface {
+
+		void service1();
+
+		void service2();
+
+		int getCount();
+
+	}
+
+	@Retryable
+	public static class RetryableImplementation implements NotAnnotatedInterface {
+
+		private int count = 0;
+
+		@Override
+		public void service1() {
+			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public void service2() {
+			if (count++ < 4) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		@Override
+		public int getCount() {
+			return count;
+		}
+
+	}
+
 
 }

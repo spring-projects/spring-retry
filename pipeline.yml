@@ -1,0 +1,128 @@
+# fly --target team login --concourse-url https://ci.spring.io --team-name "Spring Team"
+# fly --target team set-pipeline --config pipeline.yml --pipeline spring-retry --load-vars-from credentials.yml
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: nebhale/slack-notification-resource
+
+resources:
+- name: source
+  type: git
+  source:
+    uri: https://github.com/spring-projects/spring-retry.git
+- name: slack
+  type: slack-notification
+  source:
+    url: {{slack-url}}
+  
+jobs:
+- name: build
+  plan:
+  - get: source
+    trigger: true
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: springio/spring-ci-base
+      inputs:
+        - name: source
+      caches:
+        - path: source/.m2
+      run:
+        dir: source
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw install -s .mvn/settings.xml
+    params:
+      TERM: dumb
+      passphrase: {{passphrase}}
+- name: next
+  plan:
+  - get: source
+    trigger: true
+  - task: build
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: springio/spring-ci-base
+      inputs:
+        - name: source
+      caches:
+        - path: source/.m2
+      run:
+        dir: source
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw install -s .mvn/settings.xml -Dspring.framework.version=5.0.0.RC2
+    params:
+      TERM: dumb
+      passphrase: {{passphrase}}
+- name: deploy
+  plan:
+  - get: source
+    trigger: true
+    passed: [build, next]
+  - task: deploy
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: 
+          repository: springio/spring-ci-base
+      inputs:
+        - name: source
+      caches:
+        - path: source/.m2
+      run:
+        dir: source
+        path: sh
+        args:
+        - -c
+        - |
+          rm -rf ~/.m2
+          ln -s $(pwd)/.m2 ~/.m2
+          ./mvnw deploy -DskipTests -s .mvn/settings.xml
+    params:
+      TERM: dumb
+      passphrase: {{passphrase}}
+      sonatype_username: {{sonatype-username}}
+      sonatype_password: {{sonatype-password}}
+      spring_username: {{spring-username}}
+      spring_password: {{spring-password}}
+    on_failure: *slack-failure
+    on_success: *slack-success
+
+slack-failure: &slack-failure
+  put: slack
+  params:
+    attachments:
+    - color: danger
+      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <FAILURE>"
+      text: "<!here> Build has failed"
+      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
+      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+
+slack-success: &slack-success
+  put: slack
+  params:
+    attachments:
+    - color: good
+      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <SUCCESS>"
+      text: "Build has succeeded"
+      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
+      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME

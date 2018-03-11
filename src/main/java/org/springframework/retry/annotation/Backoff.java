@@ -66,7 +66,9 @@ public @interface Backoff {
 
 	/**
 	 * The maximimum wait (in milliseconds) between retries. If less than the
-	 * {@link #delay()} then ignored.
+	 * {@link #delay()} then the default of
+	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
+	 * is applied.
 	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
 	 */
@@ -91,7 +93,9 @@ public @interface Backoff {
 
 	/**
 	 * An expression evaluating to the maximimum wait (in milliseconds) between retries.
-	 * If less than the {@link #delay()} then ignored.
+	 * If less than the {@link #delay()} then the default of
+	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
+	 * is applied.
 	 * Overrides {@link #maxDelay()}
 	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
