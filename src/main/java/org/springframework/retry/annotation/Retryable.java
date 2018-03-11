@@ -60,7 +60,8 @@ public @interface Retryable {
 	/**
 	 * Exception types that are not retryable. Defaults to empty (and if includes is also
 	 * empty all exceptions are retried).
-	 * @return exception types to retry
+	 * If includes is empty but excludes is not, all not excluded exceptions are retried
+	 * @return exception types not to retry
 	 */
 	Class<? extends Throwable>[] exclude() default {};
 

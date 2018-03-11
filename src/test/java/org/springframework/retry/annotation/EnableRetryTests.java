@@ -131,6 +131,26 @@ public class EnableRetryTests {
 	}
 
 	@Test
+	public void excludesOnly() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
+		ExcludesOnlyService service = context.getBean(ExcludesOnlyService.class);
+		service.setExceptionToThrow(new IllegalStateException());
+		try {
+			service.service();
+			fail("Expected IllegalStateException");
+		}
+		catch (IllegalStateException e) {
+		}
+		assertEquals(1, service.getCount());
+
+		service.setExceptionToThrow(new IllegalArgumentException());
+		service.service();
+		assertEquals(3, service.getCount());
+		context.close();
+	}
+
+	@Test
 	public void stateful() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfiguration.class);
@@ -298,6 +318,11 @@ public class EnableRetryTests {
 		}
 
 		@Bean
+		public ExcludesOnlyService excludesOnly() {
+			return new ExcludesOnlyService();
+		}
+
+		@Bean
 		public MethodInterceptor retryInterceptor() {
 			return RetryInterceptorBuilder.stateless().maxAttempts(5).build();
 		}
@@ -439,6 +464,27 @@ public class EnableRetryTests {
 			return count;
 		}
 
+	}
+
+	protected static class ExcludesOnlyService {
+
+		private int count = 0;
+		private RuntimeException exceptionToThrow;
+
+		@Retryable(exclude = IllegalStateException.class)
+		public void service() {
+			if (count++ < 2) {
+				throw exceptionToThrow;
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+		public void setExceptionToThrow(RuntimeException exceptionToThrow) {
+			this.exceptionToThrow = exceptionToThrow;
+		}
 	}
 
 	protected static class StatefulService {
