@@ -134,7 +134,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 			interceptor.setRetryContextCache(retryContextCache);
 		}
 		if (retryListeners != null) {
-			interceptor.setDefaultListeners(retryListeners);
+			interceptor.setListeners(retryListeners);
 		}
 		if (methodArgumentsKeyGenerator != null) {
 			interceptor.setKeyGenerator(methodArgumentsKeyGenerator);

@@ -92,7 +92,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private BeanFactory beanFactory;
 
-	private RetryListener[] defaultListeners;
+	private RetryListener[] globalListeners;
 
 	/**
 	 * @param sleeper the sleeper to set
@@ -125,13 +125,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	/**
-	 * Retry listeners to apply to all operations.
-	 * @param defaultListeners the listeners
+	 * Default retry listeners to apply to all operations.
+	 * @param globalListeners the default listeners
 	 */
-	public void setDefaultListeners(Collection<RetryListener> defaultListeners) {
-		ArrayList<RetryListener> retryListeners = new ArrayList<RetryListener>(defaultListeners);
+	public void setListeners(Collection<RetryListener> globalListeners) {
+		ArrayList<RetryListener> retryListeners = new ArrayList<RetryListener>(globalListeners);
 		AnnotationAwareOrderComparator.sort(retryListeners);
-		this.defaultListeners = retryListeners.toArray(new RetryListener[0]);
+		this.globalListeners = retryListeners.toArray(new RetryListener[0]);
 	}
 
 	@Override
@@ -248,8 +248,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = new RetryTemplate();
 		if (listenersBeanNames.length > 0) {
 			template.setListeners(getListenersBeans(listenersBeanNames));
-		} else if (defaultListeners !=null) {
-			template.setListeners(defaultListeners);
+		} else if (globalListeners !=null) {
+			template.setListeners(globalListeners);
 		}
 		return template;
 	}
