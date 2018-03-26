@@ -140,7 +140,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	@Override
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
-		return (t == null || retryForException(t)) && context.getRetryCount() < maxAttempts;
+		return (t == null || retryForException(t)) && context.getRetryCount() < getMaxAttempts();
 	}
 
 	/**
