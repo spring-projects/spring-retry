@@ -46,6 +46,7 @@ import static org.junit.Assert.fail;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Ronny Bräunlich
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -218,6 +219,29 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void customRetryPolicy() throws NoSuchMethodException {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		CustomRetryPolicyService service = context.getBean(CustomRetryPolicyService.class);
+		service.service();
+		assertEquals(5, service.getCount());
+		RetryConfiguration config = context.getBean(RetryConfiguration.class);
+		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
+				config).getPropertyValue("advice");
+		@SuppressWarnings("unchecked")
+		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
+				advice).getPropertyValue("delegates");
+		MethodInterceptor interceptor = delegates.get(target(service))
+				.get(CustomRetryPolicyService.class.getDeclaredMethod("service"));
+		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
+				.getPropertyValue("retryOperations");
+		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
+		CustomRetryPolicy retryPolicy = (CustomRetryPolicy) templateAccessor
+				.getPropertyValue("retryPolicy");
+		assertEquals(5, retryPolicy.getMaxAttempts());
+		context.close();
+	}
+
 	private Object target(Object target) {
 		if (!AopUtils.isAopProxy(target)) {
 			return target;
@@ -335,6 +359,11 @@ public class EnableRetryTests {
 		@Bean
 		public NotAnnotatedInterface notAnnotatedInterface() {
 			return new RetryableImplementation();
+		}
+
+		@Bean
+		public CustomRetryPolicyService customRetryPolicyService(){
+			return new CustomRetryPolicyService();
 		}
 
 	}
@@ -505,6 +534,22 @@ public class EnableRetryTests {
 
 	}
 
+	protected static class CustomRetryPolicyService {
+
+		private int count = 0;
+
+		@Retryable(retryPolicy = CustomRetryPolicy.class)
+		public void service() {
+			if (count++ < 4) {
+				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+	}
+
 	public static class ExceptionChecker {
 
 		public boolean shouldRetry(Throwable t) {
@@ -590,5 +635,11 @@ public class EnableRetryTests {
 
 	}
 
+	private static class CustomRetryPolicy extends SimpleRetryPolicy {
+
+		public CustomRetryPolicy(){
+			super(5);
+		}
+	}
 
 }
