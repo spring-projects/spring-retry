@@ -80,6 +80,14 @@ public @interface CircuitBreaker {
 	long resetTimeout() default 20000;
 
 	/**
+	 * If the circuit is open for longer than this timeout then it resets on the next call
+	 * to give the downstream component a chance to respond again.
+	 *
+	 * @return the timeout before an open circuit is reset in milliseconds as a String value
+	 */
+	String resetTimeoutString() default "";
+
+	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component.
 	 *
@@ -87,5 +95,13 @@ public @interface CircuitBreaker {
 	 * 5000
 	 */
 	long openTimeout() default 5000;
+
+	/**
+	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
+	 * is opened automatically, preventing access to the downstream component.
+	 *
+	 * @return the timeout before an closed circuit is opened in milliseconds as a String value
+	 */
+	String openTimeoutString() default "";
 
 }

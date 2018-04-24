@@ -228,6 +228,20 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
 			breaker.setOpenTimeout(circuit.openTimeout());
 			breaker.setResetTimeout(circuit.resetTimeout());
+            if (StringUtils.hasText(circuit.resetTimeoutString())) {
+                try {
+                    breaker.setResetTimeout(Long.parseLong(circuit.resetTimeoutString()));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(String.format("Invalid resetTimeoutString value %s - cannot parse into long", circuit.resetTimeoutString()));
+                }
+            }
+            if (StringUtils.hasText(circuit.openTimeoutString())) {
+                try {
+                    breaker.setOpenTimeout(Long.parseLong(circuit.openTimeoutString()));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(String.format("Invalid openTimeoutString value %s - cannot parse into long", circuit.openTimeoutString()));
+                }
+            }
 			template.setRetryPolicy(breaker);
 			template.setBackOffPolicy(new NoBackOffPolicy());
 			String label = circuit.label();

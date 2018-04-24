@@ -92,7 +92,7 @@ public class CircuitBreakerTests {
 
 		private RetryContext context;
 
-		@CircuitBreaker(RuntimeException.class)
+		@CircuitBreaker(value = RuntimeException.class, openTimeoutString = "5000", resetTimeoutString = "20000")
 		public void service() {
 			this.context = RetrySynchronizationManager.getContext();
 			if (this.count++ < 5) {
