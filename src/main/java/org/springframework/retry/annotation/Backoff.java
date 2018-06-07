@@ -46,7 +46,6 @@ import org.springframework.retry.backoff.BackOffPolicy;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(RetryConfiguration.class)
 @Documented
 public @interface Backoff {
 
