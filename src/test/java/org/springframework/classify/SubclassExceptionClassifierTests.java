@@ -16,14 +16,17 @@
 
 package org.springframework.classify;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.junit.Test;
 
+import java.io.FileNotFoundException;
+import java.net.ConnectException;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
-import org.junit.Test;
-import org.springframework.classify.SubclassClassifier;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class SubclassExceptionClassifierTests {
 
@@ -82,5 +85,27 @@ public class SubclassExceptionClassifierTests {
 			}
 		});
 		assertEquals("spam", classifier.classify(new IllegalStateException("Foo")));
+	}
+
+	@SuppressWarnings("serial")
+	@Test
+	public void testClassifyAncestorMatch2() {
+		classifier = new SubclassClassifier<Throwable, String>();
+		classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
+			{
+				put(SocketException.class, "1");
+				put(FileNotFoundException.class, "buz");
+				put(NoSuchElementException.class, "buz");
+				put(ArrayIndexOutOfBoundsException.class, "buz");
+				put(IllegalArgumentException.class, "bar");
+				put(RuntimeException.class, "spam");
+				put(ConnectException.class, "2");
+			}
+		});
+		assertEquals("2", classifier.classify(new SubConnectException()));
+	}
+
+	public static class SubConnectException extends ConnectException {
+
 	}
 }
