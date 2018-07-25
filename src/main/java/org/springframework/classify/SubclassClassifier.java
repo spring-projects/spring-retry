@@ -15,12 +15,8 @@
  */
 package org.springframework.classify;
 
-import java.io.Serializable;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -113,17 +109,21 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		}
 
 		// check for subclasses
-		Set<Class<? extends T>> classes = new TreeSet<Class<? extends T>>(new ClassComparator());
-		classes.addAll(classified.keySet());
-		for (Class<? extends T> cls : classes) {
-			if (cls.isAssignableFrom(exceptionClass)) {
-				C value = classified.get(cls);
-				this.classified.put(exceptionClass, value);
-				return value;
-			}
+		C value = null;
+		for (Class<?> cls = exceptionClass; !cls.equals(Object.class) && value == null; cls = cls.getSuperclass()) {
+			value = classified.get(cls);
 		}
 
-		return defaultValue;
+		if (value == null) {
+			value = defaultValue;
+		}
+
+		//ConcurrentHashMap doesn't allow nulls
+		if (value != null) {
+			this.classified.put(exceptionClass, value);
+		}
+
+		return value;
 	}
 
 	/**
@@ -138,24 +138,4 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	protected Map<Class<? extends T>, C> getClassified() {
 		return classified;
 	}
-
-	/**
-	 * Comparator for classes to order by inheritance.
-	 *
-	 * @author Dave Syer
-	 *
-	 */
-	private static class ClassComparator implements Comparator<Class<?>>, Serializable {
-		/**
-		 * @return 1 if arg0 is assignable from arg1, -1 otherwise
-		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-		 */
-		public int compare(Class<?> arg0, Class<?> arg1) {
-			if (arg0.isAssignableFrom(arg1)) {
-				return 1;
-			}
-			return -1;
-		}
-	}
-
 }
