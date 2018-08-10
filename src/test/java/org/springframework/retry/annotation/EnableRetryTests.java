@@ -176,6 +176,8 @@ public class EnableRetryTests {
 		service.service1();
 		service.service2();
 		assertEquals(4, service.getCount());
+		service.service3();
+		assertTrue(service.isRecovered());
 		context.close();
 	}
 
@@ -582,11 +584,19 @@ public class EnableRetryTests {
 
 		int getCount();
 
+		void service3();
+
+		void recover(Exception e);
+
+		boolean isRecovered();
+
 	}
 
 	public static class TheClass implements TheInterface {
 
 		private int count = 0;
+
+		private boolean recovered;
 
 		@Override
 		@Retryable
@@ -606,6 +616,23 @@ public class EnableRetryTests {
 		@Override
 		public int getCount() {
 			return count;
+		}
+
+		@Override
+		@Retryable
+		public void service3() {
+			throw new RuntimeException("planned");
+		}
+
+		@Override
+		@Recover
+		public void recover(Exception e) {
+			this.recovered = true;
+		}
+
+		@Override
+		public boolean isRecovered() {
+			return this.recovered;
 		}
 
 	}
