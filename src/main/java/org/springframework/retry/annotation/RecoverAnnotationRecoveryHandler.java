@@ -16,16 +16,16 @@
 
 package org.springframework.retry.annotation;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.classify.SubclassClassifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A recoverer for method invocations based on the <code>@Recover</code> annotation. A
@@ -37,10 +37,11 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * class hierarchy is chosen, so for instance if an IllegalArgumentException is being
  * handled and there is a method whose first argument is RuntimeException, then it will be
  * preferred over a method whose first argument is Throwable.
- * 
+ *
  * @author Dave Syer
  * @author Josh Long
  * @author Aldo Sinanaj
+ * @author Randell Callahan
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -55,7 +56,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 	@Override
 	public T recover(Object[] args, Throwable cause) {
-		Method method = findClosestMatch(cause.getClass());
+		Method method = findClosestMatch(args, cause.getClass());
 		if (method == null) {
 			throw new ExhaustedRetryException("Cannot locate recovery method", cause);
 		}
@@ -75,7 +76,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 	}
 
-	private Method findClosestMatch(Class<? extends Throwable> cause) {
+	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
 		int min = Integer.MAX_VALUE;
 		Method result = null;
 		for (Method method : methods.keySet()) {
@@ -89,6 +90,13 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (distance < min) {
 					min = distance;
 					result = method;
+				}
+				else if (distance == min) {
+					boolean parametersMatch = compareParameters( args, meta.getArgCount(),
+							method.getParameterTypes() );
+					if (parametersMatch) {
+						result = method;
+					}
 				}
 			}
 		}
@@ -104,6 +112,22 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			current = current.getSuperclass();
 		}
 		return result;
+	}
+
+	private boolean compareParameters(Object[] args, int argCount, Class<?>[] parameterTypes) {
+		if (argCount == (args.length + 1)) {
+			int startingIndex = 0;
+			if (parameterTypes.length > 0 && parameterTypes[0] == Throwable.class) {
+				startingIndex = 1;
+			}
+			for (int i = startingIndex; i < parameterTypes.length; i++) {
+				if (parameterTypes[i] != args[i-1].getClass()) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	private void init(Object target, Method method) {
