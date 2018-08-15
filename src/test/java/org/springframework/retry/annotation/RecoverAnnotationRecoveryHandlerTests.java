@@ -115,7 +115,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	}
 
 	@Test
-	public void multipleQualifyingRecoverMethods (){
+	public void multipleQualifyingRecoverMethods(){
 		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class,
 				"foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
@@ -126,7 +126,18 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	}
 
 	@Test
-	public void multipleQualifyingRecoverMethodsReOrdered (){
+	public void multipleQualifyingRecoverMethodsWithNull(){
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecovers(), foo);
+		assertEquals(1,
+				handler.recover(new Object[] { null }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void multipleQualifyingRecoverMethodsReOrdered(){
 		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversReOrdered.class,
 				"foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
