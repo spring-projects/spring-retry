@@ -16,16 +16,16 @@
 
 package org.springframework.retry.annotation;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.classify.SubclassClassifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A recoverer for method invocations based on the <code>@Recover</code> annotation. A
@@ -121,7 +121,11 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				startingIndex = 1;
 			}
 			for (int i = startingIndex; i < parameterTypes.length; i++) {
-				if (parameterTypes[i] != args[i-1].getClass()) {
+				final Object argument = args[i-1];
+				if (argument == null) {
+					continue;
+				}
+				if (parameterTypes[i] != argument.getClass()) {
 					return false;
 				}
 			}
