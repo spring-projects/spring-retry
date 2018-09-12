@@ -16,6 +16,8 @@
 
 package org.springframework.retry.annotation;
 
+import org.springframework.retry.RetryPolicy;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,6 +30,7 @@ import java.lang.annotation.Target;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Ronny Bräunlich
  * @since 1.1
  *
  */
@@ -124,4 +127,11 @@ public @interface Retryable {
 	 */
 	String[] listeners() default {};
 
+    /**
+     * Define a custom retry policy that shall be used by the {@link org.springframework.retry.support.RetryTemplate}
+     * that is being created while parsing this annotation. Only one {@link RetryPolicy} can be defined!
+     * The policy is also supposed to have a default constructor.
+     * @return the retry policy to use
+     */
+	Class<? extends RetryPolicy>[] retryPolicy() default {};
 }

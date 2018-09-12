@@ -69,6 +69,7 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Ronny Bräunlich
  * @since 1.1
  *
  */
@@ -157,7 +158,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 	}
 
-	private MethodInterceptor getDelegate(Object target, Method method) {
+	private MethodInterceptor getDelegate(Object target, Method method) throws Exception {
 		if (!this.delegates.containsKey(target) || !this.delegates.get(target).containsKey(method)) {
 			synchronized (this.delegates) {
 				if (!this.delegates.containsKey(target)) {
@@ -207,7 +208,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 	}
 
-	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
+	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) throws Exception {
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
@@ -218,7 +219,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				.build();
 	}
 
-	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
+	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) throws Exception {
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryContextCache(this.retryContextCache);
 
@@ -293,7 +294,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		return new RecoverAnnotationRecoveryHandler<Object>(target, method);
 	}
 
-	private RetryPolicy getRetryPolicy(Annotation retryable) {
+	private RetryPolicy getRetryPolicy(Annotation retryable) throws Exception {
 		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(retryable);
 		@SuppressWarnings("unchecked")
 		Class<? extends Throwable>[] includes = (Class<? extends Throwable>[]) attrs.get("value");
@@ -308,6 +309,14 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Class<? extends Throwable>[] excludes = (Class<? extends Throwable>[]) attrs.get("exclude");
 		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
 		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
+		@SuppressWarnings("unchecked")
+		Class<? extends RetryPolicy>[] customRetryPolicy = (Class<? extends RetryPolicy>[]) attrs.get("retryPolicy");
+		if(customRetryPolicy.length > 1){
+			throw new IllegalArgumentException("Only one retry policy is allowed");
+		}
+		if(customRetryPolicy.length == 1){
+			return customRetryPolicy[0].newInstance();
+		}
 		if (StringUtils.hasText(maxAttemptsExpression)) {
 			maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression), PARSER_CONTEXT)
 					.getValue(this.evaluationContext, Integer.class);
