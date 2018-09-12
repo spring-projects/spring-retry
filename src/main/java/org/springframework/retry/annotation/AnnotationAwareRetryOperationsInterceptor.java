@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 the original author or authors.
+ * Copyright 2014-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,8 +226,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (circuit!=null) {
 			RetryPolicy policy = getRetryPolicy(circuit);
 			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
-			breaker.setOpenTimeout(circuit.openTimeout());
-			breaker.setResetTimeout(circuit.resetTimeout());
+			breaker.setOpenTimeout(getOpenTimeout(circuit));
+			breaker.setResetTimeout(getResetTimeout(circuit));
 			template.setRetryPolicy(breaker);
 			template.setBackOffPolicy(new NoBackOffPolicy());
 			String label = circuit.label();
@@ -252,6 +252,28 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				.label(label)
 				.recoverer(getRecoverer(target, method))
 				.build();
+	}
+
+	private long getOpenTimeout(CircuitBreaker circuit) {
+		if (StringUtils.hasText(circuit.openTimeoutExpression())) {
+			Long value = PARSER.parseExpression(resolve(circuit.openTimeoutExpression()), PARSER_CONTEXT)
+					.getValue(Long.class);
+			if (value != null) {
+				return value;
+			}
+		}
+		return circuit.openTimeout();
+	}
+
+	private long getResetTimeout(CircuitBreaker circuit) {
+		if (StringUtils.hasText(circuit.resetTimeoutExpression())) {
+			Long value = PARSER.parseExpression(resolve(circuit.resetTimeoutExpression()), PARSER_CONTEXT)
+					.getValue(Long.class);
+			if (value != null) {
+				return value;
+			}
+		}
+		return circuit.resetTimeout();
 	}
 
 	private RetryTemplate createTemplate(String[] listenersBeanNames) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.lang.annotation.Target;
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  * @since 1.2
  *
  */
@@ -63,6 +64,13 @@ public @interface CircuitBreaker {
 	int maxAttempts() default 3;
 
 	/**
+	 * @return an expression evaluated to the maximum number of attempts (including the
+	 * first failure), defaults to 3 Overrides {@link #maxAttempts()}.
+	 * @since 1.2.3
+	 */
+	String maxAttemptsExpression() default "";
+
+	/**
 	 * A unique label for the circuit for reporting and state management. Defaults to the
 	 * method signature where the annotation is declared.
 	 *
@@ -80,6 +88,16 @@ public @interface CircuitBreaker {
 	long resetTimeout() default 20000;
 
 	/**
+	 * If the circuit is open for longer than this timeout then it resets on the next call
+	 * to give the downstream component a chance to respond again. Overrides
+	 * {@link #resetTimeout()}.
+	 *
+	 * @return the timeout before an open circuit is reset in milliseconds, no default.
+	 * @since 1.2.3
+	 */
+	String resetTimeoutExpression() default "";
+
+	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component.
 	 *
@@ -87,5 +105,37 @@ public @interface CircuitBreaker {
 	 * 5000
 	 */
 	long openTimeout() default 5000;
+
+	/**
+	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
+	 * is opened automatically, preventing access to the downstream component. Overrides
+	 * {@link #openTimeout()}.
+	 *
+	 * @return the timeout before an closed circuit is opened in milliseconds, no default.
+	 * @since 1.2.3
+	 */
+	String openTimeoutExpression() default "";
+
+	/**
+	 * Specify an expression to be evaluated after the
+	 * {@code SimpleRetryPolicy.canRetry()} returns true - can be used to conditionally
+	 * suppress the retry. Only invoked after an exception is thrown. The root object for
+	 * the evaluation is the last {@code Throwable}. Other beans in the context can be
+	 * referenced. For example:
+	 *
+	 * <pre class=code>
+	 *  {@code "message.contains('you can retry this')"}.
+	 * </pre>
+	 *
+	 * and
+	 *
+	 * <pre class=code>
+	 *  {@code "@someBean.shouldRetry(#root)"}.
+	 * </pre>
+	 *
+	 * @return the expression.
+	 * @since 1.2.3
+	 */
+	String exceptionExpression() default "";
 
 }
