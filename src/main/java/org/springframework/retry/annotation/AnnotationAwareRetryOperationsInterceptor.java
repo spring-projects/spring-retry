@@ -30,6 +30,7 @@ import javax.naming.OperationNotSupportedException;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -167,7 +168,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {
-		ConcurrentMap<Method, MethodInterceptor> cachedMethods = delegates.get(target);
+		ConcurrentMap<Method, MethodInterceptor> cachedMethods = this.delegates.get(target);
 		if (cachedMethods == null) {
 			cachedMethods = new ConcurrentHashMap<Method, MethodInterceptor>();
 		}
@@ -179,7 +180,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				retryable = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Retryable.class);
 			}
 			if (retryable == null) {
-				retryable = findAnnotationOnTarget(target, method);
+				retryable = findAnnotationOnTarget(target, method, Retryable.class);
 			}
 			if (retryable != null) {
 				if (StringUtils.hasText(retryable.interceptor())) {
@@ -195,17 +196,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			cachedMethods.putIfAbsent(method, interceptor);
 			delegate = cachedMethods.get(method);
 		}
-		delegates.putIfAbsent(target, cachedMethods);
+		this.delegates.putIfAbsent(target, cachedMethods);
 		return delegate == NULL_INTERCEPTOR ? null : delegate;
 	}
 
-	private Retryable findAnnotationOnTarget(Object target, Method method) {
+	private <A extends Annotation> A findAnnotationOnTarget(Object target, Method method, Class<A> annotation) {
+
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod, Retryable.class);
+			A retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod, annotation);
 			if (retryable == null) {
-				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(),
-						Retryable.class);
+				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(), annotation);
 			}
 
 			return retryable;
@@ -228,6 +229,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		template.setRetryContextCache(this.retryContextCache);
 
 		CircuitBreaker circuit = AnnotatedElementUtils.findMergedAnnotation(method, CircuitBreaker.class);
+		if (circuit == null) {
+			circuit = findAnnotationOnTarget(target, method, CircuitBreaker.class);
+		}
 		if (circuit != null) {
 			RetryPolicy policy = getRetryPolicy(circuit);
 			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
@@ -278,8 +282,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (listenersBeanNames.length > 0) {
 			template.setListeners(getListenersBeans(listenersBeanNames));
 		}
-		else if (globalListeners != null) {
-			template.setListeners(globalListeners);
+		else if (this.globalListeners != null) {
+			template.setListeners(this.globalListeners);
 		}
 		return template;
 	}
@@ -287,7 +291,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private RetryListener[] getListenersBeans(String[] listenersBeanNames) {
 		RetryListener[] listeners = new RetryListener[listenersBeanNames.length];
 		for (int i = 0; i < listeners.length; i++) {
-			listeners[i] = beanFactory.getBean(listenersBeanNames[i], RetryListener.class);
+			listeners[i] = this.beanFactory.getBean(listenersBeanNames[i], RetryListener.class);
 		}
 		return listeners;
 	}

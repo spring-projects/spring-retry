@@ -103,17 +103,30 @@ public class CircuitBreakerTests {
 
 		@Bean
 		public Service service() {
-			return new Service();
+			return new ServiceImpl();
 		}
 
 	}
 
-	protected static class Service {
+	interface Service {
+
+		void service();
+
+		void expressionService();
+
+		int getCount();
+
+		RetryContext getContext();
+
+	}
+
+	protected static class ServiceImpl implements Service {
 
 		private int count = 0;
 
 		private RetryContext context;
 
+		@Override
 		@CircuitBreaker(RuntimeException.class)
 		public void service() {
 			this.context = RetrySynchronizationManager.getContext();
@@ -122,6 +135,7 @@ public class CircuitBreakerTests {
 			}
 		}
 
+		@Override
 		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}", openTimeoutExpression = "#{${bar:19}000}",
 				resetTimeoutExpression = "#{${baz:20}000}",
 				exceptionExpression = "#{#root instanceof RuntimeExpression}")
@@ -129,10 +143,12 @@ public class CircuitBreakerTests {
 			this.count++;
 		}
 
+		@Override
 		public RetryContext getContext() {
 			return this.context;
 		}
 
+		@Override
 		public int getCount() {
 			return this.count;
 		}
