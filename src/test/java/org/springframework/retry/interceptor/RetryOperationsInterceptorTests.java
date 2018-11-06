@@ -17,13 +17,16 @@
 package org.springframework.retry.interceptor;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -34,6 +37,7 @@ import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.listener.RetryListenerSupport;
@@ -90,6 +94,46 @@ public class RetryOperationsInterceptorTests {
 		service.service();
 		assertEquals(2, count);
 		assertEquals("FOO", context.getAttribute(RetryContext.NAME));
+	}
+
+	@Test
+	public void testExposeOriginalException() {
+		interceptor.setExposeOriginalException(true);
+		((Advised) service).addAdvice(interceptor);
+		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {
+			@Override
+			public Collection<String> recover(Object[] data, Throwable cause) {
+				// simulate that the closest recover not found
+				count ++;
+				throw new ExhaustedRetryException("exhaustedException", cause);
+			}
+		});
+
+		count = -2;
+		boolean exceptionCaught = false;
+		try {
+			service.service();
+		}
+		catch (Exception e) {
+			exceptionCaught = true;
+			assertTrue(e.getClass() == Exception.class);
+		}
+		assertEquals(count, 2);
+		assertTrue(exceptionCaught);
+
+		interceptor.setExposeOriginalException(false);
+		count = -2;
+		try {
+			exceptionCaught = false;
+			service.service();
+		}
+		catch (Exception e) {
+			exceptionCaught = true;
+			// not expose original Exception, it should be exhaustedRetryException itself
+			assertTrue(e.getClass() == ExhaustedRetryException.class);
+		}
+		assertTrue(exceptionCaught);
+		assertEquals(2, count);
 	}
 
 	@Test

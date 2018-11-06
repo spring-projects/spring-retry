@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.classify.Classifier;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -69,6 +70,8 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 	private String label;
 
+	protected boolean exposeOriginalException;
+
 	private Classifier<? super Throwable, Boolean> rollbackClassifier;
 
 	private boolean useRawKey;
@@ -82,6 +85,10 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	public void setRetryOperations(RetryOperations retryTemplate) {
 		Assert.notNull(retryTemplate, "'retryOperations' cannot be null.");
 		this.retryOperations = retryTemplate;
+	}
+
+	public void setExposeOriginalException(boolean exposeOriginalException) {
+		this.exposeOriginalException = exposeOriginalException;
 	}
 
 	/**
@@ -169,11 +176,23 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 						&& this.newMethodArgumentsIdentifier.isNew(args),
 				this.rollbackClassifier);
 
-		Object result = this.retryOperations
-				.execute(new MethodInvocationRetryCallback(invocation, label),
-						this.recoverer != null
-								? new ItemRecovererCallback(args, this.recoverer) : null,
-						retryState);
+		Object result;
+
+		try {
+			result = this.retryOperations
+					.execute(new MethodInvocationRetryCallback(invocation, label),
+							this.recoverer != null
+									? new ItemRecovererCallback(args, this.recoverer) : null,
+							retryState);
+		}
+		catch (ExhaustedRetryException e) {
+			// https://github.com/spring-projects/spring-retry/issues/82
+			if (exposeOriginalException) {
+				throw e.getCause();
+			} else {
+				throw e;
+			}
+		}
 
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Exiting proxied method in stateful retry with result: ("

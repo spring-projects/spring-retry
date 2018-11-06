@@ -24,9 +24,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.aopalliance.intercept.MethodInterceptor;
@@ -38,6 +40,10 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
+import org.springframework.classify.BackToBackPatternClassifier;
+import org.springframework.classify.ClassifierSupport;
+import org.springframework.classify.PatternMatchingClassifier;
+import org.springframework.classify.SubclassClassifier;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -65,6 +71,8 @@ public class StatefulRetryOperationsInterceptorTests {
 
 	private Transformer transformer;
 
+	private Transformer transformerThrowingSpecificEx;
+
 	private RetryContext context;
 
 	private static int count;
@@ -84,6 +92,8 @@ public class StatefulRetryOperationsInterceptorTests {
 				new SingletonTargetSource(new ServiceImpl()));
 		transformer = ProxyFactory.getProxy(Transformer.class,
 				new SingletonTargetSource(new TransformerImpl()));
+		transformerThrowingSpecificEx = ProxyFactory.getProxy(Transformer.class,
+				new SingletonTargetSource(new TransformerImplForTestOriginalException()));
 		count = 0;
 	}
 
@@ -317,6 +327,80 @@ public class StatefulRetryOperationsInterceptorTests {
 		assertEquals(1, result.size());
 	}
 
+	@Test
+	public void testInterceptorWithExposeOriginalException() {
+		((Advised) transformerThrowingSpecificEx).addAdvice(interceptor);
+		interceptor.setExposeOriginalException(true);
+		interceptor.setRetryOperations(retryTemplate);
+		HashMap<Class<? extends Throwable>, Boolean> caredExceptionMap = new HashMap<Class<? extends Throwable>,
+                Boolean>();
+		caredExceptionMap.put(RuntimeException.class, Boolean.TRUE);
+		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(3, caredExceptionMap));
+        // every time the exception will not be rethrown
+		interceptor.setRollbackClassifier(new ClassifierSupport(false));
+
+		boolean exceptionCaught = false;
+		// without recover, original exception should be thrown
+		try {
+			transformerThrowingSpecificEx.transform("foo");
+		}
+		catch (Exception e) {
+		    exceptionCaught = true;
+			assertTrue(e instanceof RuntimeException);
+		}
+		assertEquals(0, count);
+		assertTrue(exceptionCaught);
+
+		// with recover, original exception still should be thrown
+		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {
+			@Override
+			public Collection<String> recover(Object[] data, Throwable cause) {
+				count++;
+				// simulate that the closest recover not found
+                throw new ExhaustedRetryException("ExhaustedException", cause);
+			}
+		});
+		try {
+		    exceptionCaught = false;
+			transformerThrowingSpecificEx.transform("foo");
+		}
+		catch (Exception e) {
+		    exceptionCaught = true;
+			assertTrue(e instanceof RuntimeException);
+		}
+		// recover still will be executed
+		assertEquals(1, count);
+		assertTrue(exceptionCaught);
+
+		// if it is not cared exception, it should be thrown as before
+		count = 3;
+		try {
+		    exceptionCaught = false;
+		    interceptor.setRecoverer(null);
+		    transformerThrowingSpecificEx.transform("foo");
+        }
+        catch (Exception e) {
+		    exceptionCaught = true;
+		    assertTrue(e instanceof IOException);
+        }
+
+        assertTrue(exceptionCaught);
+
+		// if not exposed, ExhaustedRetryException should be thrown
+		interceptor.setExposeOriginalException(false);
+		count = 0;
+		interceptor.setRecoverer(null);
+        try {
+            exceptionCaught = false;
+            transformerThrowingSpecificEx.transform("foo");
+        }
+        catch (Exception e) {
+            exceptionCaught = true;
+            assertTrue(e instanceof ExhaustedRetryException);
+        }
+        assertTrue(exceptionCaught);
+	}
+
 	public static interface Service {
 		void service(String in) throws Exception;
 	}
@@ -348,5 +432,16 @@ public class StatefulRetryOperationsInterceptorTests {
 			return Collections.singleton(in + ":" + count);
 		}
 
+	}
+
+	public static class TransformerImplForTestOriginalException implements Transformer {
+		@Override
+		public Collection<String> transform(String in) throws Exception {
+		    if (count < 3) {
+		        throw new RuntimeException();
+            } else {
+		        throw new IOException();
+            }
+		}
 	}
 }

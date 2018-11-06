@@ -71,6 +71,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 
 	protected String label;
 
+	protected boolean exposeOriginalException;
+
 	/**
 	 * Create a builder for a stateful retry interceptor.
 	 * @return The interceptor builder.
@@ -198,6 +200,11 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 		return this;
 	}
 
+	public RetryInterceptorBuilder<T> exposeOriginalException(boolean exposeOriginalException) {
+		this.exposeOriginalException = exposeOriginalException;
+		return this;
+	}
+
 	public abstract T build();
 
 	private RetryInterceptorBuilder() {
@@ -311,6 +318,7 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			if (this.label != null) {
 				this.interceptor.setLabel(this.label);
 			}
+			this.interceptor.setExposeOriginalException(this.exposeOriginalException);
 			return this.interceptor;
 		}
 
@@ -374,6 +382,7 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			if (this.label != null) {
 				this.interceptor.setLabel(this.label);
 			}
+			this.interceptor.setExposeOriginalException(this.exposeOriginalException);
 			this.interceptor.setRollbackClassifier(new BinaryExceptionClassifier(false));
 			return this.interceptor;
 		}
@@ -402,6 +411,7 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			if (this.label != null) {
 				this.interceptor.setLabel(this.label);
 			}
+			this.interceptor.setExposeOriginalException(this.exposeOriginalException);
 			return this.interceptor;
 		}
 

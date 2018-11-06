@@ -214,6 +214,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		return RetryInterceptorBuilder.stateless()
 				.retryOperations(template)
 				.label(retryable.label())
+				.exposeOriginalException(retryable.exposeOriginalException())
 				.recoverer(getRecoverer(target, method))
 				.build();
 	}
@@ -239,6 +240,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					.retryOperations(template)
 					.recoverer(getRecoverer(target, method))
 					.label(label)
+					.exposeOriginalException(retryable.exposeOriginalException())
 					.build();
 		}
 		RetryPolicy policy = getRetryPolicy(retryable);
@@ -250,6 +252,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
 				.retryOperations(template)
 				.label(label)
+				.exposeOriginalException(retryable.exposeOriginalException())
 				.recoverer(getRecoverer(target, method))
 				.build();
 	}

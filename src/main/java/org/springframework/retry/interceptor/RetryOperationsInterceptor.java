@@ -19,6 +19,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.aop.ProxyMethodInvocation;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -51,8 +52,14 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	private String label;
 
+	private boolean exposeOriginalException;
+
 	public void setLabel(String label) {
 		this.label = label;
+	}
+
+	public void setExposeOriginalException(boolean exposeOriginalException) {
+		this.exposeOriginalException = exposeOriginalException;
 	}
 
 	public void setRetryOperations(RetryOperations retryTemplate) {
@@ -110,9 +117,19 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		};
 
 		if (recoverer != null) {
-			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(
-					invocation.getArguments(), recoverer);
-			return this.retryOperations.execute(retryCallback, recoveryCallback);
+			try {
+				ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(
+						invocation.getArguments(), recoverer);
+				return this.retryOperations.execute(retryCallback, recoveryCallback);
+			}
+			catch (ExhaustedRetryException e) {
+				// https://github.com/spring-projects/spring-retry/issues/82
+				if (exposeOriginalException) {
+					throw e.getCause();
+				} else {
+					throw e;
+				}
+			}
 		}
 
 		return this.retryOperations.execute(retryCallback);
