@@ -22,9 +22,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.retry.ExhaustedRetryException;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.RecoverAnnotationRecoveryHandler;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
@@ -32,6 +29,7 @@ import java.lang.reflect.Method;
 /**
  * @author Dave Syer
  * @author Aldo Sinanaj
+ * @author Randell Callahan
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -113,6 +111,39 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				"bar", String.class));
 		assertEquals(3,
 				barHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void multipleQualifyingRecoverMethods(){
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecovers(), foo);
+		assertEquals(1,
+				handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void multipleQualifyingRecoverMethodsWithNull(){
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecovers(), foo);
+		assertEquals(1,
+				handler.recover(new Object[] { null }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void multipleQualifyingRecoverMethodsReOrdered(){
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversReOrdered.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecoversReOrdered(), foo);
+		assertEquals(3,
+				handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
 
 	}
 
@@ -227,6 +258,54 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		@Recover
 		public Number quux(RuntimeException re, String name) {
+			return 3;
+		}
+
+	}
+
+	protected static class MultipleQualifyingRecovers {
+
+		@Retryable
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable e, String name) {
+			return 1;
+		}
+
+		@Recover
+		public int fooRecover(Throwable e) {
+			return 2;
+		}
+
+		@Recover
+		public int barRecover(Throwable e, int number) {
+			return 3;
+		}
+
+	}
+
+	protected static class MultipleQualifyingRecoversReOrdered {
+
+		@Retryable
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable e) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable e, int number) {
+			return 2;
+		}
+
+		@Recover
+		public int fooRecover(Throwable e, String name) {
 			return 3;
 		}
 

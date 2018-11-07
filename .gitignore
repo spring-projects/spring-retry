@@ -11,3 +11,4 @@ target
 *.iws
 .idea
 credentials.yml
+.DS_Store
