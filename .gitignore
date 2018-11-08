@@ -3,6 +3,7 @@
 *~
 target
 .springBeans
+.sts4-cache
 .settings
 .classpath
 .project

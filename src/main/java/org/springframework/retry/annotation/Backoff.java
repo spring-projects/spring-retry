@@ -22,7 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Import;
 import org.springframework.retry.backoff.BackOffPolicy;
 
 /**
@@ -83,8 +82,8 @@ public @interface Backoff {
 
 	/**
 	 * An expression evaluating to the canonical backoff period. Used as an initial value
-	 * in the exponential case, and as a minimum value in the uniform case.
-	 * Overrides {@link #delay()}.
+	 * in the exponential case, and as a minimum value in the uniform case. Overrides
+	 * {@link #delay()}.
 	 * @return the initial or canonical backoff period in milliseconds.
 	 * @since 1.2
 	 */
@@ -94,8 +93,7 @@ public @interface Backoff {
 	 * An expression evaluating to the maximimum wait (in milliseconds) between retries.
 	 * If less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
-	 * is applied.
-	 * Overrides {@link #maxDelay()}
+	 * is applied. Overrides {@link #maxDelay()}
 	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
 	 * @since 1.2
@@ -103,11 +101,11 @@ public @interface Backoff {
 	String maxDelayExpression() default "";
 
 	/**
-	 * Evaluates to a vaule used as a multiplier for generating the next delay for backoff.
-	 * Overrides {@link #multiplier()}.
+	 * Evaluates to a vaule used as a multiplier for generating the next delay for
+	 * backoff. Overrides {@link #multiplier()}.
 	 *
-	 * @return a multiplier expression to use to calculate the next backoff delay (default 0 =
-	 * ignored)
+	 * @return a multiplier expression to use to calculate the next backoff delay (default
+	 * 0 = ignored)
 	 * @since 1.2
 	 */
 	String multiplierExpression() default "";
