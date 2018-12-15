@@ -114,13 +114,13 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 			value = classified.get(cls);
 		}
 
-		if (value == null) {
-			value = defaultValue;
-		}
-
 		//ConcurrentHashMap doesn't allow nulls
 		if (value != null) {
 			this.classified.put(exceptionClass, value);
+		}
+
+		if (value == null) {
+			value = defaultValue;
 		}
 
 		return value;
