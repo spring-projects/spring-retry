@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
  * if true, further evaluates an expression against the last thrown exception.
  *
  * @author Gary Russell
+ * @author Aldo Sinanaj
  * @since 1.2
  *
  */
@@ -60,7 +61,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 */
 	public ExpressionRetryPolicy(String expressionString) {
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString, PARSER_CONTEXT);
+		this.expression = isTemplate(expressionString) ? getTemplateExpression(expressionString)
+													   : new SpelExpressionParser().parseExpression(expressionString);
 	}
 
 	/**
@@ -89,7 +91,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			boolean traverseCauses, String expressionString, boolean defaultValue) {
 		super(maxAttempts, retryableExceptions, traverseCauses, defaultValue);
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString, PARSER_CONTEXT);
+		this.expression = isTemplate(expressionString) ? getTemplateExpression(expressionString)
+													   : new SpelExpressionParser().parseExpression(expressionString);
 	}
 
 	@Override
@@ -112,6 +115,30 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			return super.canRetry(context)
 					&& this.expression.getValue(this.evaluationContext, lastThrowable, Boolean.class);
 		}
+	}
+
+	/**
+	 * Check if the expression is a template
+	 * @param expression the expression string
+	 * @return true if the expression string is a template
+	 * @deprecated in favor of using literal expression
+	 */
+	@Deprecated
+	private boolean isTemplate(String expression) {
+		return expression.startsWith(PARSER_CONTEXT.getExpressionPrefix()) && expression.endsWith(PARSER_CONTEXT.getExpressionSuffix());
+	}
+
+	/**
+	 * Get template expression.
+	 * Deprecated in favor of literal expression, it is not needed to have templates
+	 * since the expression is evaluated runtime against the last thrown exception
+	 * @param expression the expression string
+	 * @return expression
+	 * @deprecated in favor of literal expression
+	 */
+	@Deprecated
+	private Expression getTemplateExpression(String expression) {
+		return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
 	}
 
 }
