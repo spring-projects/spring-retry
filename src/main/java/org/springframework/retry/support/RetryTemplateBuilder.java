@@ -1,3 +1,18 @@
+/*
+ * Copyright 2015-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.springframework.retry.support;
 
 import java.util.ArrayList;
@@ -25,7 +40,8 @@ import org.springframework.util.Assert;
  * builder method - see it's doc.
  *
  * <p>
- * Examples: <pre>{@code
+ * Examples:
+ * <pre>{@code
  * RetryTemplate.builder()
  *      .maxAttempts(10)
  *      .exponentialBackoff(100, 2, 10000)
@@ -66,6 +82,8 @@ import org.springframework.util.Assert;
  * via volatile write, or other safe publication technique)
  *
  * @author Aleksandr Shamukov
+ * @author Artem Bilan
+ *
  * @since 1.3
  */
 public class RetryTemplateBuilder {
@@ -352,10 +370,9 @@ public class RetryTemplateBuilder {
 	/**
 	 * Finish configuration and build resulting {@link RetryTemplate}. For default
 	 * behaviour and concurrency note see class-level doc of {@link RetryTemplateBuilder}.
-	 *
-	 * @implNote The {@code retryPolicy} of the returned {@link RetryTemplate} is always
-	 * an instance of {@link CompositeRetryPolicy}, that consists of one base policy, and
-	 * of {@link BinaryExceptionClassifierRetryPolicy}. The motivation is: whatever base
+	 * The {@code retryPolicy} of the returned {@link RetryTemplate} is always an instance
+	 * of {@link CompositeRetryPolicy}, that consists of one base policy, and of
+	 * {@link BinaryExceptionClassifierRetryPolicy}. The motivation is: whatever base
 	 * policy we use, exception classification is extremely recommended.
 	 * @return new instance of {@link RetryTemplate}
 	 */

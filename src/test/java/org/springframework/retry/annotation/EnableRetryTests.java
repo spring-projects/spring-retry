@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2016 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import static org.junit.Assert.fail;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Aldo Sinanaj
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -235,6 +236,10 @@ public class EnableRetryTests {
 		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor
 				.getPropertyValue("retryPolicy");
 		assertEquals(5, retryPolicy.getMaxAttempts());
+		service.service4();
+		assertEquals(11, service.getCount());
+		service.service5();
+		assertEquals(12, service.getCount());
 		context.close();
 	}
 
@@ -544,6 +549,20 @@ public class EnableRetryTests {
 		public void service3() {
 			if (count++ < 8) {
 				throw new RuntimeException();
+			}
+		}
+
+		@Retryable(exceptionExpression = "message.contains('this can be retried')")
+		public void service4() {
+			if (count++ < 10) {
+				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		@Retryable(exceptionExpression = "message.contains('this can be retried')", include = RuntimeException.class)
+		public void service5() {
+			if (count++ < 11) {
+				throw new RuntimeException("this can be retried");
 			}
 		}
 

@@ -292,17 +292,17 @@ Version 1.2 introduces the ability to use expressions for certain properties:
 
 ```java
 
-@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+@Retryable(exceptionExpression="message.contains('this can be retried')")
 public void service1() {
   ...
 }
 
-@Retryable(exceptionExpression="#{message.contains('this can be retried')}")
+@Retryable(exceptionExpression="message.contains('this can be retried')")
 public void service2() {
   ...
 }
 
-@Retryable(exceptionExpression="#{@exceptionChecker.shouldRetry(#root)}",
+@Retryable(exceptionExpression="@exceptionChecker.shouldRetry(#root)",
     maxAttemptsExpression = "#{@integerFiveBean}",
   backoff = @Backoff(delayExpression = "#{1}", maxDelayExpression = "#{5}", multiplierExpression = "#{1.1}"))
 public void service3() {
@@ -310,7 +310,7 @@ public void service3() {
 }
 ```
 
-These use the familier Spring SpEL expression syntax (`#{...}`).
+For `exceptionExpression`, templated expressions (`#{...}`) are deprecated in favor of simple expression string (`message.contains('this can be retried')`), since Spring Retry 1.2.5.
 
 Expressions can contain property placeholders such as `#{${max.delay}}` or `#{@exceptionChecker.${retry.method}(#root)}`
 

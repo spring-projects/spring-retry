@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.springframework.retry.policy;
 
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -33,11 +35,14 @@ import org.springframework.util.Assert;
  * further evaluates an expression against the last thrown exception.
  *
  * @author Gary Russell
+ * @author Aldo Sinanaj
  * @since 1.2
  *
  */
 @SuppressWarnings("serial")
 public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFactoryAware {
+
+	private static final Log logger = LogFactory.getLog(ExpressionRetryPolicy.class);
 
 	private static final TemplateParserContext PARSER_CONTEXT = new TemplateParserContext();
 
@@ -60,8 +65,7 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 */
 	public ExpressionRetryPolicy(String expressionString) {
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString,
-				PARSER_CONTEXT);
+		this.expression = getExpression(expressionString);
 	}
 
 	/**
@@ -92,8 +96,7 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			boolean traverseCauses, String expressionString, boolean defaultValue) {
 		super(maxAttempts, retryableExceptions, traverseCauses, defaultValue);
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString,
-				PARSER_CONTEXT);
+		this.expression = getExpression(expressionString);
 	}
 
 	@Override
@@ -116,6 +119,31 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			return super.canRetry(context) && this.expression
 					.getValue(this.evaluationContext, lastThrowable, Boolean.class);
 		}
+	}
+
+	/**
+	 * Get expression based on the expression string. At the moment supports both literal
+	 * and template expressions. Template expressions are deprecated.
+	 * @param expression the expression string
+	 * @return literal expression or template expression
+	 */
+	private static Expression getExpression(String expression) {
+		if (isTemplate(expression)) {
+			logger.warn("#{...} syntax is not required for this run-time expression "
+					+ "and is deprecated in favor of a simple expression string");
+			return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
+		}
+		return new SpelExpressionParser().parseExpression(expression);
+	}
+
+	/**
+	 * Check if the expression is a template
+	 * @param expression the expression string
+	 * @return true if the expression string is a template
+	 */
+	private static boolean isTemplate(String expression) {
+		return expression.contains(PARSER_CONTEXT.getExpressionPrefix())
+				&& expression.contains(PARSER_CONTEXT.getExpressionSuffix());
 	}
 
 }
