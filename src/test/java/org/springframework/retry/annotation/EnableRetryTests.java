@@ -205,18 +205,30 @@ public class EnableRetryTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfiguration.class);
 		ExpressionService service = context.getBean(ExpressionService.class);
-		service.service1();
+		service.service1WithTemplate();
 		assertEquals(3, service.getCount());
 		try {
-			service.service2();
+			service.service2WithTemplate();
 			fail("expected exception");
 		}
 		catch (RuntimeException e) {
 			assertEquals("this cannot be retried", e.getMessage());
 		}
 		assertEquals(4, service.getCount());
-		service.service3();
+		service.service3WithTemplate();
 		assertEquals(9, service.getCount());
+		assertRetryPolicies(context, service, "service3WithTemplate");
+		service.service1();
+		assertEquals(11, service.getCount());
+		service.service2();
+		assertEquals(12, service.getCount());
+		service.service3();
+		assertEquals(13, service.getCount());
+		assertRetryPolicies(context, service, "service3");
+		context.close();
+	}
+
+	private void assertRetryPolicies(AnnotationConfigApplicationContext context, ExpressionService service, String method) throws NoSuchMethodException {
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
 		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
 				config).getPropertyValue("advice");
@@ -224,7 +236,7 @@ public class EnableRetryTests {
 		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
 				advice).getPropertyValue("delegates");
 		MethodInterceptor interceptor = delegates.get(target(service))
-				.get(ExpressionService.class.getDeclaredMethod("service3"));
+				.get(ExpressionService.class.getDeclaredMethod(method));
 		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
 				.getPropertyValue("retryOperations");
 		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
@@ -236,11 +248,6 @@ public class EnableRetryTests {
 		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor
 				.getPropertyValue("retryPolicy");
 		assertEquals(5, retryPolicy.getMaxAttempts());
-		service.service4();
-		assertEquals(11, service.getCount());
-		service.service5();
-		assertEquals(12, service.getCount());
-		context.close();
 	}
 
 	private Object target(Object target) {
@@ -531,36 +538,43 @@ public class EnableRetryTests {
 		private int count = 0;
 
 		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
-		public void service1() {
+		public void service1WithTemplate() {
 			if (count++ < 2) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
 		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
-		public void service2() {
+		public void service2WithTemplate() {
 			count++;
 			throw new RuntimeException("this cannot be retried");
 		}
 
 		@Retryable(exceptionExpression = "#{@exceptionChecker.${retryMethod}(#root)}", maxAttemptsExpression = "#{@integerFiveBean}", backoff = @Backoff(delayExpression = "#{${one}}", maxDelayExpression = "#{${five}}", multiplierExpression = "#{${onePointOne}}"))
-		public void service3() {
+		public void service3WithTemplate() {
 			if (count++ < 8) {
 				throw new RuntimeException();
 			}
 		}
 
 		@Retryable(exceptionExpression = "message.contains('this can be retried')")
-		public void service4() {
+		public void service1() {
 			if (count++ < 10) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
 		@Retryable(exceptionExpression = "message.contains('this can be retried')", include = RuntimeException.class)
-		public void service5() {
+		public void service2() {
 			if (count++ < 11) {
 				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		@Retryable(exceptionExpression = "@exceptionChecker.${retryMethod}(#root)", maxAttemptsExpression = "@integerFiveBean", backoff = @Backoff(delayExpression = "${one}", maxDelayExpression = "${five}", multiplierExpression = "${onePointOne}"))
+		public void service3() {
+			if (count++ < 12) {
+				throw new RuntimeException();
 			}
 		}
 

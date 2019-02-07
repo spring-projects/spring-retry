@@ -17,6 +17,8 @@ package org.springframework.retry.policy;
 
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -40,6 +42,8 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFactoryAware {
 
+	private static final Log logger = LogFactory.getLog(ExpressionRetryPolicy.class);
+
 	private static final TemplateParserContext PARSER_CONTEXT = new TemplateParserContext();
 
 	private final Expression expression;
@@ -61,8 +65,7 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 */
 	public ExpressionRetryPolicy(String expressionString) {
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = isTemplate(expressionString) ? getTemplateExpression(expressionString)
-													   : new SpelExpressionParser().parseExpression(expressionString);
+		this.expression = getExpression(expressionString);
 	}
 
 	/**
@@ -91,8 +94,7 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			boolean traverseCauses, String expressionString, boolean defaultValue) {
 		super(maxAttempts, retryableExceptions, traverseCauses, defaultValue);
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = isTemplate(expressionString) ? getTemplateExpression(expressionString)
-													   : new SpelExpressionParser().parseExpression(expressionString);
+		this.expression = getExpression(expressionString);
 	}
 
 	@Override
@@ -121,24 +123,23 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 * Check if the expression is a template
 	 * @param expression the expression string
 	 * @return true if the expression string is a template
-	 * @deprecated in favor of using literal expression
 	 */
-	@Deprecated
 	private boolean isTemplate(String expression) {
-		return expression.startsWith(PARSER_CONTEXT.getExpressionPrefix()) && expression.endsWith(PARSER_CONTEXT.getExpressionSuffix());
+		return expression.contains(PARSER_CONTEXT.getExpressionPrefix()) && expression.contains(PARSER_CONTEXT.getExpressionSuffix());
 	}
 
 	/**
-	 * Get template expression.
-	 * Deprecated in favor of literal expression, it is not needed to have templates
-	 * since the expression is evaluated runtime against the last thrown exception
+	 * Get expression based on the expression string.
+	 * At the moment supports both literal and template expressions. Template expressions are deprecated.
 	 * @param expression the expression string
-	 * @return expression
-	 * @deprecated in favor of literal expression
+	 * @return literal expression or template expression
 	 */
-	@Deprecated
-	private Expression getTemplateExpression(String expression) {
-		return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
+	private Expression getExpression(String expression) {
+		if (isTemplate(expression)) {
+			logger.warn("Template expressions are deprecated in favor of literal expressions");
+			return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
+		}
+		return new SpelExpressionParser().parseExpression(expression);
 	}
 
 }

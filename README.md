@@ -297,14 +297,14 @@ public void service2() {
 }
 
 @Retryable(exceptionExpression="@exceptionChecker.shouldRetry(#root)",
-    maxAttemptsExpression = "#{@integerFiveBean}",
-  backoff = @Backoff(delayExpression = "#{1}", maxDelayExpression = "#{5}", multiplierExpression = "#{1.1}"))
+    maxAttemptsExpression = "@integerFiveBean",
+      backoff = @Backoff(delayExpression = "${minDelay}", maxDelayExpression = "5", multiplierExpression = "1.1"))
 public void service3() {
   ...
 }
 ```
 
-For `exceptionExpression`, templated expressions (`#{message.contains('this can be retried')}`) are deprecated in favor of literal expressions (`message.contains('this can be retried')`), since Spring Retry 1.2.5.
+These use the familiar Spring SpEL literal expression syntax.
 
 Expressions can contain property placeholders such as `${max.delay}` or `@exceptionChecker.${retry.method}(#root)`
 

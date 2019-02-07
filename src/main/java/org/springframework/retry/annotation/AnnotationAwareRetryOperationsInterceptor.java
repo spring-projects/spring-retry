@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,6 +37,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.expression.Expression;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -69,10 +72,13 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Aldo Sinanaj
  * @since 1.1
  *
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
+
+	private static final Log logger = LogFactory.getLog(ExpressionRetryPolicy.class);
 
 	private static final TemplateParserContext PARSER_CONTEXT = new TemplateParserContext();
 
@@ -256,8 +262,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private long getOpenTimeout(CircuitBreaker circuit) {
 		if (StringUtils.hasText(circuit.openTimeoutExpression())) {
-			Long value = PARSER.parseExpression(resolve(circuit.openTimeoutExpression()), PARSER_CONTEXT)
-					.getValue(Long.class);
+			final Expression openTimeoutExpression = getExpression(resolve(circuit.openTimeoutExpression()));
+			Long value = openTimeoutExpression.getValue(Long.class);
 			if (value != null) {
 				return value;
 			}
@@ -267,8 +273,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private long getResetTimeout(CircuitBreaker circuit) {
 		if (StringUtils.hasText(circuit.resetTimeoutExpression())) {
-			Long value = PARSER.parseExpression(resolve(circuit.resetTimeoutExpression()), PARSER_CONTEXT)
-					.getValue(Long.class);
+			final Expression resetTimeoutExpression = getExpression(resolve(circuit.resetTimeoutExpression()));
+			Long value = resetTimeoutExpression.getValue(Long.class);
 			if (value != null) {
 				return value;
 			}
@@ -331,8 +337,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
 		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
 		if (StringUtils.hasText(maxAttemptsExpression)) {
-			maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Integer.class);
+			final Expression expression = getExpression(resolve(maxAttemptsExpression));
+			maxAttempts = expression.getValue(this.evaluationContext, Integer.class);
 		}
 		if (includes.length == 0 && excludes.length == 0) {
 			SimpleRetryPolicy simple = hasExpression ? new ExpressionRetryPolicy(resolve(exceptionExpression))
@@ -361,18 +367,18 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
 		if (StringUtils.hasText(backoff.delayExpression())) {
-			min = PARSER.parseExpression(resolve(backoff.delayExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Long.class);
+			final Expression minDelayExpression = getExpression(resolve(backoff.delayExpression()));
+			min = minDelayExpression.getValue(this.evaluationContext, Long.class);
 		}
 		long max = backoff.maxDelay();
 		if (StringUtils.hasText(backoff.maxDelayExpression())) {
-			max = PARSER.parseExpression(resolve(backoff.maxDelayExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Long.class);
+			final Expression maxDelayExpression = getExpression(resolve(backoff.maxDelayExpression()));
+			max = maxDelayExpression.getValue(this.evaluationContext, Long.class);
 		}
 		double multiplier = backoff.multiplier();
 		if (StringUtils.hasText(backoff.multiplierExpression())) {
-			multiplier = PARSER.parseExpression(resolve(backoff.multiplierExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Double.class);
+			final Expression multiplierExpression = getExpression(resolve(backoff.multiplierExpression()));
+			multiplier = multiplierExpression.getValue(this.evaluationContext, Double.class);
 		}
 		if (multiplier > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
@@ -414,6 +420,29 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			return ((ConfigurableBeanFactory) this.beanFactory).resolveEmbeddedValue(value);
 		}
 		return value;
+	}
+
+	/**
+	 * Check if the expression is a template
+	 * @param expression the expression string
+	 * @return true if the expression string is a template
+	 */
+	private boolean isTemplate(String expression) {
+		return expression.contains(PARSER_CONTEXT.getExpressionPrefix()) && expression.contains(PARSER_CONTEXT.getExpressionSuffix());
+	}
+
+	/**
+	 * Get expression based on the expression string.
+	 * At the moment supports both literal and template expressions. Template expressions are deprecated.
+	 * @param expression the expression string
+	 * @return literal expression or template expression
+	 */
+	private Expression getExpression(String expression) {
+		if (isTemplate(expression)) {
+			logger.warn("Template expressions are deprecated in favor of literal expressions");
+			return PARSER.parseExpression(expression, PARSER_CONTEXT);
+		}
+		return PARSER.parseExpression(expression);
 	}
 
 }

@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Dave Syer
  * @author Gary Russell
- *
+ * @author Aldo Sinanaj
  */
 public class CircuitBreakerTests {
 
@@ -80,22 +80,29 @@ public class CircuitBreakerTests {
 		}
 		// Not called again once circuit is open
 		assertEquals(3, service.getCount());
-		service.expressionService();
+		service.expressionServiceWithTemplate();
 		assertEquals(4, service.getCount());
+		assertExpressions(service, "expressionServiceWithTemplate");
+		service.expressionService();
+		assertEquals(5, service.getCount());
+		assertExpressions(service, "expressionService");
+		context.close();
+	}
+
+	private void assertExpressions(Service service, String method) throws NoSuchMethodException {
 		Advised advised = (Advised) service;
 		Advisor advisor = advised.getAdvisors()[0];
 		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
 		assertTrue(delegates.size() == 1);
 		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
-				.get(Service.class.getDeclaredMethod("expressionService"));
+				.get(Service.class.getDeclaredMethod(method));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
 		assertEquals(8, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")) ;
 		assertEquals(19000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")) ;
 		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")) ;
 		assertEquals("#root instanceof RuntimeExpression",
 				accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"));
-		context.close();
 	}
 
 	@Configuration
@@ -127,10 +134,17 @@ public class CircuitBreakerTests {
 				openTimeoutExpression = "#{${bar:19}000}",
 				resetTimeoutExpression = "#{${baz:20}000}",
 				exceptionExpression = "#{#root instanceof RuntimeExpression}")
-		public void expressionService() {
+		public void expressionServiceWithTemplate() {
 			this.count++;
 		}
 
+		@CircuitBreaker(maxAttemptsExpression = "2 * ${foo:4}",
+				openTimeoutExpression = "${bar:19}000",
+				resetTimeoutExpression = "${baz:20}000",
+				exceptionExpression = "#root instanceof RuntimeExpression")
+		public void expressionService() {
+			this.count++;
+		}
 
 		public RetryContext getContext() {
 			return this.context;
