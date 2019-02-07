@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 
+import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
 
@@ -219,11 +220,9 @@ public class EnableRetryTests {
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
 		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
 				config).getPropertyValue("advice");
-		@SuppressWarnings("unchecked")
-		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
-				advice).getPropertyValue("delegates");
-		MethodInterceptor interceptor = delegates.get(target(service))
-				.get(ExpressionService.class.getDeclaredMethod("service3"));
+		Method getDelegateMethod = advice.getClass().getDeclaredMethod("getDelegate", Object.class, Method.class);
+		getDelegateMethod.setAccessible(true);
+		MethodInterceptor interceptor = (MethodInterceptor) getDelegateMethod.invoke(advice, service, service.getClass().getMethod("service3"));
 		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
 				.getPropertyValue("retryOperations");
 		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);

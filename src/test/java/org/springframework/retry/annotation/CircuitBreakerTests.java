@@ -16,8 +16,10 @@
 
 package org.springframework.retry.annotation;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
+import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.Test;
 
@@ -84,11 +86,12 @@ public class CircuitBreakerTests {
 		assertEquals(4, service.getCount());
 		Advised advised = (Advised) service;
 		Advisor advisor = advised.getAdvisors()[0];
-		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
-		assertTrue(delegates.size() == 1);
-		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
-		MethodInterceptor interceptor = (MethodInterceptor) methodMap
-				.get(Service.class.getDeclaredMethod("expressionService"));
+
+		Advice advice = advisor.getAdvice();
+		AnnotationAwareRetryOperationsInterceptor annotationAwareRetryOperationsInterceptor = ((AnnotationAwareRetryOperationsInterceptor) advice);
+		Method getDelegateMethod = annotationAwareRetryOperationsInterceptor.getClass().getDeclaredMethod("getDelegate", Object.class, Method.class);
+		getDelegateMethod.setAccessible(true);
+		MethodInterceptor interceptor = (MethodInterceptor) getDelegateMethod.invoke(advice, service, service.getClass().getMethod("expressionService"));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
 		assertEquals(8, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")) ;
 		assertEquals(19000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")) ;

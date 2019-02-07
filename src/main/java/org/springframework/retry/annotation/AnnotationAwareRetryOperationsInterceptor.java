@@ -80,9 +80,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
-	private final Map<Object, Map<Method, MethodInterceptor>> delegates =
-			new HashMap<Object, Map<Method, MethodInterceptor>>();
-
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
 	private MethodArgumentsKeyGenerator methodArgumentsKeyGenerator;
@@ -158,38 +155,20 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {
-		if (!this.delegates.containsKey(target) || !this.delegates.get(target).containsKey(method)) {
-			synchronized (this.delegates) {
-				if (!this.delegates.containsKey(target)) {
-					this.delegates.put(target, new HashMap<Method, MethodInterceptor>());
-				}
-				Map<Method, MethodInterceptor> delegatesForTarget = this.delegates.get(target);
-				if (!delegatesForTarget.containsKey(method)) {
-					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
-					if (retryable == null) {
-						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
-					}
-					if (retryable == null) {
-						retryable = findAnnotationOnTarget(target, method);
-					}
-					if (retryable == null) {
-						return delegatesForTarget.put(method, null);
-					}
-					MethodInterceptor delegate;
-					if (StringUtils.hasText(retryable.interceptor())) {
-						delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
-					}
-					else if (retryable.stateful()) {
-						delegate = getStatefulInterceptor(target, method, retryable);
-					}
-					else {
-						delegate = getStatelessInterceptor(target, method, retryable);
-					}
-					delegatesForTarget.put(method, delegate);
-				}
+		MethodInterceptor delegate = null;
+		Retryable retryable = findAnnotationOnTarget(target, method);
+		if (retryable != null) {
+			if (StringUtils.hasText(retryable.interceptor())) {
+				delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
+			}
+			else if (retryable.stateful()) {
+				delegate = getStatefulInterceptor(target, method, retryable);
+			}
+			else {
+				delegate = getStatelessInterceptor(target, method, retryable);
 			}
 		}
-		return this.delegates.get(target).get(method);
+		return delegate;
 	}
 
 	private Retryable findAnnotationOnTarget(Object target, Method method) {
