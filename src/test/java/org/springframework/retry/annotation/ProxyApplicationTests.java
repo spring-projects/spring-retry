@@ -53,7 +53,7 @@ public class ProxyApplicationTests {
 	}
 
 	private int count() {
-		URLClassLoader classLoader = (URLClassLoader) getClass().getClassLoader();
+		ClassLoader classLoader = getClass().getClassLoader();
 		@SuppressWarnings("unchecked")
 		Vector<Class<?>> classes = (Vector<Class<?>>) ReflectionTestUtils
 				.getField(classLoader, "classes");
