@@ -22,11 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.naming.OperationNotSupportedException;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.IntroductionInterceptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -58,6 +62,7 @@ import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
@@ -70,7 +75,6 @@ import org.springframework.util.StringUtils;
  * @author Artem Bilan
  * @author Gary Russell
  * @since 1.1
- *
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
 
@@ -78,9 +82,16 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
+	private static final MethodInterceptor NULL_INTERCEPTOR = new MethodInterceptor() {
+		@Override
+		public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+			throw new OperationNotSupportedException("Not supported");
+		}
+	};
+
 	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
-	private final Map<Object, Map<Method, MethodInterceptor>> delegates = new HashMap<Object, Map<Method, MethodInterceptor>>();
+	private final ConcurrentReferenceHashMap<Object, ConcurrentMap<Method, MethodInterceptor>> delegates = new ConcurrentReferenceHashMap<Object, ConcurrentMap<Method, MethodInterceptor>>();
 
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
@@ -156,38 +167,36 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private MethodInterceptor getDelegate(Object target, Method method) {
-		if (!this.delegates.containsKey(target) || !this.delegates.get(target).containsKey(method)) {
-			synchronized (this.delegates) {
-				if (!this.delegates.containsKey(target)) {
-					this.delegates.put(target, new HashMap<Method, MethodInterceptor>());
+		ConcurrentMap<Method, MethodInterceptor> cachedMethods = delegates.get(target);
+		if (cachedMethods == null) {
+			cachedMethods = new ConcurrentHashMap<Method, MethodInterceptor>();
+		}
+		MethodInterceptor delegate = cachedMethods.get(method);
+		if (delegate == null) {
+			MethodInterceptor interceptor = NULL_INTERCEPTOR;
+			Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
+			if (retryable == null) {
+				retryable = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Retryable.class);
+			}
+			if (retryable == null) {
+				retryable = findAnnotationOnTarget(target, method);
+			}
+			if (retryable != null) {
+				if (StringUtils.hasText(retryable.interceptor())) {
+					interceptor = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
 				}
-				Map<Method, MethodInterceptor> delegatesForTarget = this.delegates.get(target);
-				if (!delegatesForTarget.containsKey(method)) {
-					Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
-					if (retryable == null) {
-						retryable = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Retryable.class);
-					}
-					if (retryable == null) {
-						retryable = findAnnotationOnTarget(target, method);
-					}
-					if (retryable == null) {
-						return delegatesForTarget.put(method, null);
-					}
-					MethodInterceptor delegate;
-					if (StringUtils.hasText(retryable.interceptor())) {
-						delegate = this.beanFactory.getBean(retryable.interceptor(), MethodInterceptor.class);
-					}
-					else if (retryable.stateful()) {
-						delegate = getStatefulInterceptor(target, method, retryable);
-					}
-					else {
-						delegate = getStatelessInterceptor(target, method, retryable);
-					}
-					delegatesForTarget.put(method, delegate);
+				else if (retryable.stateful()) {
+					interceptor = getStatefulInterceptor(target, method, retryable);
+				}
+				else {
+					interceptor = getStatelessInterceptor(target, method, retryable);
 				}
 			}
+			cachedMethods.putIfAbsent(method, interceptor);
+			delegate = cachedMethods.get(method);
 		}
-		return this.delegates.get(target).get(method);
+		delegates.putIfAbsent(target, cachedMethods);
+		return delegate == NULL_INTERCEPTOR ? null : delegate;
 	}
 
 	private Retryable findAnnotationOnTarget(Object target, Method method) {
@@ -195,7 +204,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
 			Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod, Retryable.class);
 			if (retryable == null) {
-				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(), Retryable.class);
+				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(),
+						Retryable.class);
 			}
 
 			return retryable;
