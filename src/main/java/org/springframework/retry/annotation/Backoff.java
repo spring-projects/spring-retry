@@ -60,7 +60,7 @@ public @interface Backoff {
 	 * as a minimum value in the uniform case.
 	 * @return the initial or canonical backoff period in milliseconds (default 1000)
 	 */
-	long delay() default 0;
+	long delay() default 1000;
 
 	/**
 	 * The maximimum wait (in milliseconds) between retries. If less than the
