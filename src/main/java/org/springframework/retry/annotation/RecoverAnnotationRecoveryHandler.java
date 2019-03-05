@@ -117,7 +117,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private boolean compareParameters(Object[] args, int argCount, Class<?>[] parameterTypes) {
 		if (argCount == (args.length + 1)) {
 			int startingIndex = 0;
-			if (parameterTypes.length > 0 && parameterTypes[0] == Throwable.class) {
+                        if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
 				startingIndex = 1;
 			}
 			for (int i = startingIndex; i < parameterTypes.length; i++) {
