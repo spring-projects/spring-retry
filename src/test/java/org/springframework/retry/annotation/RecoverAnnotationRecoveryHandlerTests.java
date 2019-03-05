@@ -146,6 +146,19 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
 
 	}
+        
+        @Test
+	public void multipleQualifyingRecoverMethodsExtendsThrowable(){
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversExtendsThrowable.class,
+				"foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecoversExtendsThrowable(), foo);
+		assertEquals(2,
+				handler.recover(new Object[] { "Kevin" }, new IllegalArgumentException("Planned")));
+                assertEquals(3,
+				handler.recover(new Object[] { "Kevin" }, new UnsupportedOperationException("Planned")));
+
+	}
 
 	private static class InAccessibleRecover {
 
@@ -306,6 +319,30 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		@Recover
 		public int fooRecover(Throwable e, String name) {
+			return 3;
+		}
+
+	}
+        
+        protected static class MultipleQualifyingRecoversExtendsThrowable {
+
+		@Retryable
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(IllegalArgumentException e, String name) {
+			return 1;
+		}
+                
+                @Recover
+		public int barRecover(IllegalArgumentException e, String name) {
+			return 2;
+		}
+
+		@Recover
+		public int bazRecover(UnsupportedOperationException e, String name) {
 			return 3;
 		}
 
