@@ -49,7 +49,8 @@ import org.springframework.retry.backoff.BackOffPolicy;
 public @interface Backoff {
 
 	/**
-	 * Synonym for {@link #delay()}.
+	 * Synonym for {@link #delay()}. When {@link #delay()} is non-zero, value of this element
+	 * should be ignored, otherwise value of this element should be taken.
 	 *
 	 * @return the delay in milliseconds (default 1000)
 	 */
@@ -57,10 +58,13 @@ public @interface Backoff {
 
 	/**
 	 * A canonical backoff period. Used as an initial value in the exponential case, and
-	 * as a minimum value in the uniform case.
-	 * @return the initial or canonical backoff period in milliseconds (default 1000)
+	 * as a minimum value in the uniform case. when the value of this element is 0,
+	 * value of element {@link #value()} should be taken, otherwise value of this
+	 * element should be taken and {@link #value()} should be ignored.
+	 *
+	 * @return the initial or canonical backoff period in milliseconds (default 0)
 	 */
-	long delay() default 1000;
+	long delay() default 0;
 
 	/**
 	 * The maximimum wait (in milliseconds) between retries. If less than the
