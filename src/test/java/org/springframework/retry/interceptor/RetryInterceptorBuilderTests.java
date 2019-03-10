@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class RetryInterceptorBuilderTests {
 	@Test
 	public void testBasic() {
 		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful().build();
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class RetryInterceptorBuilderTests {
 		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
 				.retryOperations(retryOperations)
 				.build();
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 		assertSame(retryOperations, TestUtils.getPropertyValue(interceptor, "retryOperations"));
 	}
 
@@ -64,7 +64,7 @@ public class RetryInterceptorBuilderTests {
 				RetryInterceptorBuilder.stateful()
 					.maxAttempts(5)
 					.build();
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class RetryInterceptorBuilderTests {
 					.backOffOptions(1, 2, 10)
 					.build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 		assertEquals(1L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.initialInterval"));
 		assertEquals(2.0, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.multiplier"));
 		assertEquals(10L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.maxInterval"));
@@ -89,7 +89,7 @@ public class RetryInterceptorBuilderTests {
 					.backOffPolicy(new FixedBackOffPolicy())
 					.build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 		assertEquals(1000L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod"));
 	}
 
@@ -110,7 +110,7 @@ public class RetryInterceptorBuilderTests {
 					.backOffPolicy(new FixedBackOffPolicy())
 					.build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 		assertEquals(1000L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod"));
 		final AtomicInteger count = new AtomicInteger();
 		Foo delegate = createDelegate(interceptor, count);
@@ -131,7 +131,7 @@ public class RetryInterceptorBuilderTests {
 				.retryPolicy(new SimpleRetryPolicy(15, Collections
 						.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true), true))
 				.build();
-		assertEquals(15, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(15, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 	}
 
 	@Test
@@ -148,7 +148,7 @@ public class RetryInterceptorBuilderTests {
 				})
 				.build();
 
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttemptsRetryPolicy.maxAttempts"));
 		final AtomicInteger count = new AtomicInteger();
 		Foo delegate = createDelegate(interceptor, count);
 		Object message = "";

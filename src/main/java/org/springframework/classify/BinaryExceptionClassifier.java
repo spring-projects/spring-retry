@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.springframework.classify;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +36,19 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boolean> {
 
+	private static final BinaryExceptionClassifier DEFAULT_CLASSIFIER = new BinaryExceptionClassifier(
+			Collections.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true), false
+	);
+
 	private boolean traverseCauses;
+
+	public static BinaryExceptionClassifierBuilder newBuilder() {
+		return new BinaryExceptionClassifierBuilder();
+	}
+
+	public static BinaryExceptionClassifier getDefaultClassifier() {
+		return DEFAULT_CLASSIFIER;
+	}
 
 	/**
 	 * Create a binary exception classifier with the provided default value.
@@ -86,7 +99,7 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 
 	/**
 	 * Create a binary exception classifier using the given classification map
-	 * and a default classification of false.
+	 * and the given value for default class.
 	 *
 	 * @param defaultValue the default value to use
 	 * @param typeMap the map of types to classify
@@ -95,6 +108,18 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 		super(typeMap, defaultValue);
 	}
 
+	/**
+	 * Create a binary exception classifier.
+	 *
+	 * @param defaultValue the default value to use
+	 * @param typeMap the map of types to classify
+	 * @param traverseCauses if true, throwable's causes will be inspected to find non-default class
+	 */
+	public BinaryExceptionClassifier(Map<Class<? extends Throwable>, Boolean> typeMap, boolean defaultValue,
+			boolean traverseCauses) {
+		super(typeMap, defaultValue);
+		this.traverseCauses = traverseCauses;
+	}
 
 	public void setTraverseCauses(boolean traverseCauses) {
 		this.traverseCauses = traverseCauses;
