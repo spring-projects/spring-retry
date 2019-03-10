@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.springframework.retry.policy;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.classify.BinaryExceptionClassifier;
@@ -26,7 +25,6 @@ import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.util.ClassUtils;
 
 /**
- *
  * Simple retry policy that retries a fixed number of times for a set of named
  * exceptions (and subclasses). The number of attempts includes the initial try,
  * so e.g.
@@ -38,10 +36,21 @@ import org.springframework.util.ClassUtils;
  *
  * will execute the callback at least once, and as many as 3 times.
  *
+ * Since version 1.3 it is not necessary to use this class. The same behaviour
+ * can be achieved by constructing a {@link CompositeRetryPolicy} with {@link MaxAttemptsRetryPolicy}
+ * and {@link BinaryExceptionClassifierRetryPolicy} inside, that is actually performed by:
+ * <pre> {@code:
+ * RetryTemplate.newBuilder()
+ *                  .maxAttempts(3)
+ *                  .retryOn(Exception.class)
+ *                  .build();
+ * }</pre>
+ * or by {@link org.springframework.retry.support.RetryTemplate#newDefaultInstance()}
+ *
  * @author Dave Syer
  * @author Rob Harrop
  * @author Gary Russell
- *
+ * @author Aleksandr Shamukov
  */
 @SuppressWarnings("serial")
 public class SimpleRetryPolicy implements RetryPolicy {
@@ -60,8 +69,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * attempts, retrying all exceptions.
 	 */
 	public SimpleRetryPolicy() {
-		this(DEFAULT_MAX_ATTEMPTS, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true));
+		this(DEFAULT_MAX_ATTEMPTS, BinaryExceptionClassifier.newDefaultClassifier());
 	}
 
 	/**
@@ -69,8 +77,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * attempts, retrying all exceptions.
 	 */
 	public SimpleRetryPolicy(int maxAttempts) {
-		this(maxAttempts, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true));
+		this(maxAttempts, BinaryExceptionClassifier.newDefaultClassifier());
 	}
 
 	/**
@@ -117,6 +124,19 @@ public class SimpleRetryPolicy implements RetryPolicy {
 		this.maxAttempts = maxAttempts;
 		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions, defaultValue);
 		this.retryableClassifier.setTraverseCauses(traverseCauses);
+	}
+
+	/**
+	 * Create a {@link SimpleRetryPolicy} with the specified number of retry
+	 * attempts and provided exception classifier.
+	 *
+	 * @param maxAttempts the maximum number of attempts
+	 * @param classifier custom exception classifier
+	 */
+	public SimpleRetryPolicy(int maxAttempts, BinaryExceptionClassifier classifier) {
+		super();
+		this.maxAttempts = maxAttempts;
+		this.retryableClassifier = classifier;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2014 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,15 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * properties. The {@link org.springframework.retry.backoff.BackOffPolicy} controls how
  * long the pause is between each individual retry attempt.
  * <p>
+ * A new instance can be fluently configured via {@link #newBuilder}, e.g:
+ * <pre> {@code
+ * RetryTemplate.newBuilder()
+ *                 .maxAttempts(10)
+ *                 .fixedBackoff(1000)
+ *                 .build();
+ * }</pre>
+ * See {@link RetryTemplateBuilder} for more examples and details.
+ * <p>
  * This class is thread-safe and suitable for concurrent access when executing operations
  * and when performing configuration changes. As such, it is possible to change the number
  * of retries on the fly, as well as the {@link BackOffPolicy} used and no in progress
@@ -67,6 +76,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * @author Gary Russell
  * @author Artem Bilan
  * @author Josh Long
+ * @author Aleksandr Shamukov
  */
 public class RetryTemplate implements RetryOperations {
 
@@ -87,6 +97,29 @@ public class RetryTemplate implements RetryOperations {
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
 	private boolean throwLastExceptionOnExhausted;
+
+	/**
+	 * Main entry point to configure RetryTemplate using fluent API.
+	 * See {@link RetryTemplateBuilder} for usage examples and details.
+	 *
+	 * @return a new instance of RetryTemplateBuilder with preset default behaviour, that can be overwritten during
+	 * 		   manual configuration
+	 * @since 1.3
+	 */
+	public static RetryTemplateBuilder newBuilder() {
+		return new RetryTemplateBuilder();
+	}
+
+	/**
+	 * Creates a new default instance. The properties of default instance are described in {@link RetryTemplateBuilder}
+	 * documentation.
+	 *
+	 * @return a new instance of RetryTemplate with default behaviour
+	 * @since 1.3
+	 */
+	public static RetryTemplate newDefaultInstance() {
+		return new RetryTemplateBuilder().build();
+	}
 
 	/**
 	 * @param throwLastExceptionOnExhausted the throwLastExceptionOnExhausted to set
