@@ -84,8 +84,6 @@ public class RetryTemplateBuilderTest {
                 .exponentialBackoff(99, 1.5, 1717)
                 .retryOn(IOException.class)
                 .traversingCauses()
-                .throwLastExceptionOnExhausted()
-                .retryContextCache(customCache)
                 .withListener(listener1)
                 .withListeners(Collections.singletonList(listener2))
                 .build();
@@ -103,9 +101,6 @@ public class RetryTemplateBuilderTest {
                 10,
                 ((MaxAttemptsRetryPolicy)policyTuple.baseRetryPolicy).getMaxAttempts()
         );
-
-        Assert.assertTrue(getPropertyValue(template, "throwLastExceptionOnExhausted", Boolean.class));
-        Assert.assertEquals(customCache, getPropertyValue(template, "retryContextCache"));
 
         List<RetryListener> listeners = Arrays.asList(getPropertyValue(template, "listeners", RetryListener[].class));
         Assert.assertEquals(2, listeners.size());

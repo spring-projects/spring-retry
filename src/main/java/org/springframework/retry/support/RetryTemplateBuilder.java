@@ -17,15 +17,12 @@ import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
-import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
-import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.util.Assert;
 
 /**
  * Fluent API to configure new instance of RetryTemplate.
- * All time units are in milliseconds.
  * For detailed description of each builder method - see it's doc.
  *
  * <p>
@@ -53,21 +50,22 @@ import org.springframework.util.Assert;
  * <p>
  * The builder provides the following defaults:
  * <ul>
- * <li> max attempts = 3 (initial + 2 retries) Inherited from {@link MaxAttemptsRetryPolicy} </li>
- * <li> retry only on {@link Exception} and it's subclasses, without traversing causes
- *      Inherited from {@link BinaryExceptionClassifier#getDefaultClassifier()} </li>
- * <li> no backoff (retry immediately) </li>
- * <li> throw an {@link org.springframework.retry.ExhaustedRetryException} on exhausted,
- *      instead of rethrowing original throwable. Inherited from {@link RetryTemplate} </li>
- * <li> {@link MapRetryContextCache} implementation for retryContextCache. Inherited from
- *      {@link RetryTemplate} </li>
+ * <li> retry policy: max attempts = 3 (initial + 2 retries) </li>
+ * <li> backoff policy: no backoff (retry immediately) </li>
+ * <li> exception classification: retry only on {@link Exception} and it's subclasses,
+ *      without traversing of causes </li>
  * </ul>
+ *
+ * <p>
+ * The builder supports only widely used properties of {@link RetryTemplate}. More specific
+ * properties can be configured directly (after building).
+ *
  * <p>
  * Not thread safe. Building should be performed in a single thread. Also, there is no
  * guarantee that all constructors of all fields are thread safe in-depth (means employing
  * only volatile and final writes), so, in concurrent environment, it is recommended to
  * ensure presence of happens-before between publication and any usage. (e.g. publication
- * via volatile write)
+ * via volatile write, or other safe publication technique)
  *
  * @author Aleksandr Shamukov
  * @since 1.3
@@ -78,8 +76,6 @@ public class RetryTemplateBuilder {
     private BackOffPolicy backOffPolicy;
     private List<RetryListener> listeners;
     private BinaryExceptionClassifierBuilder classifierBuilder;
-    private RetryContextCache retryContextCache;
-    private Boolean throwLastExceptionOnExhausted;
 
     /* ---------------- Configure retry policy -------------- */
 
@@ -153,7 +149,15 @@ public class RetryTemplateBuilder {
 
     /**
      * Use exponential backoff policy.
+     * The formula of backoff period:
+     * <p>
+     * {@code currentInterval = Math.min(initialInterval * Math.pow(multiplier, retryNum), maxInterval)}
+     * <p>
+     * (for first attempt retryNum = 0)
      *
+     * @param initialInterval in milliseconds
+     * @param multiplier see the formula above
+     * @param maxInterval in milliseconds
      * @see ExponentialBackOffPolicy
      */
     public RetryTemplateBuilder exponentialBackoff(long initialInterval, double multiplier, long maxInterval) {
@@ -161,8 +165,18 @@ public class RetryTemplateBuilder {
     }
 
     /**
-     * Use exponential backoff policy with optional randomness.
+     * Use exponential backoff policy.
+     * The formula of backoff period (without randomness):
+     * <p>
+     * {@code currentInterval = Math.min(initialInterval * Math.pow(multiplier, retryNum), maxInterval)}
+     * <p>
+     * (for first attempt retryNum = 0)
      *
+     * @param initialInterval in milliseconds
+     * @param multiplier see the formula above
+     * @param maxInterval in milliseconds
+     * @param withRandom adds some randomness to backoff intervals. For details, see
+     *        {@link ExponentialRandomBackOffPolicy}
      * @see ExponentialBackOffPolicy
      * @see ExponentialRandomBackOffPolicy
      */
@@ -184,8 +198,9 @@ public class RetryTemplateBuilder {
     }
 
     /**
-     * Retry after fixed amount of millis.
+     * Perform each retry after fixed amount of time.
      *
+     * @param interval fixed interval in milliseconds
      * @see FixedBackOffPolicy
      */
     public RetryTemplateBuilder fixedBackoff(long interval) {
@@ -200,6 +215,8 @@ public class RetryTemplateBuilder {
     /**
      * Use {@link UniformRandomBackOffPolicy}, see it's doc for details.
      *
+     * @param minInterval in milliseconds
+     * @param maxInterval in milliseconds
      * @see UniformRandomBackOffPolicy
      */
     public RetryTemplateBuilder uniformRandomBackoff(long minInterval, long maxInterval) {
@@ -335,21 +352,6 @@ public class RetryTemplateBuilder {
     }
 
 
-    /* ---------------- Other properties -------------- */
-
-    public RetryTemplateBuilder throwLastExceptionOnExhausted() {
-        this.throwLastExceptionOnExhausted = true;
-        return this;
-    }
-
-    public RetryTemplateBuilder retryContextCache(RetryContextCache retryContextCache) {
-        Assert.isNull(this.retryContextCache, "You have already selected retry context cache");
-        Assert.notNull(retryContextCache, "You should provide non null retry context cache");
-        this.retryContextCache = retryContextCache;
-        return this;
-    }
-
-
     /* ---------------- Building -------------- */
 
     /**
@@ -398,15 +400,6 @@ public class RetryTemplateBuilder {
 
         if (listeners != null) {
             retryTemplate.setListeners(listeners.toArray(new RetryListener[0]));
-        }
-
-        // Others
-
-        if (throwLastExceptionOnExhausted != null) {
-            retryTemplate.setThrowLastExceptionOnExhausted(throwLastExceptionOnExhausted);
-        }
-        if (retryContextCache != null) {
-            retryTemplate.setRetryContextCache(retryContextCache);
         }
 
         return retryTemplate;
