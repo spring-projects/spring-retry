@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
@@ -7,15 +7,15 @@
 	<name>Spring Retry</name>
 	<description><![CDATA[Spring Retry provides an abstraction around retrying failed operations, with an emphasis on declarative control of the process and policy-based bahaviour that is easy to extend and customize.  For instance, you can configure a plain POJO operation to retry if it fails, based on the type of exception, and with a fixed or exponential backoff.
     ]]></description>
-	<url>http://www.springsource.org</url>
+	<url>https://www.springsource.org</url>
 	<organization>
 		<name>SpringSource</name>
-		<url>http://www.springsource.com</url>
+		<url>https://www.springsource.com</url>
 	</organization>
 	<licenses>
 		<license>
 			<name>Apache 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
 	<packaging>jar</packaging>
@@ -99,7 +99,7 @@
 	</profiles>
 
 	<scm>
-		<url>http://github.com/spring-projects/spring-retry</url>
+		<url>https://github.com/spring-projects/spring-retry</url>
 		<connection>scm:git:git://github.com/spring-projects/spring-retry.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/spring-projects/spring-retry.git</developerConnection>
 		<tag>HEAD</tag>
@@ -115,7 +115,7 @@
 
 	<distributionManagement>
 		<!-- see 'staging' profile for dry-run deployment settings -->
-		<downloadUrl>http://www.springsource.com/download/community
+		<downloadUrl>https://www.springsource.com/download/community
 		</downloadUrl>
 		<site>
 			<id>spring-docs</id>
