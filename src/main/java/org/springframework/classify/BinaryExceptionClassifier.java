@@ -36,18 +36,17 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boolean> {
 
-	private static final BinaryExceptionClassifier DEFAULT_CLASSIFIER = new BinaryExceptionClassifier(
-			Collections.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true), false
-	);
-
 	private boolean traverseCauses;
 
 	public static BinaryExceptionClassifierBuilder newBuilder() {
 		return new BinaryExceptionClassifierBuilder();
 	}
 
-	public static BinaryExceptionClassifier getDefaultClassifier() {
-		return DEFAULT_CLASSIFIER;
+	public static BinaryExceptionClassifier newDefaultClassifier() {
+		// create new instance for each call due to mutability
+		return new BinaryExceptionClassifier(
+				Collections.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true), false
+		);
 	}
 
 	/**

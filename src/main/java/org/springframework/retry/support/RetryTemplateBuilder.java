@@ -374,7 +374,7 @@ public class RetryTemplateBuilder {
 
         BinaryExceptionClassifier exceptionClassifier = classifierBuilder != null
                 ? classifierBuilder.build()
-                : BinaryExceptionClassifier.getDefaultClassifier();
+                : BinaryExceptionClassifier.newDefaultClassifier();
 
         // Retry policy
 

@@ -162,7 +162,7 @@ public class RetryTemplateBuilderTest {
 
     private void assertDefaultClassifier(PolicyTuple policyTuple) {
         Assert.assertEquals(
-                BinaryExceptionClassifier.getDefaultClassifier(),
+                BinaryExceptionClassifier.newDefaultClassifier(),
                 policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier()
         );
     }

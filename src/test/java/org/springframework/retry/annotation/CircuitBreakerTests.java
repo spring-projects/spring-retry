@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class CircuitBreakerTests {
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
 				.get(Service.class.getDeclaredMethod("expressionService"));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
-		assertEquals(8, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttemptsRetryPolicy.maxAttempts")) ;
+		assertEquals(8, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")) ;
 		assertEquals(19000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")) ;
 		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")) ;
 		assertEquals("#root instanceof RuntimeExpression",

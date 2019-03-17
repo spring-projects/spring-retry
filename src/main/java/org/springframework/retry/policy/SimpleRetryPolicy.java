@@ -19,7 +19,9 @@ package org.springframework.retry.policy;
 import java.util.Map;
 
 import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -51,25 +53,23 @@ import org.springframework.util.ClassUtils;
  * @author Aleksandr Shamukov
  */
 @SuppressWarnings("serial")
-public class SimpleRetryPolicy extends CompositeRetryPolicy {
+public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
 	 * The default limit to the number of attempts for a new policy.
 	 */
 	public final static int DEFAULT_MAX_ATTEMPTS = 3;
 
-	// The reference to maxAttemptsRetryPolicy is held here to allow usage of public
-	// simpleRetryPolicy.setMaxAttempts(), while the link to exceptionClassifierRetryPolicy
-	// is held just for symmetry.
-	private final MaxAttemptsRetryPolicy maxAttemptsRetryPolicy;
-	private final BinaryExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy;
+	private volatile int maxAttempts;
+
+	private BinaryExceptionClassifier retryableClassifier = new BinaryExceptionClassifier(false);
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the default number of retry
 	 * attempts, retrying all exceptions.
 	 */
 	public SimpleRetryPolicy() {
-		this(DEFAULT_MAX_ATTEMPTS, BinaryExceptionClassifier.getDefaultClassifier());
+		this(DEFAULT_MAX_ATTEMPTS, BinaryExceptionClassifier.newDefaultClassifier());
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 * attempts, retrying all exceptions.
 	 */
 	public SimpleRetryPolicy(int maxAttempts) {
-		this(maxAttempts, BinaryExceptionClassifier.getDefaultClassifier());
+		this(maxAttempts, BinaryExceptionClassifier.newDefaultClassifier());
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 * @param retryableExceptions the map of exceptions that are retryable
 	 */
 	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions) {
-		this(maxAttempts, retryableExceptions, false, false);
+		this(maxAttempts, retryableExceptions, false);
 	}
 
 	/**
@@ -120,7 +120,10 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 */
 	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses, boolean defaultValue) {
-		this(maxAttempts, new BinaryExceptionClassifier(retryableExceptions, defaultValue, traverseCauses));
+		super();
+		this.maxAttempts = maxAttempts;
+		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions, defaultValue);
+		this.retryableClassifier.setTraverseCauses(traverseCauses);
 	}
 
 	/**
@@ -131,13 +134,9 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 * @param classifier custom exception classifier
 	 */
 	public SimpleRetryPolicy(int maxAttempts, BinaryExceptionClassifier classifier) {
-		maxAttemptsRetryPolicy = new MaxAttemptsRetryPolicy(maxAttempts);
-		exceptionClassifierRetryPolicy = new BinaryExceptionClassifierRetryPolicy(classifier);
-		setPolicies(new RetryPolicy[] {
-				maxAttemptsRetryPolicy,
-				exceptionClassifierRetryPolicy
-		});
-		setOptimistic(false);
+		super();
+		this.maxAttempts = maxAttempts;
+		this.retryableClassifier = classifier;
 	}
 
 	/**
@@ -148,7 +147,7 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 * @param maxAttempts the maximum number of attempts including the initial attempt.
 	 */
 	public void setMaxAttempts(int maxAttempts) {
-		this.maxAttemptsRetryPolicy.setMaxAttempts(maxAttempts);
+		this.maxAttempts = maxAttempts;
 	}
 
 	/**
@@ -157,12 +156,72 @@ public class SimpleRetryPolicy extends CompositeRetryPolicy {
 	 * @return the maximum number of attempts
 	 */
 	public int getMaxAttempts() {
-		return this.maxAttemptsRetryPolicy.getMaxAttempts();
+		return this.maxAttempts;
+	}
+
+	/**
+	 * Test for retryable operation based on the status.
+	 *
+	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
+	 *
+	 * @return true if the last exception was retryable and the number of
+	 * attempts so far is less than the limit.
+	 */
+	@Override
+	public boolean canRetry(RetryContext context) {
+		Throwable t = context.getLastThrowable();
+		return (t == null || retryForException(t)) && context.getRetryCount() < maxAttempts;
+	}
+
+	/**
+	 * @see org.springframework.retry.RetryPolicy#close(RetryContext)
+	 */
+	@Override
+	public void close(RetryContext status) {
+	}
+
+	/**
+	 * Update the status with another attempted retry and the latest exception.
+	 *
+	 * @see RetryPolicy#registerThrowable(RetryContext, Throwable)
+	 */
+	@Override
+	public void registerThrowable(RetryContext context, Throwable throwable) {
+		SimpleRetryContext simpleContext = ((SimpleRetryContext) context);
+		simpleContext.registerThrowable(throwable);
+	}
+
+	/**
+	 * Get a status object that can be used to track the current operation
+	 * according to this policy. Has to be aware of the latest exception and the
+	 * number of attempts.
+	 *
+	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
+	 */
+	@Override
+	public RetryContext open(RetryContext parent) {
+		return new SimpleRetryContext(parent);
+	}
+
+	private static class SimpleRetryContext extends RetryContextSupport {
+		public SimpleRetryContext(RetryContext parent) {
+			super(parent);
+		}
+	}
+
+	/**
+	 * Delegates to an exception classifier.
+	 *
+	 * @param ex
+	 * @return true if this exception or its ancestors have been registered as
+	 * retryable.
+	 */
+	private boolean retryForException(Throwable ex) {
+		return retryableClassifier.classify(ex);
 	}
 
 	@Override
 	public String toString() {
-		// implement fully if need
-		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + maxAttemptsRetryPolicy.getMaxAttempts() + "]";
+		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + maxAttempts + "]";
 	}
 }
