@@ -20,12 +20,11 @@ import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
-import org.springframework.util.ClassUtils;
 
 /**
- * A policy, that is based on {@link BinaryExceptionClassifier}.
- * Usually, binary classification is enough for retry purposes. If you need more flexible classification, use
- * {@link ExceptionClassifierRetryPolicy}.
+ * A policy, that is based on {@link BinaryExceptionClassifier}. Usually, binary
+ * classification is enough for retry purposes. If you need more flexible classification,
+ * use {@link ExceptionClassifierRetryPolicy}.
  *
  * @author Aleksandr Shamukov
  */
@@ -34,7 +33,8 @@ public class BinaryExceptionClassifierRetryPolicy implements RetryPolicy {
 
 	private final BinaryExceptionClassifier exceptionClassifier;
 
-	public BinaryExceptionClassifierRetryPolicy(BinaryExceptionClassifier exceptionClassifier) {
+	public BinaryExceptionClassifierRetryPolicy(
+			BinaryExceptionClassifier exceptionClassifier) {
 		this.exceptionClassifier = exceptionClassifier;
 	}
 
@@ -62,4 +62,5 @@ public class BinaryExceptionClassifierRetryPolicy implements RetryPolicy {
 	public RetryContext open(RetryContext parent) {
 		return new RetryContextSupport(parent);
 	}
+
 }

@@ -19,26 +19,26 @@ package org.springframework.retry.backoff;
 import org.springframework.retry.RetryContext;
 
 /**
- * Simple base class for {@link BackOffPolicy} implementations that maintain no
- * state across invocations.
- * 
+ * Simple base class for {@link BackOffPolicy} implementations that maintain no state
+ * across invocations.
+ *
  * @author Rob Harrop
  * @author Dave Syer
  */
 public abstract class StatelessBackOffPolicy implements BackOffPolicy {
 
 	/**
-	 * Delegates directly to the {@link #doBackOff()} method without passing on
-	 * the {@link BackOffContext} argument which is not needed for stateless
-	 * implementations.
+	 * Delegates directly to the {@link #doBackOff()} method without passing on the
+	 * {@link BackOffContext} argument which is not needed for stateless implementations.
 	 */
-	public final void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
+	public final void backOff(BackOffContext backOffContext)
+			throws BackOffInterruptedException {
 		doBackOff();
 	}
 
 	/**
-	 * Returns '<code>null</code>'. Subclasses can add behaviour, e.g.
-	 * initial sleep before first attempt.
+	 * Returns '<code>null</code>'. Subclasses can add behaviour, e.g. initial sleep
+	 * before first attempt.
 	 */
 	public BackOffContext start(RetryContext status) {
 		return null;
@@ -48,4 +48,5 @@ public abstract class StatelessBackOffPolicy implements BackOffPolicy {
 	 * Sub-classes should implement this method to perform the actual back off.
 	 */
 	protected abstract void doBackOff() throws BackOffInterruptedException;
+
 }

@@ -23,7 +23,7 @@ package org.springframework.retry.stats;
 public class DefaultRetryStatisticsFactory implements RetryStatisticsFactory {
 
 	private long window = 15000;
-	
+
 	/**
 	 * Window in milliseconds for exponential decay factor in rolling averages.
 	 * @param window the window to set
@@ -34,7 +34,8 @@ public class DefaultRetryStatisticsFactory implements RetryStatisticsFactory {
 
 	@Override
 	public MutableRetryStatistics create(String name) {
-		ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(name);
+		ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(
+				name);
 		stats.setWindow(window);
 		return stats;
 	}

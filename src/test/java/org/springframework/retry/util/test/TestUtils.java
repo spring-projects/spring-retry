@@ -20,6 +20,7 @@ import org.springframework.util.Assert;
 
 /**
  * See Spring Integration TestUtils.
+ *
  * @author Mark Fisher
  * @author Iwein Fuld
  * @author Oleg Zhurakousky
@@ -29,9 +30,10 @@ import org.springframework.util.Assert;
 public class TestUtils {
 
 	/**
-	 * Uses nested {@link org.springframework.beans.DirectFieldAccessor}s to obtain a property using dotted notation
-	 * to traverse fields; e.g.
-	 * "foo.bar.baz" will obtain a reference to the baz field of the bar field of foo. Adopted from Spring Integration.
+	 * Uses nested {@link org.springframework.beans.DirectFieldAccessor}s to obtain a
+	 * property using dotted notation to traverse fields; e.g. "foo.bar.baz" will obtain a
+	 * reference to the baz field of the bar field of foo. Adopted from Spring
+	 * Integration.
 	 * @param root The object.
 	 * @param propertyPath The path.
 	 * @return The field.
@@ -49,14 +51,16 @@ public class TestUtils {
 				return null;
 			}
 			else {
-				throw new IllegalArgumentException("intermediate property '" + tokens[i] + "' is null");
+				throw new IllegalArgumentException(
+						"intermediate property '" + tokens[i] + "' is null");
 			}
 		}
 		return value;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getPropertyValue(Object root, String propertyPath, Class<T> type) {
+	public static <T> T getPropertyValue(Object root, String propertyPath,
+			Class<T> type) {
 		Object value = getPropertyValue(root, propertyPath);
 		if (value != null) {
 			Assert.isAssignable(type, value.getClass());

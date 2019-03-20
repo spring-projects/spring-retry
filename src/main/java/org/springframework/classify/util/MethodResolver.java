@@ -20,37 +20,29 @@ import java.lang.reflect.Method;
 
 /**
  * Strategy interface for detecting a single Method on a Class.
- * 
+ *
  * @author Mark Fisher
  */
 public interface MethodResolver {
 
 	/**
-	 * Find a single Method on the provided Object that matches this resolver's
-	 * criteria.
-	 * 
-	 * @param candidate the candidate Object whose Class should be searched for
-	 * a Method
-	 * 
-	 * @return a single Method or <code>null</code> if no Method matching this
-	 * resolver's criteria can be found.
-	 * 
-	 * @throws IllegalArgumentException if more than one Method defined on the
-	 * given candidate's Class matches this resolver's criteria
+	 * Find a single Method on the provided Object that matches this resolver's criteria.
+	 * @param candidate the candidate Object whose Class should be searched for a Method
+	 * @return a single Method or <code>null</code> if no Method matching this resolver's
+	 * criteria can be found.
+	 * @throws IllegalArgumentException if more than one Method defined on the given
+	 * candidate's Class matches this resolver's criteria
 	 */
 	Method findMethod(Object candidate) throws IllegalArgumentException;
 
 	/**
-	 * Find a <em>single</em> Method on the given Class that matches this
-	 * resolver's criteria.
-	 * 
+	 * Find a <em>single</em> Method on the given Class that matches this resolver's
+	 * criteria.
 	 * @param clazz the Class instance on which to search for a Method
-	 * 
-	 * @return a single Method or <code>null</code> if no Method matching this
-	 * resolver's criteria can be found.
-	 * 
-	 * @throws IllegalArgumentException if more than one Method defined on the
-	 * given Class matches this resolver's criteria
+	 * @return a single Method or <code>null</code> if no Method matching this resolver's
+	 * criteria can be found.
+	 * @throws IllegalArgumentException if more than one Method defined on the given Class
+	 * matches this resolver's criteria
 	 */
 	Method findMethod(Class<?> clazz);
 

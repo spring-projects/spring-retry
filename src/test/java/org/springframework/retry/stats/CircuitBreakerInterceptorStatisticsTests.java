@@ -38,9 +38,13 @@ import org.springframework.retry.support.RetrySynchronizationManager;
 public class CircuitBreakerInterceptorStatisticsTests {
 
 	private static final String RECOVERED = "RECOVERED";
+
 	private static final String RESULT = "RESULT";
+
 	private Service callback;
+
 	private StatisticsRepository repository;
+
 	private AnnotationConfigApplicationContext context;
 
 	@Before
@@ -90,6 +94,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		public Service service() {
 			return new Service();
 		}
+
 	}
 
 	protected static class Service {
@@ -133,6 +138,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		public void setExceptionToThrow(Exception exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
 		}
+
 	}
 
 }

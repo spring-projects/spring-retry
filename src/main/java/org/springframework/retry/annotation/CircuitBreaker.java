@@ -53,8 +53,8 @@ public @interface CircuitBreaker {
 
 	/**
 	 * Exception types that are not retryable. Defaults to empty (and if includes is also
-	 * empty all exceptions are retried).
-	 * If includes is empty but excludes is not, all not excluded exceptions are retried
+	 * empty all exceptions are retried). If includes is empty but excludes is not, all
+	 * not excluded exceptions are retried
 	 * @return exception types not to retry
 	 */
 	Class<? extends Throwable>[] exclude() default {};
@@ -74,7 +74,6 @@ public @interface CircuitBreaker {
 	/**
 	 * A unique label for the circuit for reporting and state management. Defaults to the
 	 * method signature where the annotation is declared.
-	 *
 	 * @return the label for the circuit
 	 */
 	String label() default "";
@@ -82,7 +81,6 @@ public @interface CircuitBreaker {
 	/**
 	 * If the circuit is open for longer than this timeout then it resets on the next call
 	 * to give the downstream component a chance to respond again.
-	 *
 	 * @return the timeout before an open circuit is reset in milliseconds, defaults to
 	 * 20000
 	 */
@@ -92,7 +90,6 @@ public @interface CircuitBreaker {
 	 * If the circuit is open for longer than this timeout then it resets on the next call
 	 * to give the downstream component a chance to respond again. Overrides
 	 * {@link #resetTimeout()}.
-	 *
 	 * @return the timeout before an open circuit is reset in milliseconds, no default.
 	 * @since 1.2.3
 	 */
@@ -101,7 +98,6 @@ public @interface CircuitBreaker {
 	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component.
-	 *
 	 * @return the timeout before an closed circuit is opened in milliseconds, defaults to
 	 * 5000
 	 */
@@ -111,7 +107,6 @@ public @interface CircuitBreaker {
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component. Overrides
 	 * {@link #openTimeout()}.
-	 *
 	 * @return the timeout before an closed circuit is opened in milliseconds, no default.
 	 * @since 1.2.3
 	 */
@@ -133,7 +128,6 @@ public @interface CircuitBreaker {
 	 * <pre class=code>
 	 *  {@code "@someBean.shouldRetry(#root)"}.
 	 * </pre>
-	 *
 	 * @return the expression.
 	 * @since 1.2.3
 	 */

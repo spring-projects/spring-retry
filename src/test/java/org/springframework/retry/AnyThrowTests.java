@@ -25,10 +25,10 @@ import org.junit.rules.ExpectedException;
  *
  */
 public class AnyThrowTests {
-	
+
 	@Rule
 	public ExpectedException expected = ExpectedException.none();
-	
+
 	@Test
 	public void testRuntimeException() throws Throwable {
 		expected.expect(RuntimeException.class);
@@ -46,7 +46,7 @@ public class AnyThrowTests {
 		expected.expect(Exception.class);
 		AnyThrow.throwAny(new Exception("planned"));
 	}
-	
+
 	private static class AnyThrow {
 
 		private static void throwUnchecked(Throwable e) {
@@ -55,8 +55,9 @@ public class AnyThrowTests {
 
 		@SuppressWarnings("unchecked")
 		private static <E extends Throwable> void throwAny(Throwable e) throws E {
-			throw (E)e;
+			throw (E) e;
 		}
+
 	}
-	
+
 }

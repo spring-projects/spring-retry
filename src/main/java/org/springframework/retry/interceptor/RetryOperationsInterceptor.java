@@ -69,7 +69,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		String name;
 		if (StringUtils.hasText(label)) {
 			name = label;
-		} else {
+		}
+		else {
 			name = invocation.getMethod().toGenericString();
 		}
 		final String label = name;
@@ -77,7 +78,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		RetryCallback<Object, Throwable> retryCallback = new RetryCallback<Object, Throwable>() {
 
 			public Object doWithRetry(RetryContext context) throws Exception {
-				
+
 				context.setAttribute(RetryContext.NAME, label);
 
 				/*
@@ -88,7 +89,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 				 */
 				if (invocation instanceof ProxyMethodInvocation) {
 					try {
-						return ((ProxyMethodInvocation) invocation).invocableClone().proceed();
+						return ((ProxyMethodInvocation) invocation).invocableClone()
+								.proceed();
 					}
 					catch (Exception e) {
 						throw e;
@@ -102,8 +104,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 				}
 				else {
 					throw new IllegalStateException(
-							"MethodInvocation of the wrong type detected - this should not happen with Spring AOP, " +
-									"so please raise an issue if you see this exception");
+							"MethodInvocation of the wrong type detected - this should not happen with Spring AOP, "
+									+ "so please raise an issue if you see this exception");
 				}
 			}
 
@@ -132,7 +134,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		/**
 		 * @param args the item that failed.
 		 */
-		private ItemRecovererCallback(Object[] args, MethodInvocationRecoverer<?> recoverer) {
+		private ItemRecovererCallback(Object[] args,
+				MethodInvocationRecoverer<?> recoverer) {
 			this.args = Arrays.asList(args).toArray();
 			this.recoverer = recoverer;
 		}

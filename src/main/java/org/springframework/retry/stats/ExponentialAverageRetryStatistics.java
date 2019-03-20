@@ -26,15 +26,15 @@ public class ExponentialAverageRetryStatistics extends DefaultRetryStatistics {
 	private long window = 15000;
 
 	private ExponentialAverage started;
-	
+
 	private ExponentialAverage error;
-	
+
 	private ExponentialAverage complete;
-	
+
 	private ExponentialAverage recovery;
-	
+
 	private ExponentialAverage abort;
-	
+
 	public ExponentialAverageRetryStatistics(String name) {
 		super(name);
 		init();
@@ -50,7 +50,6 @@ public class ExponentialAverageRetryStatistics extends DefaultRetryStatistics {
 
 	/**
 	 * Window in milliseconds for exponential decay factor in rolling average.
-	 * 
 	 * @param window the window to set
 	 */
 	public void setWindow(long window) {
@@ -65,32 +64,32 @@ public class ExponentialAverageRetryStatistics extends DefaultRetryStatistics {
 	public int getRollingErrorCount() {
 		return (int) Math.round(error.getValue());
 	}
-	
+
 	public int getRollingAbortCount() {
 		return (int) Math.round(abort.getValue());
 	}
-	
+
 	public int getRollingRecoveryCount() {
 		return (int) Math.round(recovery.getValue());
 	}
-	
+
 	public int getRollingCompleteCount() {
 		return (int) Math.round(complete.getValue());
 	}
-	
+
 	public double getRollingErrorRate() {
-		if (Math.round(started.getValue())==0) {
+		if (Math.round(started.getValue()) == 0) {
 			return 0.;
 		}
 		return (abort.getValue() + recovery.getValue()) / started.getValue();
 	}
-	
+
 	@Override
 	public void incrementStartedCount() {
 		super.incrementStartedCount();
 		started.increment();
 	}
-	
+
 	@Override
 	public void incrementCompleteCount() {
 		super.incrementCompleteCount();
@@ -118,9 +117,9 @@ public class ExponentialAverageRetryStatistics extends DefaultRetryStatistics {
 	private class ExponentialAverage {
 
 		private final double alpha;
-		
+
 		private volatile long lastTime = System.currentTimeMillis();
-		
+
 		private volatile double value = 0;
 
 		public ExponentialAverage(long window) {
@@ -129,13 +128,13 @@ public class ExponentialAverageRetryStatistics extends DefaultRetryStatistics {
 
 		public synchronized void increment() {
 			long time = System.currentTimeMillis();
-			value = value * Math.exp(-alpha*(time - lastTime)) + 1;
+			value = value * Math.exp(-alpha * (time - lastTime)) + 1;
 			lastTime = time;
 		}
-		
+
 		public double getValue() {
 			long time = System.currentTimeMillis();
-			return value * Math.exp(-alpha*(time - lastTime));
+			return value * Math.exp(-alpha * (time - lastTime));
 		}
 
 	}

@@ -42,6 +42,7 @@ public class ExponentialBackOffPolicy
 		implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
 
 	protected final Log logger = LogFactory.getLog(this.getClass());
+
 	/**
 	 * The default 'initialInterval' value - 100 millisecs. Coupled with the default
 	 * 'multiplier' value this gives a useful initial spread of pauses for 1-5 retries.
@@ -104,7 +105,6 @@ public class ExponentialBackOffPolicy
 	/**
 	 * Set the initial sleep interval value. Default is {@code 100} millisecond. Cannot be
 	 * set to a value less than one.
-	 *
 	 * @param initialInterval the initial interval
 	 */
 	public void setInitialInterval(long initialInterval) {
@@ -125,7 +125,6 @@ public class ExponentialBackOffPolicy
 	 * be reset to 1 if this method is called with a value less than 1. Set this to avoid
 	 * infinite waits if backing off a large number of times (or if the multiplier is set
 	 * too high).
-	 *
 	 * @param maxInterval in milliseconds.
 	 */
 	public void setMaxInterval(long maxInterval) {
@@ -142,7 +141,6 @@ public class ExponentialBackOffPolicy
 
 	/**
 	 * The maximum interval to sleep for. Defaults to 30 seconds.
-	 *
 	 * @return the maximum interval.
 	 */
 	public long getMaxInterval() {
@@ -151,7 +149,6 @@ public class ExponentialBackOffPolicy
 
 	/**
 	 * The multiplier to use to generate the next backoff interval from the last.
-	 *
 	 * @return the multiplier in use
 	 */
 	public double getMultiplier() {
@@ -226,6 +223,7 @@ public class ExponentialBackOffPolicy
 		public long getMaxInterval() {
 			return maxInterval;
 		}
+
 	}
 
 	public String toString() {

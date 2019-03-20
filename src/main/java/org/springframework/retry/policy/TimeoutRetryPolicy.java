@@ -21,11 +21,11 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
 
 /**
- * A {@link RetryPolicy} that allows a retry only if it hasn't timed out. The
- * clock is started on a call to {@link #open(RetryContext)}.
- * 
+ * A {@link RetryPolicy} that allows a retry only if it hasn't timed out. The clock is
+ * started on a call to {@link #open(RetryContext)}.
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class TimeoutRetryPolicy implements RetryPolicy {
@@ -44,10 +44,9 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
-	
+
 	/**
 	 * The value of the timeout.
-	 * 
 	 * @return the timeout in milliseconds
 	 */
 	public long getTimeout() {
@@ -55,9 +54,9 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Only permits a retry if the timeout has not expired. Does not check the
-	 * exception at all.
-	 * 
+	 * Only permits a retry if the timeout has not expired. Does not check the exception
+	 * at all.
+	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	public boolean canRetry(RetryContext context) {
@@ -77,6 +76,7 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 	}
 
 	private static class TimeoutRetryContext extends RetryContextSupport {
+
 		private long timeout;
 
 		private long start;
@@ -90,6 +90,7 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 		public boolean isAlive() {
 			return (System.currentTimeMillis() - start) <= timeout;
 		}
+
 	}
 
 }

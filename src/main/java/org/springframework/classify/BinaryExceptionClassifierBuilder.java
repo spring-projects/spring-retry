@@ -24,15 +24,12 @@ import org.springframework.util.Assert;
 /**
  * Fluent API for BinaryExceptionClassifier configuration.
  * <p>
- * Can be used in while list style:
- * <pre>{@code
+ * Can be used in while list style: <pre>{@code
  * BinaryExceptionClassifier.newBuilder()
  * 			.retryOn(IOException.class)
  * 			.retryOn(IllegalArgumentException.class)
  * 			.build();
- * } </pre>
- * or in black list style:
- * <pre>{@code
+ * } </pre> or in black list style: <pre>{@code
  * BinaryExceptionClassifier.newBuilder()
  *            .notRetryOn(Error.class)
  *            .build();
@@ -40,18 +37,16 @@ import org.springframework.util.Assert;
  * <p>
  * Provides traverseCauses=false by default, and no default rules for exceptions.
  * <p>
- * Not thread safe. Building should be performed in a single thread, publishing of
- * newly created instance should be safe.
+ * Not thread safe. Building should be performed in a single thread, publishing of newly
+ * created instance should be safe.
  *
  * @author Aleksandr Shamukov
  */
 public class BinaryExceptionClassifierBuilder {
 
 	/**
-	 * Building notation type (white list or black list)
-	 * - null: has not selected yet
-	 * - true: white list
-	 * - false: black list
+	 * Building notation type (white list or black list) - null: has not selected yet -
+	 * true: white list - false: black list
 	 */
 	private Boolean isWhiteList = null;
 
@@ -59,7 +54,8 @@ public class BinaryExceptionClassifierBuilder {
 
 	private List<Class<? extends Throwable>> exceptionClasses = new ArrayList<Class<? extends Throwable>>();
 
-	public BinaryExceptionClassifierBuilder retryOn(Class<? extends Throwable> throwable) {
+	public BinaryExceptionClassifierBuilder retryOn(
+			Class<? extends Throwable> throwable) {
 		Assert.isTrue(isWhiteList == null || isWhiteList,
 				"Please use only retryOn() or only notRetryOn()");
 		Assert.notNull(throwable, "Exception class can not be null");
@@ -69,7 +65,8 @@ public class BinaryExceptionClassifierBuilder {
 
 	}
 
-	public BinaryExceptionClassifierBuilder notRetryOn(Class<? extends Throwable> throwable) {
+	public BinaryExceptionClassifierBuilder notRetryOn(
+			Class<? extends Throwable> throwable) {
 		Assert.isTrue(isWhiteList == null || !isWhiteList,
 				"Please use only retryOn() or only notRetryOn()");
 		Assert.notNull(throwable, "Exception class can not be null");
@@ -88,10 +85,12 @@ public class BinaryExceptionClassifierBuilder {
 				"Attempt to build classifier with empty rules. To build always true, or always false "
 						+ "instance, please use explicit rule for Throwable");
 		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
-				exceptionClasses,
-				isWhiteList // using white list means classifying provided classes as "true" (is retryable)
+				exceptionClasses, isWhiteList // using white list means classifying
+												// provided classes as "true" (is
+												// retryable)
 		);
 		classifier.setTraverseCauses(traverseCauses);
 		return classifier;
 	}
+
 }

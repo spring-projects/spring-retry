@@ -29,6 +29,7 @@ import org.springframework.retry.RetryStatistics;
 public class DefaultStatisticsRepository implements StatisticsRepository {
 
 	private ConcurrentMap<String, MutableRetryStatistics> map = new ConcurrentHashMap<String, MutableRetryStatistics>();
+
 	private RetryStatisticsFactory factory = new DefaultRetryStatisticsFactory();
 
 	public void setRetryStatisticsFactory(RetryStatisticsFactory factory) {

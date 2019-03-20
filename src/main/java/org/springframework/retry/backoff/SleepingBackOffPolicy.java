@@ -20,13 +20,15 @@ package org.springframework.retry.backoff;
  * A interface which can be mixed in by {@link BackOffPolicy}s indicating that they sleep
  * when backing off.
  */
-public interface SleepingBackOffPolicy<T extends SleepingBackOffPolicy<T>> extends BackOffPolicy {
-    /**
-     * Clone the policy and return a new policy which uses the passed sleeper.
-     *
-     * @param sleeper  Target to be invoked any time the backoff policy sleeps
-     * @return a clone of this policy which will have all of its backoff sleeps
-     *         routed into the passed sleeper
-     */
-    T withSleeper(Sleeper sleeper);
+public interface SleepingBackOffPolicy<T extends SleepingBackOffPolicy<T>>
+		extends BackOffPolicy {
+
+	/**
+	 * Clone the policy and return a new policy which uses the passed sleeper.
+	 * @param sleeper Target to be invoked any time the backoff policy sleeps
+	 * @return a clone of this policy which will have all of its backoff sleeps routed
+	 * into the passed sleeper
+	 */
+	T withSleeper(Sleeper sleeper);
+
 }

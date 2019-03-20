@@ -21,20 +21,19 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
 
 /**
- * A {@link RetryPolicy} that allows the first attempt but never permits a
- * retry. Also be used as a base class for other policies, e.g. for test
- * purposes as a stub.
- * 
+ * A {@link RetryPolicy} that allows the first attempt but never permits a retry. Also be
+ * used as a base class for other policies, e.g. for test purposes as a stub.
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class NeverRetryPolicy implements RetryPolicy {
 
 	/**
-	 * Returns false after the first exception. So there is always one try, and
-	 * then the retry is prevented.
-	 * 
+	 * Returns false after the first exception. So there is always one try, and then the
+	 * retry is prevented.
+	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	public boolean canRetry(RetryContext context) {
@@ -43,7 +42,7 @@ public class NeverRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Do nothing.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
 	public void close(RetryContext context) {
@@ -51,9 +50,9 @@ public class NeverRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Return a context that can respond to early termination requests, but does
-	 * nothing else.
-	 * 
+	 * Return a context that can respond to early termination requests, but does nothing
+	 * else.
+	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
 	public RetryContext open(RetryContext parent) {
@@ -71,17 +70,17 @@ public class NeverRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Special context object for {@link NeverRetryPolicy}. Implements a flag
-	 * with a similar function to {@link RetryContext#isExhaustedOnly()}, but
-	 * kept separate so that if subclasses of {@link NeverRetryPolicy} need to
-	 * they can modify the behaviour of
-	 * {@link NeverRetryPolicy#canRetry(RetryContext)} without affecting
+	 * Special context object for {@link NeverRetryPolicy}. Implements a flag with a
+	 * similar function to {@link RetryContext#isExhaustedOnly()}, but kept separate so
+	 * that if subclasses of {@link NeverRetryPolicy} need to they can modify the
+	 * behaviour of {@link NeverRetryPolicy#canRetry(RetryContext)} without affecting
 	 * {@link RetryContext#isExhaustedOnly()}.
-	 * 
+	 *
 	 * @author Dave Syer
-	 * 
+	 *
 	 */
 	private static class NeverRetryContext extends RetryContextSupport {
+
 		private boolean finished = false;
 
 		public NeverRetryContext(RetryContext parent) {
@@ -95,6 +94,7 @@ public class NeverRetryPolicy implements RetryPolicy {
 		public void setFinished() {
 			this.finished = true;
 		}
+
 	}
 
 }

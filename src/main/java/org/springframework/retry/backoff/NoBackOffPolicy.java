@@ -16,11 +16,10 @@
 
 package org.springframework.retry.backoff;
 
-
 /**
- * Implementation of {@link BackOffPolicy} that performs a no-op and as such all
- * retry operation in a given set proceed one after the other with no pause.
- * 
+ * Implementation of {@link BackOffPolicy} that performs a no-op and as such all retry
+ * operation in a given set proceed one after the other with no pause.
+ *
  * @author Rob Harrop
  * @since 2.1
  */

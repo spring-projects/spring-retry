@@ -63,7 +63,8 @@ public class ExponentialBackOffPolicyTests {
 		strategy.setSleeper(sleeper);
 		BackOffContext context = strategy.start(null);
 		strategy.backOff(context);
-		assertEquals(ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL, sleeper.getLastBackOff());
+		assertEquals(ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL,
+				sleeper.getLastBackOff());
 	}
 
 	@Test

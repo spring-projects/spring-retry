@@ -56,21 +56,24 @@ public class CircuitBreakerTests {
 		}
 		catch (Exception e) {
 		}
-		assertFalse((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+		assertFalse((Boolean) service.getContext()
+				.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		try {
 			service.service();
 			fail("Expected exception");
 		}
 		catch (Exception e) {
 		}
-		assertFalse((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+		assertFalse((Boolean) service.getContext()
+				.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		try {
 			service.service();
 			fail("Expected exception");
 		}
 		catch (Exception e) {
 		}
-		assertTrue((Boolean)service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
+		assertTrue((Boolean) service.getContext()
+				.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		assertEquals(3, service.getCount());
 		try {
 			service.service();
@@ -84,17 +87,21 @@ public class CircuitBreakerTests {
 		assertEquals(4, service.getCount());
 		Advised advised = (Advised) service;
 		Advisor advisor = advised.getAdvisors()[0];
-		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
+		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor)
+				.getPropertyValue("advice.delegates");
 		assertTrue(delegates.size() == 1);
 		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
 				.get(Service.class.getDeclaredMethod("expressionService"));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
-		assertEquals(8, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")) ;
-		assertEquals(19000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")) ;
-		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")) ;
-		assertEquals("#root instanceof RuntimeExpression",
-				accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"));
+		assertEquals(8, accessor
+				.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts"));
+		assertEquals(19000L,
+				accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout"));
+		assertEquals(20000L,
+				accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout"));
+		assertEquals("#root instanceof RuntimeExpression", accessor.getPropertyValue(
+				"retryOperations.retryPolicy.delegate.expression.expression"));
 		context.close();
 	}
 
@@ -123,14 +130,10 @@ public class CircuitBreakerTests {
 			}
 		}
 
-		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}",
-				openTimeoutExpression = "#{${bar:19}000}",
-				resetTimeoutExpression = "#{${baz:20}000}",
-				exceptionExpression = "#{#root instanceof RuntimeExpression}")
+		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}", openTimeoutExpression = "#{${bar:19}000}", resetTimeoutExpression = "#{${baz:20}000}", exceptionExpression = "#{#root instanceof RuntimeExpression}")
 		public void expressionService() {
 			this.count++;
 		}
-
 
 		public RetryContext getContext() {
 			return this.context;

@@ -25,8 +25,8 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
 
 /**
- * A {@link RetryPolicy} that composes a list of other policies and delegates
- * calls to them in order.
+ * A {@link RetryPolicy} that composes a list of other policies and delegates calls to
+ * them in order.
  *
  * @author Dave Syer
  * @author Michael Minella
@@ -36,11 +36,11 @@ import org.springframework.retry.context.RetryContextSupport;
 public class CompositeRetryPolicy implements RetryPolicy {
 
 	RetryPolicy[] policies = new RetryPolicy[0];
+
 	private boolean optimistic = false;
 
 	/**
 	 * Setter for optimistic.
-	 *
 	 * @param optimistic should this retry policy be optimistic
 	 */
 	public void setOptimistic(boolean optimistic) {
@@ -49,18 +49,15 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Setter for policies.
-	 *
-	 * @param policies    the {@link RetryPolicy} policies
+	 * @param policies the {@link RetryPolicy} policies
 	 */
 	public void setPolicies(RetryPolicy[] policies) {
 		this.policies = Arrays.asList(policies).toArray(new RetryPolicy[policies.length]);
 	}
 
 	/**
-	 * Delegate to the policies that were in operation when the context was
-	 * created. If any of them cannot retry then return false, otherwise return
-	 * true.
-	 *
+	 * Delegate to the policies that were in operation when the context was created. If
+	 * any of them cannot retry then return false, otherwise return true.
 	 * @param context the {@link RetryContext}
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
@@ -71,7 +68,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 		boolean retryable = true;
 
-		if(this.optimistic) {
+		if (this.optimistic) {
 			retryable = false;
 			for (int i = 0; i < contexts.length; i++) {
 				if (policies[i].canRetry(contexts[i])) {
@@ -91,9 +88,9 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Delegate to the policies that were in operation when the context was
-	 * created. If any of them fails to close the exception is propagated (and
-	 * those later in the chain are closed before re-throwing).
+	 * Delegate to the policies that were in operation when the context was created. If
+	 * any of them fails to close the exception is propagated (and those later in the
+	 * chain are closed before re-throwing).
 	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 * @param context the {@link RetryContext}
@@ -119,8 +116,8 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Creates a new context that copies the existing policies and keeps a list
-	 * of the contexts from each one.
+	 * Creates a new context that copies the existing policies and keeps a list of the
+	 * contexts from each one.
 	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
@@ -134,8 +131,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Delegate to the policies that were in operation when the context was
-	 * created.
+	 * Delegate to the policies that were in operation when the context was created.
 	 *
 	 * @see org.springframework.retry.RetryPolicy#close(org.springframework.retry.RetryContext)
 	 */
@@ -150,11 +146,13 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	}
 
 	private static class CompositeRetryContext extends RetryContextSupport {
+
 		RetryContext[] contexts;
 
 		RetryPolicy[] policies;
 
-		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts, RetryPolicy[] policies) {
+		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts,
+				RetryPolicy[] policies) {
 			super(parent);
 			this.contexts = contexts.toArray(new RetryContext[contexts.size()]);
 			this.policies = policies;

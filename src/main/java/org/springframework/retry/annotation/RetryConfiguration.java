@@ -50,10 +50,10 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
- * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if there is a unique bean elsewhere
- * in the context of type {@link RetryContextCache}, {@link MethodArgumentsKeyGenerator} or
- * {@link NewMethodArgumentsIdentifier} it will be used by the corresponding retry interceptor (otherwise sensible
- * defaults are adopted).
+ * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
+ * there is a unique bean elsewhere in the context of type {@link RetryContextCache},
+ * {@link MethodArgumentsKeyGenerator} or {@link NewMethodArgumentsIdentifier} it will be
+ * used by the corresponding retry interceptor (otherwise sensible defaults are adopted).
  *
  * @author Dave Syer
  * @author Artem Bilan
@@ -62,7 +62,8 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  */
 @SuppressWarnings("serial")
 @Configuration
-public class RetryConfiguration extends AbstractPointcutAdvisor implements IntroductionAdvisor, BeanFactoryAware {
+public class RetryConfiguration extends AbstractPointcutAdvisor
+		implements IntroductionAdvisor, BeanFactoryAware {
 
 	private Advice advice;
 
@@ -87,7 +88,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 
 	@PostConstruct
 	public void init() {
-		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
+		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(
+				1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
@@ -150,11 +152,11 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 
 	/**
 	 * Calculate a pointcut for the given retry annotation types, if any.
-	 *
 	 * @param retryAnnotationTypes the retry annotation types to introspect
 	 * @return the applicable Pointcut object, or {@code null} if none
 	 */
-	protected Pointcut buildPointcut(Set<Class<? extends Annotation>> retryAnnotationTypes) {
+	protected Pointcut buildPointcut(
+			Set<Class<? extends Annotation>> retryAnnotationTypes) {
 		ComposablePointcut result = null;
 		for (Class<? extends Annotation> retryAnnotationType : retryAnnotationTypes) {
 			Pointcut filter = new AnnotationClassOrMethodPointcut(retryAnnotationType);
@@ -168,7 +170,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 		return result;
 	}
 
-	private final class AnnotationClassOrMethodPointcut extends StaticMethodMatcherPointcut {
+	private final class AnnotationClassOrMethodPointcut
+			extends StaticMethodMatcherPointcut {
 
 		private final MethodMatcher methodResolver;
 
@@ -179,9 +182,10 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 
 		@Override
 		public boolean matches(Method method, Class<?> targetClass) {
-			return getClassFilter().matches(targetClass) || this.methodResolver.matches(method, targetClass);
+			return getClassFilter().matches(targetClass)
+					|| this.methodResolver.matches(method, targetClass);
 		}
-		
+
 		@Override
 		public boolean equals(Object other) {
 			if (this == other) {
@@ -191,7 +195,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 				return false;
 			}
 			AnnotationClassOrMethodPointcut otherAdvisor = (AnnotationClassOrMethodPointcut) other;
-			return ObjectUtils.nullSafeEquals(this.methodResolver, otherAdvisor.methodResolver);
+			return ObjectUtils.nullSafeEquals(this.methodResolver,
+					otherAdvisor.methodResolver);
 		}
 
 	}
@@ -213,31 +218,32 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 	}
 
 	private static class AnnotationMethodsResolver {
-		
+
 		private Class<? extends Annotation> annotationType;
-		
+
 		public AnnotationMethodsResolver(Class<? extends Annotation> annotationType) {
 			this.annotationType = annotationType;
 		}
-		
+
 		public boolean hasAnnotatedMethods(Class<?> clazz) {
 			final AtomicBoolean found = new AtomicBoolean(false);
-			ReflectionUtils.doWithMethods(clazz,
-					new MethodCallback() {
-						@Override
-						public void doWith(Method method) throws IllegalArgumentException,
-								IllegalAccessException {
-							if (found.get()) {
-								return;
-							}
-							Annotation annotation = AnnotationUtils.findAnnotation(method,
-									annotationType);
-							if (annotation != null) { found.set(true); }
-						}
+			ReflectionUtils.doWithMethods(clazz, new MethodCallback() {
+				@Override
+				public void doWith(Method method)
+						throws IllegalArgumentException, IllegalAccessException {
+					if (found.get()) {
+						return;
+					}
+					Annotation annotation = AnnotationUtils.findAnnotation(method,
+							annotationType);
+					if (annotation != null) {
+						found.set(true);
+					}
+				}
 			});
 			return found.get();
 		}
-		
+
 	}
-	
+
 }

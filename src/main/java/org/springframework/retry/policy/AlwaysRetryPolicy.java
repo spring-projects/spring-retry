@@ -20,18 +20,18 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 
 /**
- * A {@link RetryPolicy} that always permits a retry. Can also be used as a base
- * class for other policies, e.g. for test purposes as a stub.
- * 
+ * A {@link RetryPolicy} that always permits a retry. Can also be used as a base class for
+ * other policies, e.g. for test purposes as a stub.
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class AlwaysRetryPolicy extends NeverRetryPolicy {
 
 	/**
 	 * Always returns true.
-	 * 
+	 *
 	 * @see org.springframework.retry.RetryPolicy#canRetry(org.springframework.retry.RetryContext)
 	 */
 	public boolean canRetry(RetryContext context) {

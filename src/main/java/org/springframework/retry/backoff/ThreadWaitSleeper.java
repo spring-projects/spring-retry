@@ -17,7 +17,8 @@
 package org.springframework.retry.backoff;
 
 /**
- * Simple {@link Sleeper} implementation that just blocks the current Thread with sleep period.
+ * Simple {@link Sleeper} implementation that just blocks the current Thread with sleep
+ * period.
  *
  * @author Artem Bilan
  * @since 1.1

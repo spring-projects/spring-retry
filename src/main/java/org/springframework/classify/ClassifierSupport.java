@@ -17,11 +17,11 @@
 package org.springframework.classify;
 
 /**
- * Base class for {@link Classifier} implementations. Provides default behaviour
- * and some convenience members, like constants.
- * 
+ * Base class for {@link Classifier} implementations. Provides default behaviour and some
+ * convenience members, like constants.
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class ClassifierSupport<C, T> implements Classifier<C, T> {
@@ -37,9 +37,9 @@ public class ClassifierSupport<C, T> implements Classifier<C, T> {
 	}
 
 	/**
-	 * Always returns the default value. This is the main extension point for
-	 * subclasses, so it must be able to classify null.
-	 * 
+	 * Always returns the default value. This is the main extension point for subclasses,
+	 * so it must be able to classify null.
+	 *
 	 * @see org.springframework.classify.Classifier#classify(Object)
 	 */
 	public T classify(C throwable) {

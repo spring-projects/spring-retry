@@ -29,8 +29,8 @@ import org.springframework.retry.RetryContext;
 import org.springframework.util.Assert;
 
 /**
- * Subclass of {@link SimpleRetryPolicy} that delegates to super.canRetry() and,
- * if true, further evaluates an expression against the last thrown exception.
+ * Subclass of {@link SimpleRetryPolicy} that delegates to super.canRetry() and, if true,
+ * further evaluates an expression against the last thrown exception.
  *
  * @author Gary Russell
  * @since 1.2
@@ -60,7 +60,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 */
 	public ExpressionRetryPolicy(String expressionString) {
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString, PARSER_CONTEXT);
+		this.expression = new SpelExpressionParser().parseExpression(expressionString,
+				PARSER_CONTEXT);
 	}
 
 	/**
@@ -70,7 +71,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 * @param traverseCauses true to examine causes
 	 * @param expression the expression
 	 */
-	public ExpressionRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
+	public ExpressionRetryPolicy(int maxAttempts,
+			Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses, Expression expression) {
 		super(maxAttempts, retryableExceptions, traverseCauses);
 		Assert.notNull(expression, "'expression' cannot be null");
@@ -85,11 +87,13 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 * @param expressionString the expression.
 	 * @param defaultValue the default action
 	 */
-	public ExpressionRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
+	public ExpressionRetryPolicy(int maxAttempts,
+			Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses, String expressionString, boolean defaultValue) {
 		super(maxAttempts, retryableExceptions, traverseCauses, defaultValue);
 		Assert.notNull(expressionString, "'expressionString' cannot be null");
-		this.expression = new SpelExpressionParser().parseExpression(expressionString, PARSER_CONTEXT);
+		this.expression = new SpelExpressionParser().parseExpression(expressionString,
+				PARSER_CONTEXT);
 	}
 
 	@Override
@@ -109,8 +113,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			return super.canRetry(context);
 		}
 		else {
-			return super.canRetry(context)
-					&& this.expression.getValue(this.evaluationContext, lastThrowable, Boolean.class);
+			return super.canRetry(context) && this.expression
+					.getValue(this.evaluationContext, lastThrowable, Boolean.class);
 		}
 	}
 

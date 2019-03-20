@@ -21,9 +21,9 @@ import org.springframework.core.AttributeAccessor;
 /**
  * Low-level access to ongoing retry operation. Normally not needed by clients, but can be
  * used to alter the course of the retry, e.g. force an early termination.
- * 
+ *
  * @author Dave Syer
- * 
+ *
  */
 public interface RetryContext extends AttributeAccessor {
 
@@ -35,7 +35,8 @@ public interface RetryContext extends AttributeAccessor {
 	String NAME = "context.name";
 
 	/**
-	 * Retry context attribute name for state key. Can be used to identify a stateful retry from its context.
+	 * Retry context attribute name for state key. Can be used to identify a stateful
+	 * retry from its context.
 	 */
 	String STATE_KEY = "context.state";
 
@@ -62,14 +63,12 @@ public interface RetryContext extends AttributeAccessor {
 
 	/**
 	 * Public accessor for the exhausted flag {@link #setExhaustedOnly()}.
-	 * 
 	 * @return true if the flag has been set.
 	 */
 	boolean isExhaustedOnly();
 
 	/**
 	 * Accessor for the parent context if retry blocks are nested.
-	 * 
 	 * @return the parent or null if there is none.
 	 */
 	RetryContext getParent();
@@ -77,14 +76,12 @@ public interface RetryContext extends AttributeAccessor {
 	/**
 	 * Counts the number of retry attempts. Before the first attempt this counter is zero,
 	 * and before the first and subsequent attempts it should increment accordingly.
-	 * 
 	 * @return the number of retries.
 	 */
 	int getRetryCount();
 
 	/**
 	 * Accessor for the exception object that caused the current retry.
-	 * 
 	 * @return the last exception that caused a retry, or possibly null. It will be null
 	 * if this is the first attempt, but also if the enclosing policy decides not to
 	 * provide it (e.g. because of concerns about memory usage).

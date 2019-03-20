@@ -25,11 +25,11 @@ import org.springframework.retry.RetryStatistics;
 public interface StatisticsRepository {
 
 	RetryStatistics findOne(String name);
-	
+
 	Iterable<RetryStatistics> findAll();
 
 	void addStarted(String name);
-	
+
 	void addError(String name);
 
 	void addRecovery(String name);

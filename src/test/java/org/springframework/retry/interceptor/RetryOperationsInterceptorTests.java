@@ -71,7 +71,8 @@ public class RetryOperationsInterceptorTests {
 		});
 		interceptor.setRetryOperations(retryTemplate);
 		target = new ServiceImpl();
-		service = (Service) ProxyFactory.getProxy(Service.class, new SingletonTargetSource(target));
+		service = (Service) ProxyFactory.getProxy(Service.class,
+				new SingletonTargetSource(target));
 		count = 0;
 		transactionCount = 0;
 	}
@@ -193,9 +194,11 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	public static interface Service {
+
 		void service() throws Exception;
 
 		void doTansactional() throws Exception;
+
 	}
 
 	public static class ServiceImpl implements Service {
@@ -228,4 +231,5 @@ public class RetryOperationsInterceptorTests {
 		}
 
 	}
+
 }

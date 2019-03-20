@@ -38,11 +38,13 @@ import java.util.Random;
  *
  * {@link ExponentialRandomBackOffPolicy} may yield [76, 151, 304, 580, 901] or [53, 190,
  * 267, 451, 815]
+ *
  * @author Jon Travis
  * @author Dave Syer
  */
 @SuppressWarnings("serial")
 public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
+
 	/**
 	 * Returns a new instance of {@link org.springframework.retry.backoff.BackOffContext},
 	 * seeded with this policies settings.
@@ -58,6 +60,7 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 
 	static class ExponentialRandomBackOffContext
 			extends ExponentialBackOffPolicy.ExponentialBackOffContext {
+
 		private final Random r = new Random();
 
 		public ExponentialRandomBackOffContext(long expSeed, double multiplier,
@@ -73,4 +76,5 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 		}
 
 	}
+
 }

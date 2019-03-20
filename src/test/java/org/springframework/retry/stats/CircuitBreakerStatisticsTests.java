@@ -43,14 +43,21 @@ import static org.junit.Assert.fail;
 public class CircuitBreakerStatisticsTests {
 
 	private static final String RECOVERED = "RECOVERED";
+
 	private static final String RESULT = "RESULT";
+
 	private RetryTemplate retryTemplate;
+
 	private RecoveryCallback<Object> recovery;
+
 	private MockRetryCallback callback;
+
 	private DefaultRetryState state;
 
 	private StatisticsRepository repository = new DefaultStatisticsRepository();
+
 	private StatisticsListener listener = new StatisticsListener(repository);
+
 	private RetryContextCache cache;
 
 	@Before
@@ -184,6 +191,7 @@ public class CircuitBreakerStatisticsTests {
 		public void setExceptionToThrow(Exception exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
 		}
+
 	}
 
 }

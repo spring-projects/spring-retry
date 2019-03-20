@@ -50,7 +50,8 @@ public class StatefulRecoveryRetryTests {
 
 	@Test
 	public void testOpenSunnyDay() throws Exception {
-		RetryContext context = retryTemplate.open(new NeverRetryPolicy(), new DefaultRetryState("foo"));
+		RetryContext context = retryTemplate.open(new NeverRetryPolicy(),
+				new DefaultRetryState("foo"));
 		assertNotNull(context);
 		// we haven't called the processor yet...
 		assertEquals(0, count);
@@ -117,7 +118,7 @@ public class StatefulRecoveryRetryTests {
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 		// Roll back for these:
 		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(Collections
-				.<Class<? extends Throwable>> singleton(DataAccessException.class));
+				.<Class<? extends Throwable>>singleton(DataAccessException.class));
 		// ...but not these:
 		assertFalse(classifier.classify(new RuntimeException()));
 		final String input = "foo";
@@ -211,7 +212,8 @@ public class StatefulRecoveryRetryTests {
 		}
 		catch (RetryException ex) {
 			String message = ex.getMessage();
-			assertTrue("Message doesn't contain 'inconsistent': " + message, message.contains("inconsistent"));
+			assertTrue("Message doesn't contain 'inconsistent': " + message,
+					message.contains("inconsistent"));
 		}
 
 		RetryContext context = retryTemplate.open(retryPolicy, state);
@@ -247,7 +249,8 @@ public class StatefulRecoveryRetryTests {
 		}
 		catch (RetryException e) {
 			String message = e.getMessage();
-			assertTrue("Message does not contain 'capacity': " + message, message.indexOf("capacity") >= 0);
+			assertTrue("Message does not contain 'capacity': " + message,
+					message.indexOf("capacity") >= 0);
 		}
 	}
 

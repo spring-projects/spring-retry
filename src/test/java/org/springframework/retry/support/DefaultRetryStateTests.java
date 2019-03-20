@@ -24,7 +24,7 @@ import org.springframework.classify.Classifier;
 
 /**
  * @author Dave Syer
- * 
+ *
  */
 public class DefaultRetryStateTests {
 
@@ -35,11 +35,12 @@ public class DefaultRetryStateTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectBooleanClassifierOfQsuperThrowableBoolean() {
-		DefaultRetryState state = new DefaultRetryState("foo", true, new Classifier<Throwable, Boolean>() {
-			public Boolean classify(Throwable classifiable) {
-				return false;
-			}
-		});
+		DefaultRetryState state = new DefaultRetryState("foo", true,
+				new Classifier<Throwable, Boolean>() {
+					public Boolean classify(Throwable classifiable) {
+						return false;
+					}
+				});
 		assertEquals("foo", state.getKey());
 		assertTrue(state.isForceRefresh());
 		assertFalse(state.rollbackFor(null));
@@ -52,11 +53,12 @@ public class DefaultRetryStateTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectClassifierOfQsuperThrowableBoolean() {
-		DefaultRetryState state = new DefaultRetryState("foo", new Classifier<Throwable, Boolean>() {
-			public Boolean classify(Throwable classifiable) {
-				return false;
-			}
-		});
+		DefaultRetryState state = new DefaultRetryState("foo",
+				new Classifier<Throwable, Boolean>() {
+					public Boolean classify(Throwable classifiable) {
+						return false;
+					}
+				});
 		assertEquals("foo", state.getKey());
 		assertFalse(state.isForceRefresh());
 		assertFalse(state.rollbackFor(null));

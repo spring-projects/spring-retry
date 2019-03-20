@@ -22,16 +22,16 @@ import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.retry.support.RetryTemplate;
 
 /**
- * Simple retry policy that is aware only about attempt count and retries a fixed number of times.
- * The number of attempts includes the initial try.
+ * Simple retry policy that is aware only about attempt count and retries a fixed number
+ * of times. The number of attempts includes the initial try.
  * <p>
- * It is not recommended to use it directly, because usually exception classification is strongly
- * recommended (to not retry on OutOfMemoryError, for example).
+ * It is not recommended to use it directly, because usually exception classification is
+ * strongly recommended (to not retry on OutOfMemoryError, for example).
  * <p>
  * For daily usage see {@link RetryTemplate#newBuilder()}
  * <p>
- * Volatility of maxAttempts allows concurrent modification and does not require safe publication
- * of new instance after construction.
+ * Volatility of maxAttempts allows concurrent modification and does not require safe
+ * publication of new instance after construction.
  */
 @SuppressWarnings("serial")
 public class MaxAttemptsRetryPolicy implements RetryPolicy {
@@ -44,8 +44,8 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	private volatile int maxAttempts;
 
 	/**
-	 * Create a {@link MaxAttemptsRetryPolicy} with the default number of retry
-	 * attempts, retrying all throwables.
+	 * Create a {@link MaxAttemptsRetryPolicy} with the default number of retry attempts,
+	 * retrying all throwables.
 	 */
 	public MaxAttemptsRetryPolicy() {
 		this.maxAttempts = DEFAULT_MAX_ATTEMPTS;
@@ -63,7 +63,6 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	 * Set the number of attempts before retries are exhausted. Includes the initial
 	 * attempt before the retries begin so, generally, will be {@code >= 1}. For example
 	 * setting this property to 3 means 3 attempts total (initial + 2 retries).
-	 *
 	 * @param maxAttempts the maximum number of attempts including the initial attempt.
 	 */
 	public void setMaxAttempts(int maxAttempts) {
@@ -72,7 +71,6 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 
 	/**
 	 * The maximum number of attempts before failure.
-	 *
 	 * @return the maximum number of attempts
 	 */
 	public int getMaxAttempts() {
@@ -83,9 +81,8 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	 * Test for retryable operation based on the status.
 	 *
 	 * @see RetryPolicy#canRetry(RetryContext)
-	 *
-	 * @return true if the last exception was retryable and the number of
-	 * attempts so far is less than the limit.
+	 * @return true if the last exception was retryable and the number of attempts so far
+	 * is less than the limit.
 	 */
 	@Override
 	public boolean canRetry(RetryContext context) {
@@ -107,9 +104,8 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Get a status object that can be used to track the current operation
-	 * according to this policy. Has to be aware of the latest exception and the
-	 * number of attempts.
+	 * Get a status object that can be used to track the current operation according to
+	 * this policy. Has to be aware of the latest exception and the number of attempts.
 	 *
 	 * @see RetryPolicy#open(RetryContext)
 	 */
@@ -117,4 +113,5 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	public RetryContext open(RetryContext parent) {
 		return new RetryContextSupport(parent);
 	}
+
 }

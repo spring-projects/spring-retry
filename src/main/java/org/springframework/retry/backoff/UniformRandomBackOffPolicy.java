@@ -18,20 +18,19 @@ package org.springframework.retry.backoff;
 
 import java.util.Random;
 
-
 /**
- * Implementation of {@link BackOffPolicy} that pauses for a random period of
- * time before continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
+ * Implementation of {@link BackOffPolicy} that pauses for a random period of time before
+ * continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
  *
  * {@link #setMinBackOffPeriod(long)} is thread-safe and it is safe to call
- * {@link #setMaxBackOffPeriod(long)} during execution from multiple threads, however
- * this may cause a single retry operation to have pauses of different
- * intervals.
+ * {@link #setMaxBackOffPeriod(long)} during execution from multiple threads, however this
+ * may cause a single retry operation to have pauses of different intervals.
  *
  * @author Rob Harrop
  * @author Dave Syer
  */
-public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implements SleepingBackOffPolicy<UniformRandomBackOffPolicy> {
+public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
+		implements SleepingBackOffPolicy<UniformRandomBackOffPolicy> {
 
 	/**
 	 * Default min back off period - 500ms.
@@ -51,12 +50,12 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 
 	private Sleeper sleeper = new ThreadWaitSleeper();
 
-    public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
-        UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
-        res.setMinBackOffPeriod(minBackOffPeriod);
-        res.setSleeper(sleeper);
-        return res;
-    }
+	public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
+		UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
+		res.setMinBackOffPeriod(minBackOffPeriod);
+		res.setSleeper(sleeper);
+		return res;
+	}
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
@@ -67,9 +66,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	}
 
 	/**
-	 * Set the minimum back off period in milliseconds. Cannot be &lt; 1. Default value
-	 * is 500ms.
-	 *
+	 * Set the minimum back off period in milliseconds. Cannot be &lt; 1. Default value is
+	 * 500ms.
 	 * @param backOffPeriod the backoff period
 	 */
 	public void setMinBackOffPeriod(long backOffPeriod) {
@@ -85,8 +83,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	}
 
 	/**
-	 * Set the maximum back off period in milliseconds. Cannot be &lt; 1. Default value
-	 * is 1500ms.
+	 * Set the maximum back off period in milliseconds. Cannot be &lt; 1. Default value is
+	 * 1500ms.
 	 * @param backOffPeriod the back off period
 	 */
 	public void setMaxBackOffPeriod(long backOffPeriod) {
@@ -107,15 +105,18 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy implement
 	 */
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
-			long delta = maxBackOffPeriod==minBackOffPeriod ? 0 : random.nextInt((int) (maxBackOffPeriod - minBackOffPeriod));
-			sleeper.sleep(minBackOffPeriod + delta );
+			long delta = maxBackOffPeriod == minBackOffPeriod ? 0
+					: random.nextInt((int) (maxBackOffPeriod - minBackOffPeriod));
+			sleeper.sleep(minBackOffPeriod + delta);
 		}
 		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
 
-    public String toString() {
-        return "RandomBackOffPolicy[backOffPeriod=" + minBackOffPeriod + ", " + maxBackOffPeriod + "]";
-    }
+	public String toString() {
+		return "RandomBackOffPolicy[backOffPeriod=" + minBackOffPeriod + ", "
+				+ maxBackOffPeriod + "]";
+	}
+
 }

@@ -26,13 +26,19 @@ import org.springframework.retry.RetryStatistics;
  *
  */
 @SuppressWarnings("serial")
-public class DefaultRetryStatistics extends AttributeAccessorSupport implements RetryStatistics, MutableRetryStatistics {
+public class DefaultRetryStatistics extends AttributeAccessorSupport
+		implements RetryStatistics, MutableRetryStatistics {
 
 	private String name;
+
 	private AtomicInteger startedCount = new AtomicInteger();
+
 	private AtomicInteger completeCount = new AtomicInteger();
+
 	private AtomicInteger recoveryCount = new AtomicInteger();
+
 	private AtomicInteger errorCount = new AtomicInteger();
+
 	private AtomicInteger abortCount = new AtomicInteger();
 
 	DefaultRetryStatistics() {

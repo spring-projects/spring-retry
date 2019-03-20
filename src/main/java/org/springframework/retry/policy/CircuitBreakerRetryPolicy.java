@@ -39,7 +39,9 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	private static Log logger = LogFactory.getLog(CircuitBreakerRetryPolicy.class);
 
 	private final RetryPolicy delegate;
+
 	private long resetTimeout = 20000;
+
 	private long openTimeout = 5000;
 
 	public CircuitBreakerRetryPolicy() {
@@ -53,7 +55,6 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	/**
 	 * Timeout for resetting circuit in milliseconds. After the circuit opens it will
 	 * re-close after this time has elapsed and the context will be restarted.
-	 *
 	 * @param timeout the timeout to set in milliseconds
 	 */
 	public void setResetTimeout(long timeout) {
@@ -64,7 +65,6 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	 * Timeout for tripping the open circuit. If the delegate policy cannot retry and the
 	 * time elapsed since the context was started is less than this window, then the
 	 * circuit is opened.
-	 *
 	 * @param timeout the timeout to set in milliseconds
 	 */
 	public void setOpenTimeout(long timeout) {
@@ -104,11 +104,17 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	}
 
 	static class CircuitBreakerRetryContext extends RetryContextSupport {
+
 		private volatile RetryContext context;
+
 		private final RetryPolicy policy;
+
 		private volatile long start = System.currentTimeMillis();
+
 		private final long timeout;
+
 		private final long openWindow;
+
 		private final AtomicInteger shortCircuitCount = new AtomicInteger();
 
 		public CircuitBreakerRetryContext(RetryContext parent, RetryPolicy policy,

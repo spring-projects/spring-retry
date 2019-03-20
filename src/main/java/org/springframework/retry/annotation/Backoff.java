@@ -49,19 +49,17 @@ import org.springframework.retry.backoff.BackOffPolicy;
 public @interface Backoff {
 
 	/**
-	 * Synonym for {@link #delay()}. When {@link #delay()} is non-zero, value of this element
-	 * is ignored, otherwise value of this element is taken.
-	 *
+	 * Synonym for {@link #delay()}. When {@link #delay()} is non-zero, value of this
+	 * element is ignored, otherwise value of this element is taken.
 	 * @return the delay in milliseconds (default 1000)
 	 */
 	long value() default 1000;
 
 	/**
 	 * A canonical backoff period. Used as an initial value in the exponential case, and
-	 * as a minimum value in the uniform case. When the value of this element is 0,
-	 * value of element {@link #value()} istaken, otherwise value of this
-	 * element is taken and {@link #value()} is ignored.
-	 *
+	 * as a minimum value in the uniform case. When the value of this element is 0, value
+	 * of element {@link #value()} istaken, otherwise value of this element is taken and
+	 * {@link #value()} is ignored.
 	 * @return the initial or canonical backoff period in milliseconds (default 0)
 	 */
 	long delay() default 0;
@@ -71,14 +69,12 @@ public @interface Backoff {
 	 * {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied.
-	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
 	 */
 	long maxDelay() default 0;
 
 	/**
 	 * If positive, then used as a multiplier for generating the next delay for backoff.
-	 *
 	 * @return a multiplier to use to calculate the next backoff delay (default 0 =
 	 * ignored)
 	 */
@@ -98,7 +94,6 @@ public @interface Backoff {
 	 * If less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied. Overrides {@link #maxDelay()}
-	 *
 	 * @return the maximum delay between retries (default 0 = ignored)
 	 * @since 1.2
 	 */
@@ -107,7 +102,6 @@ public @interface Backoff {
 	/**
 	 * Evaluates to a vaule used as a multiplier for generating the next delay for
 	 * backoff. Overrides {@link #multiplier()}.
-	 *
 	 * @return a multiplier expression to use to calculate the next backoff delay (default
 	 * 0 = ignored)
 	 * @since 1.2
@@ -118,7 +112,6 @@ public @interface Backoff {
 	 * In the exponential case ({@link #multiplier()} &gt; 0) set this to true to have the
 	 * backoff delays randomized, so that the maximum delay is multiplier times the
 	 * previous delay and the distribution is uniform between the two values.
-	 *
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	boolean random() default false;

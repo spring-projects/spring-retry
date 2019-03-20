@@ -31,4 +31,5 @@ public class RetryExceptionTests extends AbstractExceptionTests {
 	public void testNothing() throws Exception {
 		// fool coverage tools...
 	}
+
 }

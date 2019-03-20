@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dave Syer
- * 
+ *
  */
 public class ClassifierAdapterTests {
 
@@ -68,9 +68,11 @@ public class ClassifierAdapterTests {
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
 			}
+
 			@SuppressWarnings("unused")
 			public void doNothing(String key) {
 			}
+
 			@SuppressWarnings("unused")
 			public String doNothing(String key, int value) {
 				return "foo";
@@ -102,7 +104,7 @@ public class ClassifierAdapterTests {
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testClassifyWithWrongType() {
 		adapter.setDelegate(new Object() {
 			@Classifier
@@ -116,11 +118,12 @@ public class ClassifierAdapterTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyWithClassifier() {
-		adapter.setDelegate(new org.springframework.classify.Classifier<String, Integer>() {
-			public Integer classify(String classifiable) {
-				return Integer.valueOf(classifiable);
-			}
-		});
+		adapter.setDelegate(
+				new org.springframework.classify.Classifier<String, Integer>() {
+					public Integer classify(String classifiable) {
+						return Integer.valueOf(classifiable);
+					}
+				});
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 

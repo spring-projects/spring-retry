@@ -26,7 +26,7 @@ import org.springframework.classify.PatternMatchingClassifier;
 
 /**
  * @author Dave Syer
- * 
+ *
  */
 public class PatternMatchingClassifierTests {
 
@@ -52,7 +52,7 @@ public class PatternMatchingClassifierTests {
 	public void testCreateFromMap() {
 		classifier = new PatternMatchingClassifier<String>(map);
 		assertEquals("bar", classifier.classify("foo"));
-		assertEquals("spam", classifier.classify("bucket"));		
+		assertEquals("spam", classifier.classify("bucket"));
 	}
 
 }

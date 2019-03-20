@@ -57,14 +57,12 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * properties. The {@link org.springframework.retry.backoff.BackOffPolicy} controls how
  * long the pause is between each individual retry attempt.
  * <p>
- * A new instance can be fluently configured via {@link #newBuilder}, e.g:
- * <pre> {@code
+ * A new instance can be fluently configured via {@link #newBuilder}, e.g: <pre> {@code
  * RetryTemplate.newBuilder()
  *                 .maxAttempts(10)
  *                 .fixedBackoff(1000)
  *                 .build();
- * }</pre>
- * See {@link RetryTemplateBuilder} for more examples and details.
+ * }</pre> See {@link RetryTemplateBuilder} for more examples and details.
  * <p>
  * This class is thread-safe and suitable for concurrent access when executing operations
  * and when performing configuration changes. As such, it is possible to change the number
@@ -99,11 +97,10 @@ public class RetryTemplate implements RetryOperations {
 	private boolean throwLastExceptionOnExhausted;
 
 	/**
-	 * Main entry point to configure RetryTemplate using fluent API.
-	 * See {@link RetryTemplateBuilder} for usage examples and details.
-	 *
-	 * @return a new instance of RetryTemplateBuilder with preset default behaviour, that can be overwritten during
-	 * 		   manual configuration
+	 * Main entry point to configure RetryTemplate using fluent API. See
+	 * {@link RetryTemplateBuilder} for usage examples and details.
+	 * @return a new instance of RetryTemplateBuilder with preset default behaviour, that
+	 * can be overwritten during manual configuration
 	 * @since 1.3
 	 */
 	public static RetryTemplateBuilder newBuilder() {
@@ -111,9 +108,8 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	/**
-	 * Creates a new default instance. The properties of default instance are described in {@link RetryTemplateBuilder}
-	 * documentation.
-	 *
+	 * Creates a new default instance. The properties of default instance are described in
+	 * {@link RetryTemplateBuilder} documentation.
 	 * @return a new instance of RetryTemplate with default behaviour
 	 * @since 1.3
 	 */
@@ -130,7 +126,6 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Public setter for the {@link RetryContextCache}.
-	 *
 	 * @param retryContextCache the {@link RetryContextCache} to set.
 	 */
 	public void setRetryContextCache(RetryContextCache retryContextCache) {
@@ -140,7 +135,6 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Setter for listeners. The listeners are executed before and after a retry block
 	 * (i.e. before and after all the attempts), and on an error (every attempt).
-	 *
 	 * @param listeners the {@link RetryListener}s
 	 * @see RetryListener
 	 */
@@ -151,7 +145,6 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Register an additional listener.
-	 *
 	 * @param listener the {@link RetryListener}
 	 * @see #setListeners(RetryListener[])
 	 */
@@ -164,7 +157,6 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Setter for {@link BackOffPolicy}.
-	 *
 	 * @param backOffPolicy the {@link BackOffPolicy}
 	 */
 	public void setBackOffPolicy(BackOffPolicy backOffPolicy) {
@@ -173,7 +165,6 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * Setter for {@link RetryPolicy}.
-	 *
 	 * @param retryPolicy the {@link RetryPolicy}
 	 */
 	public void setRetryPolicy(RetryPolicy retryPolicy) {
@@ -187,7 +178,6 @@ public class RetryTemplate implements RetryOperations {
 	 *
 	 * @see RetryOperations#execute(RetryCallback)
 	 * @param retryCallback the {@link RetryCallback}
-	 *
 	 * @throws TerminatedRetryException if the retry has been manually terminated by a
 	 * listener.
 	 */
@@ -399,7 +389,6 @@ public class RetryTemplate implements RetryOperations {
 	 * Decide whether to proceed with the ongoing retry attempt. This method is called
 	 * before the {@link RetryCallback} is executed, but after the backoff and open
 	 * interceptors.
-	 *
 	 * @param retryPolicy the policy to apply
 	 * @param context the current retry context
 	 * @return true if we can continue with the attempt
@@ -411,7 +400,6 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Clean up the cache if necessary and close the context provided (if the flag
 	 * indicates that processing was successful).
-	 *
 	 * @param retryPolicy the {@link RetryPolicy}
 	 * @param context the {@link RetryContext}
 	 * @param state the {@link RetryState}
@@ -459,10 +447,8 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Delegate to the {@link RetryPolicy} having checked in the cache for an existing
 	 * value if the state is not null.
-	 *
 	 * @param state a {@link RetryState}
 	 * @param retryPolicy a {@link RetryPolicy} to delegate the context creation
-	 *
 	 * @return a retry context, either a new one or the one used last time the same state
 	 * was encountered
 	 */
@@ -524,7 +510,6 @@ public class RetryTemplate implements RetryOperations {
 	 * Actions to take after final attempt has failed. If there is state clean up the
 	 * cache. If there is a recovery callback, execute that and return its result.
 	 * Otherwise throw an exception.
-	 *
 	 * @param recoveryCallback the callback for recovery (might be null)
 	 * @param context the current retry context
 	 * @param state the {@link RetryState}
@@ -570,7 +555,6 @@ public class RetryTemplate implements RetryOperations {
 	 * Extension point for subclasses to decide on behaviour after catching an exception
 	 * in a {@link RetryCallback}. Normal stateless behaviour is not to rethrow, and if
 	 * there is state we rethrow.
-	 *
 	 * @param retryPolicy the retry policy
 	 * @param context the current context
 	 * @param state the current retryState

@@ -37,10 +37,15 @@ import org.springframework.retry.support.RetryTemplate;
 public class CircuitBreakerRetryTemplateTests {
 
 	private static final String RECOVERED = "RECOVERED";
+
 	private static final String RESULT = "RESULT";
+
 	private RetryTemplate retryTemplate;
+
 	private RecoveryCallback<Object> recovery;
+
 	private MockRetryCallback callback;
+
 	private DefaultRetryState state;
 
 	@Before
@@ -79,13 +84,15 @@ public class CircuitBreakerRetryTemplateTests {
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			assertEquals(this.callback.exceptionToThrow, e);
 			assertEquals(1, this.callback.getAttempts());
 		}
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			assertEquals(this.callback.exceptionToThrow, e);
 			// circuit is now open so no more attempts
 			assertEquals(1, this.callback.getAttempts());
@@ -184,6 +191,7 @@ public class CircuitBreakerRetryTemplateTests {
 		public void setExceptionToThrow(Exception exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
 		}
+
 	}
 
 }

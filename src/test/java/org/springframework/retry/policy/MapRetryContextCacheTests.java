@@ -26,7 +26,7 @@ import org.springframework.retry.context.RetryContextSupport;
 public class MapRetryContextCacheTests {
 
 	MapRetryContextCache cache = new MapRetryContextCache();
-	
+
 	@Test
 	public void testPut() {
 		RetryContextSupport context = new RetryContextSupport(null);
@@ -34,7 +34,7 @@ public class MapRetryContextCacheTests {
 		assertEquals(context, cache.get("foo"));
 	}
 
-	@Test(expected=RetryCacheCapacityExceededException.class)
+	@Test(expected = RetryCacheCapacityExceededException.class)
 	public void testPutOverLimit() {
 		RetryContextSupport context = new RetryContextSupport(null);
 		cache.setCapacity(1);

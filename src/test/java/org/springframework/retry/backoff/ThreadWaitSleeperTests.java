@@ -39,8 +39,8 @@ public class ThreadWaitSleeperTests {
 	private void assertEqualsApprox(long desired, long actual, long variance) {
 		long lower = desired - variance;
 		long upper = desired + 2 * variance;
-		assertTrue("Expected value to be between '" + lower + "' and '" + upper + "' but was '" + actual + "'",
-				lower <= actual);
+		assertTrue("Expected value to be between '" + lower + "' and '" + upper
+				+ "' but was '" + actual + "'", lower <= actual);
 	}
 
 }

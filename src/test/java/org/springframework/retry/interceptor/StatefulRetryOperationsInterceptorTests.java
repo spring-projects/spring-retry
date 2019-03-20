@@ -263,8 +263,10 @@ public class StatefulRetryOperationsInterceptorTests {
 		MethodInvocation invocation = mock(MethodInvocation.class);
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
-		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor
+				.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class),
+				captor.capture());
 		assertNull(captor.getValue().getKey());
 	}
 
@@ -285,8 +287,10 @@ public class StatefulRetryOperationsInterceptorTests {
 		MethodInvocation invocation = mock(MethodInvocation.class);
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
-		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor
+				.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class),
+				captor.capture());
 		assertEquals("bar", captor.getValue().getKey());
 	}
 
@@ -318,7 +322,9 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	public static interface Service {
+
 		void service(String in) throws Exception;
+
 	}
 
 	public static class ServiceImpl implements Service {
@@ -334,7 +340,9 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	public static interface Transformer {
+
 		Collection<String> transform(String in) throws Exception;
+
 	}
 
 	public static class TransformerImpl implements Transformer {
@@ -349,4 +357,5 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 
 	}
+
 }

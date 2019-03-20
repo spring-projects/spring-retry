@@ -42,7 +42,8 @@ public class RetrySimulation {
 	}
 
 	/**
-	 * @return Returns a list of all the unique sleep values which were executed within all simulations.
+	 * @return Returns a list of all the unique sleep values which were executed within
+	 * all simulations.
 	 */
 	public List<Double> getPercentiles() {
 		List<Double> res = new ArrayList<Double>();
@@ -77,6 +78,7 @@ public class RetrySimulation {
 	}
 
 	public static class SleepSequence {
+
 		private final List<Long> sleeps;
 
 		private final long longestSleep;
@@ -111,5 +113,7 @@ public class RetrySimulation {
 		public String toString() {
 			return "totalSleep=" + totalSleep + ": " + sleeps.toString();
 		}
+
 	}
+
 }

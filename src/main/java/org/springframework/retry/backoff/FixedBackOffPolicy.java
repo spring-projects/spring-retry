@@ -28,8 +28,8 @@ package org.springframework.retry.backoff;
  * @author Dave Syer
  * @author Artem Bilan
  */
-public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
-		SleepingBackOffPolicy<FixedBackOffPolicy> {
+public class FixedBackOffPolicy extends StatelessBackOffPolicy
+		implements SleepingBackOffPolicy<FixedBackOffPolicy> {
 
 	/**
 	 * Default back off period - 1000ms.
@@ -90,4 +90,5 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements
 	public String toString() {
 		return "FixedBackOffPolicy[backOffPeriod=" + backOffPeriod + "]";
 	}
+
 }

@@ -28,8 +28,8 @@ import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.util.Assert;
 
 /**
- * A {@link RetryPolicy} that dynamically adapts to one of a set of injected
- * policies according to the value of the latest exception.
+ * A {@link RetryPolicy} that dynamically adapts to one of a set of injected policies
+ * according to the value of the latest exception.
  *
  * @author Dave Syer
  *
@@ -37,27 +37,28 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
-	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(new NeverRetryPolicy());
+	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(
+			new NeverRetryPolicy());
 
 	/**
-	 * Setter for policy map used to create a classifier. Either this property
-	 * or the exception classifier directly should be set, but not both.
-	 *
-	 * @param policyMap a map of Throwable class to {@link RetryPolicy} that
-	 * will be used to create a {@link Classifier} to locate a policy.
+	 * Setter for policy map used to create a classifier. Either this property or the
+	 * exception classifier directly should be set, but not both.
+	 * @param policyMap a map of Throwable class to {@link RetryPolicy} that will be used
+	 * to create a {@link Classifier} to locate a policy.
 	 */
 	public void setPolicyMap(Map<Class<? extends Throwable>, RetryPolicy> policyMap) {
-		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(policyMap, new NeverRetryPolicy());
+		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(
+				policyMap, new NeverRetryPolicy());
 	}
 
 	/**
-	 * Setter for an exception classifier. The classifier is responsible for
-	 * translating exceptions to concrete retry policies. Either this property
-	 * or the policy map should be used, but not both.
-	 *
+	 * Setter for an exception classifier. The classifier is responsible for translating
+	 * exceptions to concrete retry policies. Either this property or the policy map
+	 * should be used, but not both.
 	 * @param exceptionClassifier ExceptionClassifier to use
 	 */
-	public void setExceptionClassifier(Classifier<Throwable, RetryPolicy> exceptionClassifier) {
+	public void setExceptionClassifier(
+			Classifier<Throwable, RetryPolicy> exceptionClassifier) {
 		this.exceptionClassifier = exceptionClassifier;
 	}
 
@@ -82,13 +83,14 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	}
 
 	/**
-	 * Create an active context that proxies a retry policy by choosing a target
-	 * from the policy map.
+	 * Create an active context that proxies a retry policy by choosing a target from the
+	 * policy map.
 	 *
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
 	public RetryContext open(RetryContext parent) {
-		return new ExceptionClassifierRetryContext(parent, exceptionClassifier).open(parent);
+		return new ExceptionClassifierRetryContext(parent, exceptionClassifier)
+				.open(parent);
 	}
 
 	/**
@@ -103,7 +105,8 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 		((RetryContextSupport) context).registerThrowable(throwable);
 	}
 
-	private static class ExceptionClassifierRetryContext extends RetryContextSupport implements RetryPolicy {
+	private static class ExceptionClassifierRetryContext extends RetryContextSupport
+			implements RetryPolicy {
 
 		final private Classifier<Throwable, RetryPolicy> exceptionClassifier;
 
@@ -138,7 +141,8 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 		public void registerThrowable(RetryContext context, Throwable throwable) {
 			policy = exceptionClassifier.classify(throwable);
-			Assert.notNull(policy, "Could not locate policy for exception=[" + throwable + "].");
+			Assert.notNull(policy,
+					"Could not locate policy for exception=[" + throwable + "].");
 			this.context = getContext(policy, context.getParent());
 			policy.registerThrowable(this.context, throwable);
 		}

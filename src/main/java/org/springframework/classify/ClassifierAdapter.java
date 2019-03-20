@@ -21,9 +21,9 @@ import org.springframework.util.Assert;
 
 /**
  * Wrapper for an object to adapt it to the {@link Classifier} interface.
- * 
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class ClassifierAdapter<C, T> implements Classifier<C, T> {
@@ -40,9 +40,8 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	}
 
 	/**
-	 * Create a new {@link Classifier} from the delegate provided. Use the
-	 * constructor as an alternative to the {@link #setDelegate(Object)} method.
-	 * 
+	 * Create a new {@link Classifier} from the delegate provided. Use the constructor as
+	 * an alternative to the {@link #setDelegate(Object)} method.
 	 * @param delegate the delegate
 	 */
 	public ClassifierAdapter(Object delegate) {
@@ -50,10 +49,8 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	}
 
 	/**
-	 * Create a new {@link Classifier} from the delegate provided. Use the
-	 * constructor as an alternative to the {@link #setDelegate(Classifier)}
-	 * method.
-	 * 
+	 * Create a new {@link Classifier} from the delegate provided. Use the constructor as
+	 * an alternative to the {@link #setDelegate(Classifier)} method.
 	 * @param delegate the classifier to delegate to
 	 */
 	public ClassifierAdapter(Classifier<C, T> delegate) {
@@ -66,15 +63,13 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	}
 
 	/**
-	 * Search for the
-	 * {@link org.springframework.classify.annotation.Classifier
-	 * Classifier} annotation on a method in the supplied delegate and use that
-	 * to create a {@link Classifier} from the parameter type to the return
-	 * type. If the annotation is not found a unique non-void method with a
-	 * single parameter will be used, if it exists. The signature of the method
-	 * cannot be checked here, so might be a runtime exception when the method
-	 * is invoked if the signature doesn't match the classifier types.
-	 * 
+	 * Search for the {@link org.springframework.classify.annotation.Classifier
+	 * Classifier} annotation on a method in the supplied delegate and use that to create
+	 * a {@link Classifier} from the parameter type to the return type. If the annotation
+	 * is not found a unique non-void method with a single parameter will be used, if it
+	 * exists. The signature of the method cannot be checked here, so might be a runtime
+	 * exception when the method is invoked if the signature doesn't match the classifier
+	 * types.
 	 * @param delegate an object with an annotated method
 	 */
 	public final void setDelegate(Object delegate) {
@@ -82,7 +77,8 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 		invoker = MethodInvokerUtils.getMethodInvokerByAnnotation(
 				org.springframework.classify.annotation.Classifier.class, delegate);
 		if (invoker == null) {
-			invoker = MethodInvokerUtils.<C, T> getMethodInvokerForSingleArgument(delegate);
+			invoker = MethodInvokerUtils
+					.<C, T>getMethodInvokerForSingleArgument(delegate);
 		}
 		Assert.state(invoker != null, "No single argument public method with or without "
 				+ "@Classifier was found in delegate of type " + delegate.getClass());

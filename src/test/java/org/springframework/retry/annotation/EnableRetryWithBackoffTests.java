@@ -42,8 +42,8 @@ public class EnableRetryWithBackoffTests {
 				TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		service.service();
-		assertEquals("[1000, 1000]", context.getBean(PeriodSleeper.class)
-				.getPeriods().toString());
+		assertEquals("[1000, 1000]",
+				context.getBean(PeriodSleeper.class).getPeriods().toString());
 		assertEquals(3, service.getCount());
 		context.close();
 	}
@@ -67,8 +67,8 @@ public class EnableRetryWithBackoffTests {
 		ExponentialService service = context.getBean(ExponentialService.class);
 		service.service();
 		assertEquals(3, service.getCount());
-		assertEquals("[1000, 1100]", context.getBean(PeriodSleeper.class)
-				.getPeriods().toString());
+		assertEquals("[1000, 1100]",
+				context.getBean(PeriodSleeper.class).getPeriods().toString());
 		context.close();
 	}
 
@@ -81,11 +81,11 @@ public class EnableRetryWithBackoffTests {
 		service.service(1);
 		assertEquals(3, service.getCount());
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
-		assertNotEquals("[1000, 1100]", context.getBean(PeriodSleeper.class)
-				.getPeriods().toString());
+		assertNotEquals("[1000, 1100]",
+				context.getBean(PeriodSleeper.class).getPeriods().toString());
 		assertTrue("Wrong periods: " + periods, periods.get(0) > 1000);
-		assertTrue("Wrong periods: " + periods, periods.get(1) > 1100
-				&& periods.get(1) < 1210);
+		assertTrue("Wrong periods: " + periods,
+				periods.get(1) > 1100 && periods.get(1) < 1210);
 		context.close();
 	}
 
@@ -204,4 +204,5 @@ public class EnableRetryWithBackoffTests {
 		}
 
 	}
+
 }

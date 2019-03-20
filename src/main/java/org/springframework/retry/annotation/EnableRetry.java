@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Import;
  * declared on any <code>@Configuration</code> in the context then beans that have
  * retryable methods will be proxied and the retry handled according to the metadata in
  * the annotations.
- * 
+ *
  * @author Dave Syer
  * @since 2.0
  *
@@ -43,9 +43,8 @@ import org.springframework.context.annotation.Import;
 public @interface EnableRetry {
 
 	/**
-	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed
-	 * to standard Java interface-based proxies. The default is {@code false}.
-	 *
+	 * Indicate whether subclass-based (CGLIB) proxies are to be created as opposed to
+	 * standard Java interface-based proxies. The default is {@code false}.
 	 * @return whether to proxy or not to proxy the class
 	 */
 	boolean proxyTargetClass() default false;

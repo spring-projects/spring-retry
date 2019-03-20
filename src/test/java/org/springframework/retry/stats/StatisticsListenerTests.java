@@ -37,6 +37,7 @@ import org.springframework.retry.support.RetryTemplate;
 public class StatisticsListenerTests {
 
 	private StatisticsRepository repository = new DefaultStatisticsRepository();
+
 	private StatisticsListener listener = new StatisticsListener(repository);
 
 	@Test
@@ -117,7 +118,7 @@ public class StatisticsListenerTests {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
-			for (int i = 0; i < x+1; i++) {
+			for (int i = 0; i < x + 1; i++) {
 				try {
 					retryTemplate.execute(callback, state);
 				}
@@ -168,7 +169,7 @@ public class StatisticsListenerTests {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
-			for (int i = 0; i < x+1; i++) {
+			for (int i = 0; i < x + 1; i++) {
 				try {
 					retryTemplate.execute(callback, new RecoveryCallback<Object>() {
 						@Override

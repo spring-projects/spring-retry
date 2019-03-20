@@ -32,53 +32,60 @@ import org.springframework.retry.support.RetrySimulator;
  *
  */
 public class ExponentialRandomBackOffPolicyTests {
-    static final int NUM_TRIALS = 10000;
-    static final int MAX_RETRIES = 6;
 
-    private ExponentialBackOffPolicy makeBackoffPolicy() {
-        ExponentialBackOffPolicy policy = new ExponentialRandomBackOffPolicy();
-        policy.setInitialInterval(50);
-        policy.setMultiplier(2.0);
-        policy.setMaxInterval(3000);
-        return policy;
-    }
+	static final int NUM_TRIALS = 10000;
+	static final int MAX_RETRIES = 6;
 
-    private SimpleRetryPolicy makeRetryPolicy() {
-        SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
-        retryPolicy.setMaxAttempts(MAX_RETRIES);
-        return retryPolicy;
-    }
+	private ExponentialBackOffPolicy makeBackoffPolicy() {
+		ExponentialBackOffPolicy policy = new ExponentialRandomBackOffPolicy();
+		policy.setInitialInterval(50);
+		policy.setMultiplier(2.0);
+		policy.setMaxInterval(3000);
+		return policy;
+	}
+
+	private SimpleRetryPolicy makeRetryPolicy() {
+		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+		retryPolicy.setMaxAttempts(MAX_RETRIES);
+		return retryPolicy;
+	}
 
 	@Test
-   public void testSingleBackoff() throws Exception {
-        ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
-        RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
-        RetrySimulation simulation = simulator.executeSimulation(1);
+	public void testSingleBackoff() throws Exception {
+		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
+		RetrySimulation simulation = simulator.executeSimulation(1);
 
-        List<Long> sleeps = simulation.getLongestTotalSleepSequence().getSleeps();
-        System.out.println("Single trial of " + backOffPolicy + ": sleeps=" + sleeps);
-        assertEquals(MAX_RETRIES - 1, sleeps.size());
-        long initialInterval = backOffPolicy.getInitialInterval();
-        for (int i=0; i<sleeps.size(); i++) {
-            long expectedMaxValue = 2*(long) (initialInterval + initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
-            assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max expected value of " + expectedMaxValue + " at interval " + i,
-                       sleeps.get(i) < expectedMaxValue);
-        }
-    }
+		List<Long> sleeps = simulation.getLongestTotalSleepSequence().getSleeps();
+		System.out.println("Single trial of " + backOffPolicy + ": sleeps=" + sleeps);
+		assertEquals(MAX_RETRIES - 1, sleeps.size());
+		long initialInterval = backOffPolicy.getInitialInterval();
+		for (int i = 0; i < sleeps.size(); i++) {
+			long expectedMaxValue = 2 * (long) (initialInterval + initialInterval
+					* Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
+			assertTrue(
+					"Found a sleep [" + sleeps.get(i)
+							+ "] which exceeds our max expected value of "
+							+ expectedMaxValue + " at interval " + i,
+					sleeps.get(i) < expectedMaxValue);
+		}
+	}
 
 	@Test
 	public void testMultiBackOff() throws Exception {
-        ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
-        RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
-        RetrySimulation simulation = simulator.executeSimulation(NUM_TRIALS);
+		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
+		RetrySimulation simulation = simulator.executeSimulation(NUM_TRIALS);
 
-        System.out.println("Ran " + NUM_TRIALS + " backoff trials.  Each trial retried " + MAX_RETRIES + " times");
-        System.out.println("Policy: " + backOffPolicy);
-        System.out.println("All generated backoffs:");
-        System.out.println("    " + simulation.getPercentiles());
+		System.out.println("Ran " + NUM_TRIALS + " backoff trials.  Each trial retried "
+				+ MAX_RETRIES + " times");
+		System.out.println("Policy: " + backOffPolicy);
+		System.out.println("All generated backoffs:");
+		System.out.println("    " + simulation.getPercentiles());
 
-        System.out.println("Backoff frequencies:");
-        System.out.print("    " + simulation.getPercentiles());
+		System.out.println("Backoff frequencies:");
+		System.out.print("    " + simulation.getPercentiles());
 
 	}
+
 }

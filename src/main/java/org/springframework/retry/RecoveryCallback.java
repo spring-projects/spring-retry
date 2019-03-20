@@ -17,9 +17,8 @@ package org.springframework.retry;
 
 /**
  * Callback for stateful retry after all tries are exhausted.
- * 
+ *
  * @author Dave Syer
- * 
  * @since 1.1
  */
 public interface RecoveryCallback<T> {

@@ -21,27 +21,26 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
 
 /**
- * Global variable support for retry clients. Normally it is not necessary for
- * clients to be aware of the surrounding environment because a
- * {@link RetryCallback} can always use the context it is passed by the
- * enclosing {@link RetryOperations}. But occasionally it might be helpful to
- * have lower level access to the ongoing {@link RetryContext} so we provide a
- * global accessor here. The mutator methods ({@link #clear()} and
+ * Global variable support for retry clients. Normally it is not necessary for clients to
+ * be aware of the surrounding environment because a {@link RetryCallback} can always use
+ * the context it is passed by the enclosing {@link RetryOperations}. But occasionally it
+ * might be helpful to have lower level access to the ongoing {@link RetryContext} so we
+ * provide a global accessor here. The mutator methods ({@link #clear()} and
  * {@link #register(RetryContext)} should not be used except internally by
  * {@link RetryOperations} implementations.
- * 
+ *
  * @author Dave Syer
- * 
+ *
  */
 public final class RetrySynchronizationManager {
 
-	private RetrySynchronizationManager() {}
+	private RetrySynchronizationManager() {
+	}
 
 	private static final ThreadLocal<RetryContext> context = new ThreadLocal<RetryContext>();
 
 	/**
 	 * Public accessor for the locally enclosing {@link RetryContext}.
-	 * 
 	 * @return the current retry context, or null if there isn't one
 	 */
 	public static RetryContext getContext() {
@@ -50,10 +49,9 @@ public final class RetrySynchronizationManager {
 	}
 
 	/**
-	 * Method for registering a context - should only be used by
-	 * {@link RetryOperations} implementations to ensure that
-	 * {@link #getContext()} always returns the correct value.
-	 * 
+	 * Method for registering a context - should only be used by {@link RetryOperations}
+	 * implementations to ensure that {@link #getContext()} always returns the correct
+	 * value.
 	 * @param context the new context to register
 	 * @return the old context if there was one
 	 */
@@ -66,7 +64,6 @@ public final class RetrySynchronizationManager {
 	/**
 	 * Clear the current context at the end of a batch - should only be used by
 	 * {@link RetryOperations} implementations.
-	 * 
 	 * @return the old value if there was one.
 	 */
 	public static RetryContext clear() {

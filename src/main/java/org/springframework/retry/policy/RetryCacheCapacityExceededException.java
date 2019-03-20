@@ -18,22 +18,20 @@ package org.springframework.retry.policy;
 import org.springframework.retry.RetryException;
 
 /**
- * Exception that indicates that a cache limit was exceeded. This is often a
- * sign of badly or inconsistently implemented hashCode, equals in failed items.
- * Items can then fail repeatedly and appear different to the cache, so they get
- * added over and over again until a limit is reached and this exception is
- * thrown. Consult the documentation of the {@link RetryContextCache} in use to
- * determine how to increase the limit if appropriate.
- * 
+ * Exception that indicates that a cache limit was exceeded. This is often a sign of badly
+ * or inconsistently implemented hashCode, equals in failed items. Items can then fail
+ * repeatedly and appear different to the cache, so they get added over and over again
+ * until a limit is reached and this exception is thrown. Consult the documentation of the
+ * {@link RetryContextCache} in use to determine how to increase the limit if appropriate.
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class RetryCacheCapacityExceededException extends RetryException {
 
 	/**
 	 * Constructs a new instance with a message.
-	 * 
 	 * @param message the message sent when creating the exception
 	 */
 	public RetryCacheCapacityExceededException(String message) {
@@ -42,7 +40,6 @@ public class RetryCacheCapacityExceededException extends RetryException {
 
 	/**
 	 * Constructs a new instance with a message and nested exception.
-	 * 
 	 * @param msg the exception message.
 	 * @param nested the nested exception
 	 */

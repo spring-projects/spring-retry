@@ -190,14 +190,14 @@ public class EnableRetryTests {
 
 	@Test
 	public void testImplementation() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class);
 		NotAnnotatedInterface service = context.getBean(NotAnnotatedInterface.class);
 		service.service1();
 		service.service2();
 		assertEquals(5, service.getCount());
 		context.close();
 	}
-
 
 	@Test
 	public void testExpression() throws Exception {
@@ -243,7 +243,7 @@ public class EnableRetryTests {
 			return target;
 		}
 		try {
-			return target(((Advised)target).getTargetSource().getTarget());
+			return target(((Advised) target).getTargetSource().getTarget());
 		}
 		catch (Exception e) {
 			throw new IllegalStateException(e);
@@ -469,6 +469,7 @@ public class EnableRetryTests {
 	protected static class ExcludesOnlyService {
 
 		private int count = 0;
+
 		private RuntimeException exceptionToThrow;
 
 		@Retryable(exclude = IllegalStateException.class)
@@ -485,6 +486,7 @@ public class EnableRetryTests {
 		public void setExceptionToThrow(RuntimeException exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
 		}
+
 	}
 
 	protected static class StatefulService {
@@ -635,6 +637,5 @@ public class EnableRetryTests {
 		}
 
 	}
-
 
 }

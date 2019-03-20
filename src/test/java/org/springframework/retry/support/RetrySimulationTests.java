@@ -39,12 +39,15 @@ public class RetrySimulationTests {
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
 		RetrySimulation simulation = simulator.executeSimulation(1000);
 		System.out.println(backOffPolicy);
-		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println(
+				"Longest sequence  " + simulation.getLongestTotalSleepSequence());
 		System.out.println("Percentiles:       " + simulation.getPercentiles());
 
-		assertEquals(asList(400l, 400l, 400l, 400l), simulation.getLongestTotalSleepSequence().getSleeps());
-		assertEquals(asList(400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d), simulation.getPercentiles());
-		assertEquals(400d, simulation.getPercentile(0.5),0.1);
+		assertEquals(asList(400l, 400l, 400l, 400l),
+				simulation.getLongestTotalSleepSequence().getSleeps());
+		assertEquals(asList(400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d, 400d),
+				simulation.getPercentiles());
+		assertEquals(400d, simulation.getPercentile(0.5), 0.1);
 	}
 
 	@Test
@@ -60,11 +63,14 @@ public class RetrySimulationTests {
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
 		RetrySimulation simulation = simulator.executeSimulation(1000);
 		System.out.println(backOffPolicy);
-		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println(
+				"Longest sequence  " + simulation.getLongestTotalSleepSequence());
 		System.out.println("Percentiles:       " + simulation.getPercentiles());
 
-		assertEquals(asList(100l, 200l, 400l, 800l), simulation.getLongestTotalSleepSequence().getSleeps());
-		assertEquals(asList(100d, 100d, 200d, 200d, 300d, 400d, 400d, 800d, 800d), simulation.getPercentiles());
+		assertEquals(asList(100l, 200l, 400l, 800l),
+				simulation.getLongestTotalSleepSequence().getSleeps());
+		assertEquals(asList(100d, 100d, 200d, 200d, 300d, 400d, 400d, 800d, 800d),
+				simulation.getPercentiles());
 		assertEquals(300d, simulation.getPercentile(0.5f), 0.1);
 	}
 
@@ -81,9 +87,11 @@ public class RetrySimulationTests {
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, retryPolicy);
 		RetrySimulation simulation = simulator.executeSimulation(10000);
 		System.out.println(backOffPolicy);
-		System.out.println("Longest sequence  " + simulation.getLongestTotalSleepSequence());
+		System.out.println(
+				"Longest sequence  " + simulation.getLongestTotalSleepSequence());
 		System.out.println("Percentiles:       " + simulation.getPercentiles());
 
 		assertTrue(simulation.getPercentiles().size() > 4);
 	}
+
 }

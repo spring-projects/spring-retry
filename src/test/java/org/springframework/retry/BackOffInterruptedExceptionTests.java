@@ -31,4 +31,5 @@ public class BackOffInterruptedExceptionTests extends AbstractExceptionTests {
 	public void testNothing() throws Exception {
 		// fool coverage tools...
 	}
+
 }

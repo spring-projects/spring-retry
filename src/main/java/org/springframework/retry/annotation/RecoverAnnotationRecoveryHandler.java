@@ -46,7 +46,9 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
 	private SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<Throwable, Method>();
+
 	private Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
+
 	private Object target;
 
 	public RecoverAnnotationRecoveryHandler(Object target, Method method) {
@@ -92,8 +94,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 					result = method;
 				}
 				else if (distance == min) {
-					boolean parametersMatch = compareParameters( args, meta.getArgCount(),
-							method.getParameterTypes() );
+					boolean parametersMatch = compareParameters(args, meta.getArgCount(),
+							method.getParameterTypes());
 					if (parametersMatch) {
 						result = method;
 					}
@@ -114,14 +116,16 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return result;
 	}
 
-	private boolean compareParameters(Object[] args, int argCount, Class<?>[] parameterTypes) {
+	private boolean compareParameters(Object[] args, int argCount,
+			Class<?>[] parameterTypes) {
 		if (argCount == (args.length + 1)) {
 			int startingIndex = 0;
-                        if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
+			if (parameterTypes.length > 0
+					&& Throwable.class.isAssignableFrom(parameterTypes[0])) {
 				startingIndex = 1;
 			}
 			for (int i = startingIndex; i < parameterTypes.length; i++) {
-				final Object argument = args[i-1];
+				final Object argument = args[i - 1];
 				if (argument == null) {
 					continue;
 				}
@@ -140,26 +144,25 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		ReflectionUtils.doWithMethods(failingMethod.getDeclaringClass(),
 				new MethodCallback() {
 					@Override
-					public void doWith(Method method) throws IllegalArgumentException,
-							IllegalAccessException {
+					public void doWith(Method method)
+							throws IllegalArgumentException, IllegalAccessException {
 						Recover recover = AnnotationUtils.findAnnotation(method,
 								Recover.class);
-						if (recover != null
-								&& method.getReturnType().isAssignableFrom(
-										failingMethod.getReturnType())) {
+						if (recover != null && method.getReturnType()
+								.isAssignableFrom(failingMethod.getReturnType())) {
 							Class<?>[] parameterTypes = method.getParameterTypes();
-							if (parameterTypes.length > 0
-									&& Throwable.class
-											.isAssignableFrom(parameterTypes[0])) {
+							if (parameterTypes.length > 0 && Throwable.class
+									.isAssignableFrom(parameterTypes[0])) {
 								@SuppressWarnings("unchecked")
 								Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
 								types.put(type, method);
-								methods.put(method, new SimpleMetadata(
-										parameterTypes.length, type));
-							} else {
+								methods.put(method,
+										new SimpleMetadata(parameterTypes.length, type));
+							}
+							else {
 								classifier.setDefaultValue(method);
-								methods.put(method, new SimpleMetadata(
-										parameterTypes.length, null));
+								methods.put(method,
+										new SimpleMetadata(parameterTypes.length, null));
 							}
 						}
 					}
@@ -181,7 +184,9 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	}
 
 	private static class SimpleMetadata {
+
 		private int argCount;
+
 		private Class<? extends Throwable> type;
 
 		public SimpleMetadata(int argCount, Class<? extends Throwable> type) {
@@ -208,6 +213,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			System.arraycopy(args, 0, result, startArgs, result.length - startArgs);
 			return result;
 		}
+
 	}
 
 }

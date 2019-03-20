@@ -55,23 +55,27 @@ public class SubclassExceptionClassifierTests {
 
 	@Test
 	public void testClassifyExactMatch() {
-		classifier.setTypeMap(Collections.<Class<? extends Throwable>, String> singletonMap(
-				IllegalStateException.class, "foo"));
+		classifier
+				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
+						IllegalStateException.class, "foo"));
 		assertEquals("foo", classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySubclassMatch() {
-		classifier.setTypeMap(Collections.<Class<? extends Throwable>, String> singletonMap(RuntimeException.class,
-				"foo"));
+		classifier
+				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
+						RuntimeException.class, "foo"));
 		assertEquals("foo", classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySuperclassDoesNotMatch() {
-		classifier.setTypeMap(Collections.<Class<? extends Throwable>, String> singletonMap(
-				IllegalStateException.class, "foo"));
-		assertEquals(classifier.getDefault(), classifier.classify(new RuntimeException("Foo")));
+		classifier
+				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
+						IllegalStateException.class, "foo"));
+		assertEquals(classifier.getDefault(),
+				classifier.classify(new RuntimeException("Foo")));
 	}
 
 	@SuppressWarnings("serial")
@@ -108,4 +112,5 @@ public class SubclassExceptionClassifierTests {
 	public static class SubConnectException extends ConnectException {
 
 	}
+
 }

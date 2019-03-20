@@ -37,4 +37,5 @@ public abstract class AbstractExceptionTests {
 	public abstract Exception getException(String msg) throws Exception;
 
 	public abstract Exception getException(String msg, Throwable t) throws Exception;
+
 }

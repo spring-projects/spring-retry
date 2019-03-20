@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
  * The Throwable first argument is optional (but a method without it will only be called
  * if no others match). Subsequent arguments are populated from the argument list of the
  * failed method in order.
- * 
+ *
  * @author Dave Syer
  * @since 2.0
  *
@@ -41,4 +41,5 @@ import org.springframework.context.annotation.Import;
 @Import(RetryConfiguration.class)
 @Documented
 public @interface Recover {
+
 }

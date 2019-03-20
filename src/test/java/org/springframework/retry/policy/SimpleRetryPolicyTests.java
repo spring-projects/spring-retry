@@ -44,8 +44,8 @@ public class SimpleRetryPolicyTests {
 	public void testEmptyExceptionsNeverRetry() throws Exception {
 
 		// We can't retry any exceptions...
-		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, Collections
-				.<Class<? extends Throwable>, Boolean> emptyMap());
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
+				Collections.<Class<? extends Throwable>, Boolean>emptyMap());
 		RetryContext context = policy.open(null);
 
 		// ...so we can't retry this one...
@@ -57,8 +57,10 @@ public class SimpleRetryPolicyTests {
 	public void testWithExceptionDefaultAlwaysRetry() throws Exception {
 
 		// We retry any exceptions except...
-		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, Collections
-				.<Class<? extends Throwable>, Boolean> singletonMap(IllegalStateException.class, false), true, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+						IllegalStateException.class, false),
+				true, true);
 		RetryContext context = policy.open(null);
 
 		// ...so we can't retry this one...

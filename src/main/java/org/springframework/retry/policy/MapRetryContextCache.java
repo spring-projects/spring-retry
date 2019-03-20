@@ -22,21 +22,22 @@ import java.util.Map;
 import org.springframework.retry.RetryContext;
 
 /**
- * Map-based implementation of {@link RetryContextCache}. The map backing the
- * cache of contexts is synchronized.
- * 
+ * Map-based implementation of {@link RetryContextCache}. The map backing the cache of
+ * contexts is synchronized.
+ *
  * @author Dave Syer
  */
 public class MapRetryContextCache implements RetryContextCache {
 
 	/**
-	 * Default value for maximum capacity of the cache. This is set to a
-	 * reasonably low value (4096) to avoid users inadvertently filling the
-	 * cache with item keys that are inconsistent.
+	 * Default value for maximum capacity of the cache. This is set to a reasonably low
+	 * value (4096) to avoid users inadvertently filling the cache with item keys that are
+	 * inconsistent.
 	 */
 	public static final int DEFAULT_CAPACITY = 4096;
 
-	private Map<Object, RetryContext> map = Collections.synchronizedMap(new HashMap<Object, RetryContext>());
+	private Map<Object, RetryContext> map = Collections
+			.synchronizedMap(new HashMap<Object, RetryContext>());
 
 	private int capacity;
 
@@ -56,12 +57,10 @@ public class MapRetryContextCache implements RetryContextCache {
 	}
 
 	/**
-	 * Public setter for the capacity. Prevents the cache from growing
-	 * unboundedly if items that fail are misidentified and two references to an
-	 * identical item actually do not have the same key. This can happen when
-	 * users implement equals and hashCode based on mutable fields, for
-	 * instance.
-	 * 
+	 * Public setter for the capacity. Prevents the cache from growing unboundedly if
+	 * items that fail are misidentified and two references to an identical item actually
+	 * do not have the same key. This can happen when users implement equals and hashCode
+	 * based on mutable fields, for instance.
 	 * @param capacity the capacity to set
 	 */
 	public void setCapacity(int capacity) {
@@ -78,9 +77,10 @@ public class MapRetryContextCache implements RetryContextCache {
 
 	public void put(Object key, RetryContext context) {
 		if (map.size() >= capacity) {
-			throw new RetryCacheCapacityExceededException("Retry cache capacity limit breached. "
-					+ "Do you need to re-consider the implementation of the key generator, "
-					+ "or the equals and hashCode of the items that failed?");
+			throw new RetryCacheCapacityExceededException(
+					"Retry cache capacity limit breached. "
+							+ "Do you need to re-consider the implementation of the key generator, "
+							+ "or the equals and hashCode of the items that failed?");
 		}
 		map.put(key, context);
 	}
@@ -88,4 +88,5 @@ public class MapRetryContextCache implements RetryContextCache {
 	public void remove(Object key) {
 		map.remove(key);
 	}
+
 }

@@ -23,11 +23,10 @@ import org.springframework.retry.RetryContext;
  * retrieving {@link RetryContext} instances. A null key should never be passed in by the
  * caller, but if it is then implementations are free to discard the context instead of
  * saving it (null key means "no information").
- * 
+ *
  * @author Dave Syer
- * 
  * @see MapRetryContextCache
- * 
+ *
  */
 public interface RetryContextCache {
 

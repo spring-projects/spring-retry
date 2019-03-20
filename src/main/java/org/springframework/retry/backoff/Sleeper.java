@@ -19,15 +19,14 @@ import java.io.Serializable;
 
 /**
  * Strategy interface for backoff policies to delegate the pausing of execution.
- * 
+ *
  * @author Dave Syer
- * 
+ *
  */
 public interface Sleeper extends Serializable {
 
 	/**
 	 * Pause for the specified period using whatever means available.
-	 * 
 	 * @param backOffPeriod the backoff period
 	 * @throws InterruptedException the exception when interrupted
 	 */

@@ -128,7 +128,8 @@ public class RetryTemplateTests {
 		try {
 			retryTemplate.execute(callback);
 			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
+		}
+		catch (IllegalArgumentException e) {
 			assertNotNull(e);
 			assertEquals(retryAttempts, callback.attempts);
 			return;
@@ -158,11 +159,10 @@ public class RetryTemplateTests {
 
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(attempts,
-				Collections.<Class<? extends Throwable>, Boolean> singletonMap(
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
 						Exception.class, true)));
-		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
-				Collections
-						.<Class<? extends Throwable>> singleton(IllegalArgumentException.class),
+		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(Collections
+				.<Class<? extends Throwable>>singleton(IllegalArgumentException.class),
 				false);
 		retryTemplate.execute(callback, new DefaultRetryState("foo", classifier));
 		assertEquals(attempts, callback.attempts);
@@ -172,7 +172,7 @@ public class RetryTemplateTests {
 	public void testSetExceptions() throws Throwable {
 		RetryTemplate template = new RetryTemplate();
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
-				Collections.<Class<? extends Throwable>, Boolean> singletonMap(
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
 						RuntimeException.class, true));
 		template.setRetryPolicy(policy);
 
@@ -183,7 +183,8 @@ public class RetryTemplateTests {
 
 		try {
 			template.execute(callback);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			assertNotNull(e);
 			assertEquals(1, callback.attempts);
 		}
@@ -221,7 +222,8 @@ public class RetryTemplateTests {
 				}
 			});
 			fail("Expected ExhaustedRetryException");
-		} catch (IllegalStateException ex) {
+		}
+		catch (IllegalStateException ex) {
 			// Expected for internal retry policy (external would recover
 			// gracefully)
 			assertEquals("Retry this operation", ex.getMessage());
@@ -241,7 +243,8 @@ public class RetryTemplateTests {
 				}
 			});
 			fail("Expected ExhaustedRetryException");
-		} catch (IllegalStateException ex) {
+		}
+		catch (IllegalStateException ex) {
 			// Expected for internal retry policy (external would recover
 			// gracefully)
 			assertEquals("Retry this operation", ex.getMessage());
@@ -289,7 +292,8 @@ public class RetryTemplateTests {
 				}
 			});
 			fail("Expected Error");
-		} catch (Error e) {
+		}
+		catch (Error e) {
 			assertEquals("Realllly bad!", e.getMessage());
 		}
 	}
@@ -312,7 +316,8 @@ public class RetryTemplateTests {
 				}
 			});
 			fail("Expected Error");
-		} catch (TerminatedRetryException e) {
+		}
+		catch (TerminatedRetryException e) {
 			assertEquals("Planned", e.getCause().getMessage());
 		}
 	}
@@ -334,7 +339,8 @@ public class RetryTemplateTests {
 				}
 			});
 			fail("Expected RuntimeException");
-		} catch (BackOffInterruptedException e) {
+		}
+		catch (BackOffInterruptedException e) {
 			assertEquals("foo", e.getMessage());
 		}
 	}
@@ -374,7 +380,8 @@ public class RetryTemplateTests {
 
 			});
 			fail();
-		} catch (Exception expected) {
+		}
+		catch (Exception expected) {
 			assertEquals("maybe next time!", expected.getMessage());
 		}
 
@@ -405,6 +412,7 @@ public class RetryTemplateTests {
 		public void setExceptionToThrow(Exception exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
 		}
+
 	}
 
 	private static class MockBackOffStrategy implements BackOffPolicy {
@@ -424,5 +432,7 @@ public class RetryTemplateTests {
 				throws BackOffInterruptedException {
 			this.backOffCalls++;
 		}
+
 	}
+
 }

@@ -19,10 +19,10 @@ package org.springframework.retry.backoff;
 import org.springframework.retry.RetryException;
 
 /**
- * Exception class signifiying that an attempt to back off using a
- * {@link BackOffPolicy} was interrupted, most likely by an
- * {@link InterruptedException} during a call to {@link Thread#sleep(long)}.
- * 
+ * Exception class signifiying that an attempt to back off using a {@link BackOffPolicy}
+ * was interrupted, most likely by an {@link InterruptedException} during a call to
+ * {@link Thread#sleep(long)}.
+ *
  * @author Rob Harrop
  * @since 2.1
  */
@@ -36,4 +36,5 @@ public class BackOffInterruptedException extends RetryException {
 	public BackOffInterruptedException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
+
 }

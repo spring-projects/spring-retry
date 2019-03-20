@@ -38,7 +38,7 @@ import org.springframework.retry.support.RetryTemplate;
 /**
  * @author Dave Syer
  * @author Gary Russell
- * 
+ *
  */
 public class StatefulRetryIntegrationTests {
 
@@ -118,7 +118,8 @@ public class StatefulRetryIntegrationTests {
 	}
 
 	@Test
-	public void testExternalRetryWithSuccessOnRetryAndSerializedContext() throws Throwable {
+	public void testExternalRetryWithSuccessOnRetryAndSerializedContext()
+			throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 
 		RetryState retryState = new DefaultRetryState("foo");
@@ -212,13 +213,15 @@ public class StatefulRetryIntegrationTests {
 
 	/**
 	 * @author Dave Syer
-	 * 
+	 *
 	 */
 	private static final class MockRetryCallback
 			implements RetryCallback<String, Exception> {
+
 		int attempts = 0;
+
 		RetryContext context;
-		
+
 		public String doWithRetry(RetryContext context) throws Exception {
 			attempts++;
 			this.context = context;
@@ -227,6 +230,7 @@ public class StatefulRetryIntegrationTests {
 			}
 			return "bar";
 		}
+
 	}
 
 }

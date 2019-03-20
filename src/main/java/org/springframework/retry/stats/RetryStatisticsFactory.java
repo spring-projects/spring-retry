@@ -21,7 +21,7 @@ package org.springframework.retry.stats;
  *
  */
 public interface RetryStatisticsFactory {
-	
+
 	MutableRetryStatistics create(String name);
 
 }

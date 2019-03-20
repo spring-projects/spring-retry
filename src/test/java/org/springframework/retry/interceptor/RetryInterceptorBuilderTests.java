@@ -44,74 +44,76 @@ public class RetryInterceptorBuilderTests {
 
 	@Test
 	public void testBasic() {
-		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful().build();
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().build();
+		assertEquals(3, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
 	}
 
 	@Test
 	public void testWithCustomRetryTemplate() {
 		RetryOperations retryOperations = new RetryTemplate();
-		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
-				.retryOperations(retryOperations)
-				.build();
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
-		assertSame(retryOperations, TestUtils.getPropertyValue(interceptor, "retryOperations"));
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().retryOperations(retryOperations).build();
+		assertEquals(3, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
+		assertSame(retryOperations,
+				TestUtils.getPropertyValue(interceptor, "retryOperations"));
 	}
 
 	@Test
 	public void testWithMoreAttempts() {
-		StatefulRetryOperationsInterceptor interceptor =
-				RetryInterceptorBuilder.stateful()
-					.maxAttempts(5)
-					.build();
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().maxAttempts(5).build();
+		assertEquals(5, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
 	}
 
 	@Test
 	public void testWithCustomizedBackOffMoreAttempts() {
-		StatefulRetryOperationsInterceptor interceptor =
-				RetryInterceptorBuilder.stateful()
-					.maxAttempts(5)
-					.backOffOptions(1, 2, 10)
-					.build();
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().maxAttempts(5).backOffOptions(1, 2, 10).build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
-		assertEquals(1L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.initialInterval"));
-		assertEquals(2.0, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.multiplier"));
-		assertEquals(10L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.maxInterval"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(1L, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.backOffPolicy.initialInterval"));
+		assertEquals(2.0, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.backOffPolicy.multiplier"));
+		assertEquals(10L, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.backOffPolicy.maxInterval"));
 	}
 
 	@Test
 	public void testWithCustomBackOffPolicy() {
-		StatefulRetryOperationsInterceptor interceptor =
-				RetryInterceptorBuilder.stateful()
-					.maxAttempts(5)
-					.backOffPolicy(new FixedBackOffPolicy())
-					.build();
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().maxAttempts(5).backOffPolicy(new FixedBackOffPolicy())
+				.build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
-		assertEquals(1000L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(1000L, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.backOffPolicy.backOffPeriod"));
 	}
 
 	@Test
 	public void testWithCustomNewMessageIdentifier() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
-		StatefulRetryOperationsInterceptor interceptor =
-				RetryInterceptorBuilder.stateful()
-					.maxAttempts(5)
-					.newMethodArgumentsIdentifier(new NewMethodArgumentsIdentifier() {
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().maxAttempts(5)
+				.newMethodArgumentsIdentifier(new NewMethodArgumentsIdentifier() {
 
-						@Override
-						public boolean isNew(Object[] args) {
-							latch.countDown();
-							return false;
-						}
-					})
-					.backOffPolicy(new FixedBackOffPolicy())
-					.build();
+					@Override
+					public boolean isNew(Object[] args) {
+						latch.countDown();
+						return false;
+					}
+				}).backOffPolicy(new FixedBackOffPolicy()).build();
 
-		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
-		assertEquals(1000L, TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod"));
+		assertEquals(5, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(1000L, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.backOffPolicy.backOffPeriod"));
 		final AtomicInteger count = new AtomicInteger();
 		Foo delegate = createDelegate(interceptor, count);
 		Object message = "";
@@ -127,28 +129,32 @@ public class RetryInterceptorBuilderTests {
 
 	@Test
 	public void testWitCustomRetryPolicyTraverseCause() {
-		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
-				.retryPolicy(new SimpleRetryPolicy(15, Collections
-						.<Class<? extends Throwable>, Boolean> singletonMap(Exception.class, true), true))
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful()
+				.retryPolicy(new SimpleRetryPolicy(15,
+						Collections.<Class<? extends Throwable>, Boolean>singletonMap(
+								Exception.class, true),
+						true))
 				.build();
-		assertEquals(15, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(15, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
 	}
 
 	@Test
 	public void testWithCustomKeyGenerator() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
-		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
-				.keyGenerator(new MethodArgumentsKeyGenerator() {
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder
+				.stateful().keyGenerator(new MethodArgumentsKeyGenerator() {
 
 					@Override
 					public Object getKey(Object[] item) {
 						latch.countDown();
 						return "foo";
 					}
-				})
-				.build();
+				}).build();
 
-		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
+		assertEquals(3, TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.maxAttempts"));
 		final AtomicInteger count = new AtomicInteger();
 		Foo delegate = createDelegate(interceptor, count);
 		Object message = "";
@@ -184,6 +190,7 @@ public class RetryInterceptorBuilderTests {
 	static interface Foo {
 
 		void onMessage(String s, Object message);
+
 	}
 
 }

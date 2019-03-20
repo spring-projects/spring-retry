@@ -99,4 +99,5 @@ public class RetrySynchronizationManagerTests {
 		}
 		return result;
 	}
+
 }

@@ -47,7 +47,6 @@ import org.springframework.util.Assert;
  * @author Gary Russell
  * @author Artem Bilan
  * @since 1.1
- *
  * @param <T> The type of {@link org.aopalliance.intercept.MethodInterceptor} returned by
  * the builder's {@link #build()} method.
  */
@@ -109,8 +108,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 	}
 
 	/**
-	 * Apply the max attempts - a SimpleRetryPolicy will be used. Cannot be used if a custom retry operations
-	 * or retry policy has been set.
+	 * Apply the max attempts - a SimpleRetryPolicy will be used. Cannot be used if a
+	 * custom retry operations or retry policy has been set.
 	 * @param maxAttempts the max attempts (including the initial attempt).
 	 * @return this.
 	 */
@@ -345,7 +344,8 @@ public abstract class RetryInterceptorBuilder<T extends MethodInterceptor> {
 			return this;
 		}
 
-		public CircuitBreakerInterceptorBuilder keyGenerator(MethodArgumentsKeyGenerator keyGenerator) {
+		public CircuitBreakerInterceptorBuilder keyGenerator(
+				MethodArgumentsKeyGenerator keyGenerator) {
 			this.keyGenerator = keyGenerator;
 			return this;
 		}

@@ -19,13 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A {@link Classifier} that maps from String patterns with wildcards to a set
- * of values of a given type. An input String is matched with the most specific
- * pattern possible to the corresponding value in an input map. A default value
- * should be specified with a pattern key of "*".
- * 
+ * A {@link Classifier} that maps from String patterns with wildcards to a set of values
+ * of a given type. An input String is matched with the most specific pattern possible to
+ * the corresponding value in an input map. A default value should be specified with a
+ * pattern key of "*".
+ *
  * @author Dave Syer
- * 
+ *
  */
 @SuppressWarnings("serial")
 public class PatternMatchingClassifier<T> implements Classifier<String, T> {
@@ -33,17 +33,16 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	private PatternMatcher<T> values;
 
 	/**
-	 * Default constructor. Use the setter or the other constructor to create a
-	 * sensible classifier, otherwise all inputs will cause an exception.
+	 * Default constructor. Use the setter or the other constructor to create a sensible
+	 * classifier, otherwise all inputs will cause an exception.
 	 */
 	public PatternMatchingClassifier() {
 		this(new HashMap<String, T>());
 	}
 
 	/**
-	 * Create a classifier from the provided map. The keys are patterns, using
-	 * '?' as a single character and '*' as multi-character wildcard.
-	 * 
+	 * Create a classifier from the provided map. The keys are patterns, using '?' as a
+	 * single character and '*' as multi-character wildcard.
 	 * @param values the values to use in the {@link PatternMatcher}
 	 */
 	public PatternMatchingClassifier(Map<String, T> values) {
@@ -61,11 +60,9 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 
 	/**
 	 * Classify the input by matching it against the patterns provided in
-	 * {@link #setPatternMap(Map)}. The most specific pattern that matches will
-	 * be used to locate a value.
-	 * 
+	 * {@link #setPatternMap(Map)}. The most specific pattern that matches will be used to
+	 * locate a value.
 	 * @return the value matching the most specific pattern possible
-	 * 
 	 * @throws IllegalStateException if no matching value is found.
 	 */
 	public T classify(String classifiable) {

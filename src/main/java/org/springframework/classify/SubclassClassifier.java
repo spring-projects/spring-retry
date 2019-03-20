@@ -21,12 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A {@link Classifier} for a parameterised object type based on a map.
- * Classifies objects according to their inheritance relation with the supplied
- * type map. If the object to be classified is one of the keys of the provided
- * map, or is a subclass of one of the keys, then the map entry value for that
- * key is returned. Otherwise returns the default value which is null by
- * default.
+ * A {@link Classifier} for a parameterised object type based on a map. Classifies objects
+ * according to their inheritance relation with the supplied type map. If the object to be
+ * classified is one of the keys of the provided map, or is a subclass of one of the keys,
+ * then the map entry value for that key is returned. Otherwise returns the default value
+ * which is null by default.
  *
  * @author Dave Syer
  * @author Gary Russell
@@ -49,7 +48,6 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
-	 *
 	 * @param defaultValue the default value
 	 */
 	public SubclassClassifier(C defaultValue) {
@@ -58,7 +56,6 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
-	 *
 	 * @param defaultValue the default value
 	 * @param typeMap the map of types
 	 */
@@ -69,9 +66,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * Public setter for the default value for mapping keys that are not found
-	 * in the map (or their subclasses). Defaults to false.
-	 *
+	 * Public setter for the default value for mapping keys that are not found in the map
+	 * (or their subclasses). Defaults to false.
 	 * @param defaultValue the default value to set
 	 */
 	public void setDefaultValue(C defaultValue) {
@@ -79,10 +75,9 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * Set the classifications up as a map. The keys are types and these will be
-	 * mapped along with all their subclasses to the corresponding value. The
-	 * most specific types will match first.
-	 *
+	 * Set the classifications up as a map. The keys are types and these will be mapped
+	 * along with all their subclasses to the corresponding value. The most specific types
+	 * will match first.
 	 * @param map a map from type to class
 	 */
 	public void setTypeMap(Map<Class<? extends T>, C> map) {
@@ -90,9 +85,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * Return the value from the type map whose key is the class of the given
-	 * Throwable, or its nearest ancestor if a subclass.
-	 *
+	 * Return the value from the type map whose key is the class of the given Throwable,
+	 * or its nearest ancestor if a subclass.
 	 * @return C the classified value
 	 * @param classifiable the classifiable thing
 	 */
@@ -110,11 +104,12 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 		// check for subclasses
 		C value = null;
-		for (Class<?> cls = exceptionClass; !cls.equals(Object.class) && value == null; cls = cls.getSuperclass()) {
+		for (Class<?> cls = exceptionClass; !cls.equals(Object.class)
+				&& value == null; cls = cls.getSuperclass()) {
 			value = classified.get(cls);
 		}
 
-		//ConcurrentHashMap doesn't allow nulls
+		// ConcurrentHashMap doesn't allow nulls
 		if (value != null) {
 			this.classified.put(exceptionClass, value);
 		}
@@ -128,7 +123,6 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 	/**
 	 * Return the default value supplied in the constructor (default false).
-	 *
 	 * @return C the default value
 	 */
 	final public C getDefault() {
@@ -138,4 +132,5 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	protected Map<Class<? extends T>, C> getClassified() {
 		return classified;
 	}
+
 }
