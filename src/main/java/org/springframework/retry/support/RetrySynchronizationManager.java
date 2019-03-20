@@ -44,7 +44,7 @@ public final class RetrySynchronizationManager {
 	 * @return the current retry context, or null if there isn't one
 	 */
 	public static RetryContext getContext() {
-		RetryContext result = (RetryContext) context.get();
+		RetryContext result = context.get();
 		return result;
 	}
 

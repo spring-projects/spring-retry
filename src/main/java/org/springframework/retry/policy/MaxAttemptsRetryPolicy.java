@@ -28,7 +28,7 @@ import org.springframework.retry.support.RetryTemplate;
  * It is not recommended to use it directly, because usually exception classification is
  * strongly recommended (to not retry on OutOfMemoryError, for example).
  * <p>
- * For daily usage see {@link RetryTemplate#newBuilder()}
+ * For daily usage see {@link RetryTemplate#builder()}
  * <p>
  * Volatility of maxAttempts allows concurrent modification and does not require safe
  * publication of new instance after construction.
@@ -44,8 +44,8 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	private volatile int maxAttempts;
 
 	/**
-	 * Create a {@link MaxAttemptsRetryPolicy} with the default number of retry attempts,
-	 * retrying all throwables.
+	 * Create a {@link MaxAttemptsRetryPolicy} with the default number of retry attempts
+	 * (3), retrying all throwables.
 	 */
 	public MaxAttemptsRetryPolicy() {
 		this.maxAttempts = DEFAULT_MAX_ATTEMPTS;
@@ -54,6 +54,7 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	/**
 	 * Create a {@link MaxAttemptsRetryPolicy} with the specified number of retry
 	 * attempts, retrying all throwables.
+	 * @param maxAttempts the maximum number of attempts
 	 */
 	public MaxAttemptsRetryPolicy(int maxAttempts) {
 		this.maxAttempts = maxAttempts;
@@ -86,7 +87,7 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	 */
 	@Override
 	public boolean canRetry(RetryContext context) {
-		return context.getRetryCount() < maxAttempts;
+		return context.getRetryCount() < this.maxAttempts;
 	}
 
 	@Override

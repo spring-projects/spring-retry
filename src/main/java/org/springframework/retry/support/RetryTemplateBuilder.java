@@ -26,19 +26,19 @@ import org.springframework.util.Assert;
  *
  * <p>
  * Examples: <pre>{@code
- * RetryTemplate.newBuilder()
+ * RetryTemplate.builder()
  *      .maxAttempts(10)
  *      .exponentialBackoff(100, 2, 10000)
  *      .retryOn(IOException.class)
  *      .traversingCauses()
  *      .build();
  *
- * RetryTemplate.newBuilder()
+ * RetryTemplate.builder()
  *      .fixedBackoff(10)
  *      .withinMillis(3000)
  *      .build();
  *
- * RetryTemplate.newBuilder()
+ * RetryTemplate.builder()
  *      .infiniteRetry()
  *      .retryOn(IOException.class)
  *      .uniformRandomBackoff(1000, 3000)
@@ -87,12 +87,14 @@ public class RetryTemplateBuilder {
 	 * that is "retry only on {@link Exception} and it's subclasses".
 	 * @param maxAttempts includes initial attempt and all retries. E.g: maxAttempts = 3
 	 * means one initial attempt and two retries.
+	 * @return this
 	 * @see MaxAttemptsRetryPolicy
 	 */
 	public RetryTemplateBuilder maxAttempts(int maxAttempts) {
 		Assert.isTrue(maxAttempts > 0, "Number of attempts should be positive");
-		Assert.isNull(baseRetryPolicy, "You have already selected another retry policy");
-		baseRetryPolicy = new MaxAttemptsRetryPolicy(maxAttempts);
+		Assert.isNull(this.baseRetryPolicy,
+				"You have already selected another retry policy");
+		this.baseRetryPolicy = new MaxAttemptsRetryPolicy(maxAttempts);
 		return this;
 	}
 
@@ -102,11 +104,13 @@ public class RetryTemplateBuilder {
 	 * Invocation of this method does not discard default exception classification rule,
 	 * that is "retry only on {@link Exception} and it's subclasses".
 	 * @param timeout whole execution timeout in milliseconds
+	 * @return this
 	 * @see TimeoutRetryPolicy
 	 */
 	public RetryTemplateBuilder withinMillis(long timeout) {
 		Assert.isTrue(timeout > 0, "Timeout should be positive");
-		Assert.isNull(baseRetryPolicy, "You have already selected another retry policy");
+		Assert.isNull(this.baseRetryPolicy,
+				"You have already selected another retry policy");
 		TimeoutRetryPolicy timeoutRetryPolicy = new TimeoutRetryPolicy();
 		timeoutRetryPolicy.setTimeout(timeout);
 		this.baseRetryPolicy = timeoutRetryPolicy;
@@ -118,12 +122,13 @@ public class RetryTemplateBuilder {
 	 * <p>
 	 * Invocation of this method does not discard default exception classification rule,
 	 * that is "retry only on {@link Exception} and it's subclasses".
-	 *
+	 * @return this
 	 * @see TimeoutRetryPolicy
 	 */
 	public RetryTemplateBuilder infiniteRetry() {
-		Assert.isNull(baseRetryPolicy, "You have already selected another retry policy");
-		baseRetryPolicy = new AlwaysRetryPolicy();
+		Assert.isNull(this.baseRetryPolicy,
+				"You have already selected another retry policy");
+		this.baseRetryPolicy = new AlwaysRetryPolicy();
 		return this;
 	}
 
@@ -134,11 +139,13 @@ public class RetryTemplateBuilder {
 	 * Invocation of this method does not discard default exception classification rule,
 	 * that is "retry only on {@link Exception} and it's subclasses".
 	 * @param policy will be directly set to resulting {@link RetryTemplate}
+	 * @return this
 	 */
 	public RetryTemplateBuilder customPolicy(RetryPolicy policy) {
 		Assert.notNull(policy, "Policy should not be null");
-		Assert.isNull(baseRetryPolicy, "You have already selected another retry policy");
-		baseRetryPolicy = policy;
+		Assert.isNull(this.baseRetryPolicy,
+				"You have already selected another retry policy");
+		this.baseRetryPolicy = policy;
 		return this;
 	}
 
@@ -153,6 +160,7 @@ public class RetryTemplateBuilder {
 	 * @param initialInterval in milliseconds
 	 * @param multiplier see the formula above
 	 * @param maxInterval in milliseconds
+	 * @return this
 	 * @see ExponentialBackOffPolicy
 	 */
 	public RetryTemplateBuilder exponentialBackoff(long initialInterval,
@@ -171,12 +179,13 @@ public class RetryTemplateBuilder {
 	 * @param maxInterval in milliseconds
 	 * @param withRandom adds some randomness to backoff intervals. For details, see
 	 * {@link ExponentialRandomBackOffPolicy}
+	 * @return this
 	 * @see ExponentialBackOffPolicy
 	 * @see ExponentialRandomBackOffPolicy
 	 */
 	public RetryTemplateBuilder exponentialBackoff(long initialInterval,
 			double multiplier, long maxInterval, boolean withRandom) {
-		Assert.isNull(backOffPolicy, "You have already selected backoff policy");
+		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
 		Assert.isTrue(initialInterval >= 1, "Initial interval should be >= 1");
 		Assert.isTrue(multiplier > 1, "Multiplier should be > 1");
 		Assert.isTrue(maxInterval > initialInterval,
@@ -186,21 +195,22 @@ public class RetryTemplateBuilder {
 		policy.setInitialInterval(initialInterval);
 		policy.setMultiplier(multiplier);
 		policy.setMaxInterval(maxInterval);
-		backOffPolicy = policy;
+		this.backOffPolicy = policy;
 		return this;
 	}
 
 	/**
 	 * Perform each retry after fixed amount of time.
 	 * @param interval fixed interval in milliseconds
+	 * @return this
 	 * @see FixedBackOffPolicy
 	 */
 	public RetryTemplateBuilder fixedBackoff(long interval) {
-		Assert.isNull(backOffPolicy, "You have already selected backoff policy");
+		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
 		Assert.isTrue(interval >= 1, "Interval should be >= 1");
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
 		policy.setBackOffPeriod(interval);
-		backOffPolicy = policy;
+		this.backOffPolicy = policy;
 		return this;
 	}
 
@@ -208,10 +218,11 @@ public class RetryTemplateBuilder {
 	 * Use {@link UniformRandomBackOffPolicy}, see it's doc for details.
 	 * @param minInterval in milliseconds
 	 * @param maxInterval in milliseconds
+	 * @return this
 	 * @see UniformRandomBackOffPolicy
 	 */
 	public RetryTemplateBuilder uniformRandomBackoff(long minInterval, long maxInterval) {
-		Assert.isNull(backOffPolicy, "You have already selected backoff policy");
+		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
 		Assert.isTrue(minInterval >= 1, "Min interval should be >= 1");
 		Assert.isTrue(maxInterval >= 1, "Max interval should be >= 1");
 		Assert.isTrue(maxInterval > minInterval,
@@ -219,24 +230,25 @@ public class RetryTemplateBuilder {
 		UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
 		policy.setMinBackOffPeriod(minInterval);
 		policy.setMaxBackOffPeriod(maxInterval);
-		backOffPolicy = policy;
+		this.backOffPolicy = policy;
 		return this;
 	}
 
 	/**
 	 * Do not pause between attempts, retry immediately.
-	 *
+	 * @return this
 	 * @see NoBackOffPolicy
 	 */
 	public RetryTemplateBuilder noBackoff() {
-		Assert.isNull(backOffPolicy, "You have already selected backoff policy");
-		backOffPolicy = new NoBackOffPolicy();
+		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
+		this.backOffPolicy = new NoBackOffPolicy();
 		return this;
 	}
 
 	/**
 	 * You can provide your own {@link BackOffPolicy} via this method.
 	 * @param backOffPolicy will be directly set to resulting {@link RetryTemplate}
+	 * @return this
 	 */
 	public RetryTemplateBuilder customBackoff(BackOffPolicy backOffPolicy) {
 		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
@@ -257,6 +269,7 @@ public class RetryTemplateBuilder {
 	 * black list. If you choose white list - use this method, if black - use
 	 * {@link #notRetryOn(Class)}
 	 * @param throwable to be retryable (with it's subclasses)
+	 * @return this
 	 * @see BinaryExceptionClassifierBuilder#retryOn
 	 * @see BinaryExceptionClassifier
 	 */
@@ -275,6 +288,7 @@ public class RetryTemplateBuilder {
 	 * black list. If you choose black list - use this method, if white - use
 	 * {@link #retryOn(Class)}
 	 * @param throwable to be not retryable (with it's subclasses)
+	 * @return this
 	 * @see BinaryExceptionClassifierBuilder#notRetryOn
 	 * @see BinaryExceptionClassifier
 	 */
@@ -286,16 +300,16 @@ public class RetryTemplateBuilder {
 	/**
 	 * Suppose throwing a {@code new MyLogicException(new IOException())}. This template
 	 * will not retry on it: <pre>{@code
-	 * RetryTemplate.newBuilder()
+	 * RetryTemplate.builder()
 	 *          .retryOn(IOException.class)
 	 *          .build()
 	 * }</pre> but this will retry: <pre>{@code
-	 * RetryTemplate.newBuilder()
+	 * RetryTemplate.builder()
 	 *          .retryOn(IOException.class)
 	 *          .traversingCauses()
 	 *          .build()
 	 * }</pre>
-	 *
+	 * @return this
 	 * @see BinaryExceptionClassifier
 	 */
 	public RetryTemplateBuilder traversingCauses() {
@@ -308,6 +322,7 @@ public class RetryTemplateBuilder {
 	/**
 	 * Appends provided {@code listener} to {@link RetryTemplate}'s listener list.
 	 * @param listener to be appended
+	 * @return this
 	 * @see RetryTemplate
 	 * @see RetryListener
 	 */
@@ -320,6 +335,7 @@ public class RetryTemplateBuilder {
 	/**
 	 * Appends all provided {@code listeners} to {@link RetryTemplate}'s listener list.
 	 * @param listeners to be appended
+	 * @return this
 	 * @see RetryTemplate
 	 * @see RetryListener
 	 */
@@ -348,32 +364,32 @@ public class RetryTemplateBuilder {
 
 		// Exception classifier
 
-		BinaryExceptionClassifier exceptionClassifier = classifierBuilder != null
-				? classifierBuilder.build()
-				: BinaryExceptionClassifier.newDefaultClassifier();
+		BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null
+				? this.classifierBuilder.build()
+				: BinaryExceptionClassifier.defaultClassifier();
 
 		// Retry policy
 
-		if (baseRetryPolicy == null) {
-			baseRetryPolicy = new MaxAttemptsRetryPolicy();
+		if (this.baseRetryPolicy == null) {
+			this.baseRetryPolicy = new MaxAttemptsRetryPolicy();
 		}
 
 		CompositeRetryPolicy finalPolicy = new CompositeRetryPolicy();
-		finalPolicy.setPolicies(new RetryPolicy[] { baseRetryPolicy,
+		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy,
 				new BinaryExceptionClassifierRetryPolicy(exceptionClassifier) });
 		retryTemplate.setRetryPolicy(finalPolicy);
 
 		// Backoff policy
 
-		if (backOffPolicy == null) {
-			backOffPolicy = new NoBackOffPolicy();
+		if (this.backOffPolicy == null) {
+			this.backOffPolicy = new NoBackOffPolicy();
 		}
-		retryTemplate.setBackOffPolicy(backOffPolicy);
+		retryTemplate.setBackOffPolicy(this.backOffPolicy);
 
 		// Listeners
 
-		if (listeners != null) {
-			retryTemplate.setListeners(listeners.toArray(new RetryListener[0]));
+		if (this.listeners != null) {
+			retryTemplate.setListeners(this.listeners.toArray(new RetryListener[0]));
 		}
 
 		return retryTemplate;
@@ -382,17 +398,17 @@ public class RetryTemplateBuilder {
 	/* ---------------- Private utils -------------- */
 
 	private BinaryExceptionClassifierBuilder classifierBuilder() {
-		if (classifierBuilder == null) {
-			classifierBuilder = new BinaryExceptionClassifierBuilder();
+		if (this.classifierBuilder == null) {
+			this.classifierBuilder = new BinaryExceptionClassifierBuilder();
 		}
-		return classifierBuilder;
+		return this.classifierBuilder;
 	}
 
 	private List<RetryListener> listenersList() {
-		if (listeners == null) {
-			listeners = new ArrayList<RetryListener>();
+		if (this.listeners == null) {
+			this.listeners = new ArrayList<RetryListener>();
 		}
-		return listeners;
+		return this.listeners;
 	}
 
 }

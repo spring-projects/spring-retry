@@ -57,8 +57,8 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * properties. The {@link org.springframework.retry.backoff.BackOffPolicy} controls how
  * long the pause is between each individual retry attempt.
  * <p>
- * A new instance can be fluently configured via {@link #newBuilder}, e.g: <pre> {@code
- * RetryTemplate.newBuilder()
+ * A new instance can be fluently configured via {@link #builder}, e.g: <pre> {@code
+ * RetryTemplate.builder()
  *                 .maxAttempts(10)
  *                 .fixedBackoff(1000)
  *                 .build();
@@ -103,7 +103,7 @@ public class RetryTemplate implements RetryOperations {
 	 * can be overwritten during manual configuration
 	 * @since 1.3
 	 */
-	public static RetryTemplateBuilder newBuilder() {
+	public static RetryTemplateBuilder builder() {
 		return new RetryTemplateBuilder();
 	}
 
@@ -113,7 +113,7 @@ public class RetryTemplate implements RetryOperations {
 	 * @return a new instance of RetryTemplate with default behaviour
 	 * @since 1.3
 	 */
-	public static RetryTemplate newDefaultInstance() {
+	public static RetryTemplate defaultInstance() {
 		return new RetryTemplateBuilder().build();
 	}
 
@@ -519,6 +519,7 @@ public class RetryTemplate implements RetryOperations {
 	 * @throws ExhaustedRetryException if the state is not null and there is no recovery
 	 * callback
 	 * @return T the payload to return
+	 * @throws Throwable if there is an error
 	 */
 	protected <T> T handleRetryExhausted(RecoveryCallback<T> recoveryCallback,
 			RetryContext context, RetryState state) throws Throwable {

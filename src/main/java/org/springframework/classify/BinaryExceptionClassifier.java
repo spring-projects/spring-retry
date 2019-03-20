@@ -36,11 +36,11 @@ public class BinaryExceptionClassifier extends SubclassClassifier<Throwable, Boo
 
 	private boolean traverseCauses;
 
-	public static BinaryExceptionClassifierBuilder newBuilder() {
+	public static BinaryExceptionClassifierBuilder builder() {
 		return new BinaryExceptionClassifierBuilder();
 	}
 
-	public static BinaryExceptionClassifier newDefaultClassifier() {
+	public static BinaryExceptionClassifier defaultClassifier() {
 		// create new instance for each call due to mutability
 		return new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>, Boolean>singletonMap(Exception.class, true),

@@ -43,8 +43,7 @@ import org.springframework.util.ClassUtils;
  *                  .maxAttempts(3)
  *                  .retryOn(Exception.class)
  *                  .build();
- * }</pre> or by
- * {@link org.springframework.retry.support.RetryTemplate#newDefaultInstance()}
+ * }</pre> or by {@link org.springframework.retry.support.RetryTemplate#defaultInstance()}
  *
  * @author Dave Syer
  * @author Rob Harrop
@@ -69,15 +68,16 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * retrying all exceptions.
 	 */
 	public SimpleRetryPolicy() {
-		this(DEFAULT_MAX_ATTEMPTS, BinaryExceptionClassifier.newDefaultClassifier());
+		this(DEFAULT_MAX_ATTEMPTS, BinaryExceptionClassifier.defaultClassifier());
 	}
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the specified number of retry attempts,
 	 * retrying all exceptions.
+	 * @param maxAttempts the maximum number of attempts
 	 */
 	public SimpleRetryPolicy(int maxAttempts) {
-		this(maxAttempts, BinaryExceptionClassifier.newDefaultClassifier());
+		this(maxAttempts, BinaryExceptionClassifier.defaultClassifier());
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
 		return (t == null || retryForException(t))
-				&& context.getRetryCount() < maxAttempts;
+				&& context.getRetryCount() < this.maxAttempts;
 	}
 
 	/**
@@ -213,12 +213,13 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @return true if this exception or its ancestors have been registered as retryable.
 	 */
 	private boolean retryForException(Throwable ex) {
-		return retryableClassifier.classify(ex);
+		return this.retryableClassifier.classify(ex);
 	}
 
 	@Override
 	public String toString() {
-		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + maxAttempts + "]";
+		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + this.maxAttempts
+				+ "]";
 	}
 
 }

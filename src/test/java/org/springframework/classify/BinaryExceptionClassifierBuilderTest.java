@@ -32,10 +32,10 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testWhiteList() {
-		RetryTemplate.newBuilder().infiniteRetry().retryOn(IOException.class)
+		RetryTemplate.builder().infiniteRetry().retryOn(IOException.class)
 				.uniformRandomBackoff(1000, 3000).build();
 
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.newBuilder()
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
 				.retryOn(IOException.class).retryOn(TimeoutException.class).build();
 
 		Assert.assertTrue(classifier.classify(new IOException()));
@@ -47,7 +47,7 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testWhiteListWithTraverseCauses() {
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.newBuilder()
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
 				.retryOn(IOException.class).retryOn(TimeoutException.class)
 				.traversingCauses().build();
 
@@ -62,7 +62,7 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testBlackList() {
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.newBuilder()
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
 				.notRetryOn(Error.class).notRetryOn(InterruptedException.class)
 				.traversingCauses().build();
 
@@ -77,7 +77,7 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testFailOnNotationMix() {
-		BinaryExceptionClassifier.newBuilder().retryOn(IOException.class)
+		BinaryExceptionClassifier.builder().retryOn(IOException.class)
 				.notRetryOn(OutOfMemoryError.class);
 	}
 
