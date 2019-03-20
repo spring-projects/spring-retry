@@ -100,7 +100,7 @@ public @interface Backoff {
 	String maxDelayExpression() default "";
 
 	/**
-	 * Evaluates to a vaule used as a multiplier for generating the next delay for
+	 * Evaluates to a value used as a multiplier for generating the next delay for
 	 * backoff. Overrides {@link #multiplier()}.
 	 * @return a multiplier expression to use to calculate the next backoff delay (default
 	 * 0 = ignored)
