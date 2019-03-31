@@ -1,10 +1,10 @@
 This project provides declarative retry support for Spring
 applications. It is used in Spring Batch, Spring Integration,
 Spring for Apache Hadoop (amongst others).
+Imperative retry is also supported for explicit usage. 
 
 ## Quick Start
-
-Example:
+#### Declarative example:
 
 ```java
 @Configuration
@@ -37,6 +37,23 @@ The declarative approach to applying retry handling using the `@Retryable` annot
 runtime dependency on AOP classes. For details on how to resolve this dependency in your project see the 
 ['Java Configuration for Retry Proxies'](#javaConfigForRetryProxies) section below.
 
+#### Imperative example:
+
+Since version 1.3:
+```java
+RetryTemplate template = RetryTemplate.builder()
+				.maxAttempts(3)
+				.fixedBackoff(1000)
+				.retryOn(RemoteAccessException.class)
+				.build();
+
+template.execute(ctx -> {
+    // ... do something
+});
+```
+
+Older versions:
+see example in [RetryTemplate](#retryTemplate) section.
 
 ## Building
 
@@ -48,7 +65,7 @@ $ mvn install
 
 ## Features and API
 
-### RetryTemplate
+### <a name="retryTemplate"></a> RetryTemplate
 
 To make processing more robust and less prone to failure, sometimes it helps to automatically retry a failed operation in case it might succeed on a subsequent attempt. Errors that are susceptible to this kind of treatment are transient in nature. For example a remote call to a web service or RMI service that fails because of a network glitch or a `DeadLockLoserException` in a database update may resolve themselves after a short wait. To automate the retry of such operations Spring Retry has the `RetryOperations` strategy. The `RetryOperations` interface looks like this:
 
@@ -102,6 +119,28 @@ Foo result = template.execute(new RetryCallback<Foo>() {
 ```
 
 In the example we execute a web service call and return the result to the user. If that call fails then it is retried until a timeout is reached.
+
+Since version 1.3, fluent configuration of RetryTemplate is also available:
+
+```java
+RetryTemplate.builder()
+      .maxAttempts(10)
+      .exponentialBackoff(100, 2, 10000)
+      .retryOn(IOException.class)
+      .traversingCauses()
+      .build();
+ 
+RetryTemplate.builder()
+      .fixedBackoff(10)
+      .withinMillis(3000)
+      .build();
+ 
+RetryTemplate.builder()
+      .infiniteRetry()
+      .retryOn(IOException.class)
+      .uniformRandomBackoff(1000, 3000)
+      .build();
+```
 
 ### RetryContext
 
@@ -193,7 +232,7 @@ public interface BackoffPolicy {
 }
 ```
 
-A `BackoffPolicy` is free to implement the backOff in any way it chooses. The policies provided by Spring Retry out of the box all use `Object.wait()`. A common use case is to backoff with an exponentially increasing wait period, to avoid two retries getting into lock step and both failing - this is a lesson learned from the ethernet. For this purpose Spring Retry provides the `ExponentialBackoffPolicy`. There are also randomized versions delay policies that are quite useful to avoid resonating between related failures in a complex system.
+A `BackoffPolicy` is free to implement the backOff in any way it chooses. The policies provided by Spring Retry out of the box all use `Thread.sleep()`. A common use case is to backoff with an exponentially increasing wait period, to avoid two retries getting into lock step and both failing - this is a lesson learned from the ethernet. For this purpose Spring Retry provides the `ExponentialBackoffPolicy`. There are also randomized versions delay policies that are quite useful to avoid resonating between related failures in a complex system.
 
 ## Listeners
 
