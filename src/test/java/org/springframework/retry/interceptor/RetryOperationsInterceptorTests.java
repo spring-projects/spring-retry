@@ -16,11 +16,6 @@
 
 package org.springframework.retry.interceptor;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,6 +25,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
@@ -43,6 +39,11 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class RetryOperationsInterceptorTests {
 
@@ -60,7 +61,7 @@ public class RetryOperationsInterceptorTests {
 
 	@Before
 	public void setUp() throws Exception {
-		interceptor = new RetryOperationsInterceptor();
+		this.interceptor = new RetryOperationsInterceptor();
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.registerListener(new RetryListenerSupport() {
 			@Override
@@ -69,50 +70,52 @@ public class RetryOperationsInterceptorTests {
 				RetryOperationsInterceptorTests.this.context = context;
 			}
 		});
-		interceptor.setRetryOperations(retryTemplate);
-		target = new ServiceImpl();
-		service = (Service) ProxyFactory.getProxy(Service.class,
-				new SingletonTargetSource(target));
+		this.interceptor.setRetryOperations(retryTemplate);
+		this.target = new ServiceImpl();
+		this.service = ProxyFactory.getProxy(Service.class,
+				new SingletonTargetSource(this.target));
 		count = 0;
 		transactionCount = 0;
 	}
 
 	@Test
 	public void testDefaultInterceptorSunnyDay() throws Exception {
-		((Advised) service).addAdvice(interceptor);
-		service.service();
+		((Advised) this.service).addAdvice(this.interceptor);
+		this.service.service();
 		assertEquals(2, count);
 	}
 
 	@Test
 	public void testDefaultInterceptorWithLabel() throws Exception {
-		interceptor.setLabel("FOO");
-		((Advised) service).addAdvice(interceptor);
-		service.service();
+		this.interceptor.setLabel("FOO");
+		((Advised) this.service).addAdvice(this.interceptor);
+		this.service.service();
 		assertEquals(2, count);
-		assertEquals("FOO", context.getAttribute(RetryContext.NAME));
+		assertEquals("FOO", this.context.getAttribute(RetryContext.NAME));
 	}
 
 	@Test
 	public void testDefaultInterceptorWithRecovery() throws Exception {
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(1));
-		interceptor.setRetryOperations(template);
-		interceptor.setRecoverer(new MethodInvocationRecoverer<Void>() {
+		this.interceptor.setRetryOperations(template);
+		this.interceptor.setRecoverer(new MethodInvocationRecoverer<Void>() {
+			@Override
 			public Void recover(Object[] args, Throwable cause) {
 				return null;
 			}
 		});
-		((Advised) service).addAdvice(interceptor);
-		service.service();
+		((Advised) this.service).addAdvice(this.interceptor);
+		this.service.service();
 		assertEquals(1, count);
 	}
 
 	@Test
 	public void testInterceptorChainWithRetry() throws Exception {
-		((Advised) service).addAdvice(interceptor);
+		((Advised) this.service).addAdvice(this.interceptor);
 		final List<String> list = new ArrayList<String>();
-		((Advised) service).addAdvice(new MethodInterceptor() {
+		((Advised) this.service).addAdvice(new MethodInterceptor() {
+			@Override
 			public Object invoke(MethodInvocation invocation) throws Throwable {
 				list.add("chain");
 				return invocation.proceed();
@@ -120,20 +123,20 @@ public class RetryOperationsInterceptorTests {
 		});
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(2));
-		interceptor.setRetryOperations(template);
-		service.service();
+		this.interceptor.setRetryOperations(template);
+		this.service.service();
 		assertEquals(2, count);
 		assertEquals(2, list.size());
 	}
 
 	@Test
 	public void testRetryExceptionAfterTooManyAttempts() throws Exception {
-		((Advised) service).addAdvice(interceptor);
+		((Advised) this.service).addAdvice(this.interceptor);
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new NeverRetryPolicy());
-		interceptor.setRetryOperations(template);
+		this.interceptor.setRetryOperations(template);
 		try {
-			service.service();
+			this.service.service();
 			fail("Expected Exception.");
 		}
 		catch (Exception e) {
@@ -161,24 +164,29 @@ public class RetryOperationsInterceptorTests {
 	@Test
 	public void testIllegalMethodInvocationType() throws Throwable {
 		try {
-			interceptor.invoke(new MethodInvocation() {
+			this.interceptor.invoke(new MethodInvocation() {
+				@Override
 				public Method getMethod() {
 					return ClassUtils.getMethod(RetryOperationsInterceptorTests.class,
 							"testIllegalMethodInvocationType");
 				}
 
+				@Override
 				public Object[] getArguments() {
 					return null;
 				}
 
+				@Override
 				public AccessibleObject getStaticPart() {
 					return null;
 				}
 
+				@Override
 				public Object getThis() {
 					return null;
 				}
 
+				@Override
 				public Object proceed() throws Throwable {
 					return null;
 				}
@@ -205,6 +213,7 @@ public class RetryOperationsInterceptorTests {
 
 		private boolean enteredTransaction = false;
 
+		@Override
 		public void service() throws Exception {
 			count++;
 			if (count < 2) {
@@ -212,17 +221,19 @@ public class RetryOperationsInterceptorTests {
 			}
 		}
 
+		@Override
 		public void doTansactional() throws Exception {
 			if (TransactionSynchronizationManager.isActualTransactionActive()
-					&& !enteredTransaction) {
+					&& !this.enteredTransaction) {
 				transactionCount++;
 				TransactionSynchronizationManager
 						.registerSynchronization(new TransactionSynchronizationAdapter() {
+							@Override
 							public void beforeCompletion() {
-								enteredTransaction = false;
+								ServiceImpl.this.enteredTransaction = false;
 							}
 						});
-				enteredTransaction = true;
+				this.enteredTransaction = true;
 			}
 			count++;
 			if (count == 1) {

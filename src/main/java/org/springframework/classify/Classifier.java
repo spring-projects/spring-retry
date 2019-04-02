@@ -26,6 +26,8 @@ import java.io.Serializable;
  * themselves serializable.
  *
  * @author Dave Syer
+ * @param <C> the type of the thing to classify
+ * @param <T> the output of the classifier
  *
  */
 public interface Classifier<C, T> extends Serializable {

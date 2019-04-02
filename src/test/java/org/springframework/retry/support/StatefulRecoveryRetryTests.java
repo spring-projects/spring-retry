@@ -16,17 +16,12 @@
 
 package org.springframework.retry.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.retry.ExhaustedRetryException;
@@ -40,6 +35,12 @@ import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class StatefulRecoveryRetryTests {
 
 	private RetryTemplate retryTemplate = new RetryTemplate();
@@ -50,20 +51,21 @@ public class StatefulRecoveryRetryTests {
 
 	@Test
 	public void testOpenSunnyDay() throws Exception {
-		RetryContext context = retryTemplate.open(new NeverRetryPolicy(),
+		RetryContext context = this.retryTemplate.open(new NeverRetryPolicy(),
 				new DefaultRetryState("foo"));
 		assertNotNull(context);
 		// we haven't called the processor yet...
-		assertEquals(0, count);
+		assertEquals(0, this.count);
 	}
 
 	@Test
 	public void testRegisterThrowable() {
 		NeverRetryPolicy retryPolicy = new NeverRetryPolicy();
 		RetryState state = new DefaultRetryState("foo");
-		RetryContext context = retryTemplate.open(retryPolicy, state);
+		RetryContext context = this.retryTemplate.open(retryPolicy, state);
 		assertNotNull(context);
-		retryTemplate.registerThrowable(retryPolicy, state, context, new Exception());
+		this.retryTemplate.registerThrowable(retryPolicy, state, context,
+				new Exception());
 		assertFalse(retryPolicy.canRetry(context));
 	}
 
@@ -71,11 +73,12 @@ public class StatefulRecoveryRetryTests {
 	public void testClose() throws Exception {
 		NeverRetryPolicy retryPolicy = new NeverRetryPolicy();
 		RetryState state = new DefaultRetryState("foo");
-		RetryContext context = retryTemplate.open(retryPolicy, state);
+		RetryContext context = this.retryTemplate.open(retryPolicy, state);
 		assertNotNull(context);
-		retryTemplate.registerThrowable(retryPolicy, state, context, new Exception());
+		this.retryTemplate.registerThrowable(retryPolicy, state, context,
+				new Exception());
 		assertFalse(retryPolicy.canRetry(context));
-		retryTemplate.close(retryPolicy, context, state, true);
+		this.retryTemplate.close(retryPolicy, context, state, true);
 		// still can't retry, even if policy is closed
 		// (not that this would happen in practice)...
 		assertFalse(retryPolicy.canRetry(context));
@@ -83,39 +86,41 @@ public class StatefulRecoveryRetryTests {
 
 	@Test
 	public void testRecover() throws Throwable {
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
+		this.retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
 		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
+			@Override
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
 		};
 		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
+			@Override
 			public String recover(RetryContext context) {
-				count++;
-				list.add(input);
+				StatefulRecoveryRetryTests.this.count++;
+				StatefulRecoveryRetryTests.this.list.add(input);
 				return input;
 			}
 		};
 		Object result = null;
 		try {
-			result = retryTemplate.execute(callback, recoveryCallback, state);
+			result = this.retryTemplate.execute(callback, recoveryCallback, state);
 			fail("Expected exception on first try");
 		}
 		catch (Exception e) {
 			// expected...
 		}
 		// On the second retry, the recovery path is taken...
-		result = retryTemplate.execute(callback, recoveryCallback, state);
+		result = this.retryTemplate.execute(callback, recoveryCallback, state);
 		assertEquals(input, result); // default result is the item
-		assertEquals(1, count);
-		assertEquals(input, list.get(0));
+		assertEquals(1, this.count);
+		assertEquals(input, this.list.get(0));
 	}
 
 	@Test
 	public void testSwitchToStatelessForNoRollback() throws Throwable {
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
+		this.retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 		// Roll back for these:
 		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(Collections
 				.<Class<? extends Throwable>>singleton(DataAccessException.class));
@@ -124,40 +129,43 @@ public class StatefulRecoveryRetryTests {
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input, classifier);
 		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
+			@Override
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
 		};
 		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
+			@Override
 			public String recover(RetryContext context) {
-				count++;
-				list.add(input);
+				StatefulRecoveryRetryTests.this.count++;
+				StatefulRecoveryRetryTests.this.list.add(input);
 				return input;
 			}
 		};
 		Object result = null;
 		// On the second retry, the recovery path is taken...
-		result = retryTemplate.execute(callback, recoveryCallback, state);
+		result = this.retryTemplate.execute(callback, recoveryCallback, state);
 		assertEquals(input, result); // default result is the item
-		assertEquals(1, count);
-		assertEquals(input, list.get(0));
+		assertEquals(1, this.count);
+		assertEquals(input, this.list.get(0));
 	}
 
 	@Test
 	public void testExhaustedClearsHistoryAfterLastAttempt() throws Throwable {
 		RetryPolicy retryPolicy = new SimpleRetryPolicy(1);
-		retryTemplate.setRetryPolicy(retryPolicy);
+		this.retryTemplate.setRetryPolicy(retryPolicy);
 
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
 		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
+			@Override
 			public String doWithRetry(RetryContext context) throws Exception {
 				throw new RuntimeException("Barf!");
 			}
 		};
 
 		try {
-			retryTemplate.execute(callback, state);
+			this.retryTemplate.execute(callback, state);
 			fail("Expected ExhaustedRetryException");
 		}
 		catch (RuntimeException e) {
@@ -165,14 +173,14 @@ public class StatefulRecoveryRetryTests {
 		}
 
 		try {
-			retryTemplate.execute(callback, state);
+			this.retryTemplate.execute(callback, state);
 			fail("Expected ExhaustedRetryException");
 		}
 		catch (ExhaustedRetryException e) {
 			// expected
 		}
 
-		RetryContext context = retryTemplate.open(retryPolicy, state);
+		RetryContext context = this.retryTemplate.open(retryPolicy, state);
 		// True after exhausted - the history is reset...
 		assertTrue(retryPolicy.canRetry(context));
 	}
@@ -181,22 +189,23 @@ public class StatefulRecoveryRetryTests {
 	public void testKeyGeneratorNotConsistentAfterFailure() throws Throwable {
 
 		RetryPolicy retryPolicy = new SimpleRetryPolicy(3);
-		retryTemplate.setRetryPolicy(retryPolicy);
+		this.retryTemplate.setRetryPolicy(retryPolicy);
 		final StringHolder item = new StringHolder("bar");
 		RetryState state = new DefaultRetryState(item);
 
 		RetryCallback<StringHolder, Exception> callback = new RetryCallback<StringHolder, Exception>() {
+			@Override
 			public StringHolder doWithRetry(RetryContext context) throws Exception {
 				// This simulates what happens if someone uses a primary key
 				// for hashCode and equals and then relies on default key
 				// generator
-				((StringHolder) item).string = ((StringHolder) item).string + (count++);
+				item.string = item.string + (StatefulRecoveryRetryTests.this.count++);
 				throw new RuntimeException("Barf!");
 			}
 		};
 
 		try {
-			retryTemplate.execute(callback, state);
+			this.retryTemplate.execute(callback, state);
 			fail("Expected RuntimeException");
 		}
 		catch (RuntimeException ex) {
@@ -207,7 +216,7 @@ public class StatefulRecoveryRetryTests {
 		// inconsistent has codes relies on the cache having been used for this
 		// item already...
 		try {
-			retryTemplate.execute(callback, state);
+			this.retryTemplate.execute(callback, state);
 			fail("Expected RetryException");
 		}
 		catch (RetryException ex) {
@@ -216,7 +225,7 @@ public class StatefulRecoveryRetryTests {
 					message.contains("inconsistent"));
 		}
 
-		RetryContext context = retryTemplate.open(retryPolicy, state);
+		RetryContext context = this.retryTemplate.open(retryPolicy, state);
 		// True after exhausted - the history is reset...
 		assertEquals(0, context.getRetryCount());
 
@@ -225,18 +234,19 @@ public class StatefulRecoveryRetryTests {
 	@Test
 	public void testCacheCapacity() throws Throwable {
 
-		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
-		retryTemplate.setRetryContextCache(new MapRetryContextCache(1));
+		this.retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
+		this.retryTemplate.setRetryContextCache(new MapRetryContextCache(1));
 
 		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
+			@Override
 			public Object doWithRetry(RetryContext context) throws Exception {
-				count++;
+				StatefulRecoveryRetryTests.this.count++;
 				throw new RuntimeException("Barf!");
 			}
 		};
 
 		try {
-			retryTemplate.execute(callback, new DefaultRetryState("foo"));
+			this.retryTemplate.execute(callback, new DefaultRetryState("foo"));
 			fail("Expected RuntimeException");
 		}
 		catch (RuntimeException e) {
@@ -244,7 +254,7 @@ public class StatefulRecoveryRetryTests {
 		}
 
 		try {
-			retryTemplate.execute(callback, new DefaultRetryState("bar"));
+			this.retryTemplate.execute(callback, new DefaultRetryState("bar"));
 			fail("Expected RetryException");
 		}
 		catch (RetryException e) {
@@ -258,33 +268,35 @@ public class StatefulRecoveryRetryTests {
 	public void testCacheCapacityNotReachedIfRecovered() throws Throwable {
 
 		SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy(1);
-		retryTemplate.setRetryPolicy(retryPolicy);
-		retryTemplate.setRetryContextCache(new MapRetryContextCache(2));
+		this.retryTemplate.setRetryPolicy(retryPolicy);
+		this.retryTemplate.setRetryContextCache(new MapRetryContextCache(2));
 		final StringHolder item = new StringHolder("foo");
 		RetryState state = new DefaultRetryState(item);
 
 		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
+			@Override
 			public Object doWithRetry(RetryContext context) throws Exception {
-				count++;
+				StatefulRecoveryRetryTests.this.count++;
 				throw new RuntimeException("Barf!");
 			}
 		};
 		RecoveryCallback<Object> recoveryCallback = new RecoveryCallback<Object>() {
+			@Override
 			public Object recover(RetryContext context) throws Exception {
 				return null;
 			}
 		};
 
 		try {
-			retryTemplate.execute(callback, recoveryCallback, state);
+			this.retryTemplate.execute(callback, recoveryCallback, state);
 			fail("Expected RuntimeException");
 		}
 		catch (RuntimeException e) {
 			assertEquals("Barf!", e.getMessage());
 		}
-		retryTemplate.execute(callback, recoveryCallback, state);
+		this.retryTemplate.execute(callback, recoveryCallback, state);
 
-		RetryContext context = retryTemplate.open(retryPolicy, state);
+		RetryContext context = this.retryTemplate.open(retryPolicy, state);
 		// True after exhausted - the history is reset...
 		assertEquals(0, context.getRetryCount());
 
@@ -298,19 +310,22 @@ public class StatefulRecoveryRetryTests {
 			this.string = string;
 		}
 
+		@Override
 		public boolean equals(Object obj) {
 			if (obj == null || !(obj instanceof StringHolder)) {
 				return false;
 			}
-			return string.equals(((StringHolder) obj).string);
+			return this.string.equals(((StringHolder) obj).string);
 		}
 
+		@Override
 		public int hashCode() {
-			return string.hashCode();
+			return this.string.hashCode();
 		}
 
+		@Override
 		public String toString() {
-			return "String: " + string + " (hash = " + hashCode() + ")";
+			return "String: " + this.string + " (hash = " + hashCode() + ")";
 		}
 
 	}

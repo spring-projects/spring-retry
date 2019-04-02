@@ -42,6 +42,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Josh Long
  * @author Aldo Sinanaj
  * @author Randell Callahan
+ * @param <T> the type of the return value from the recovery
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -62,13 +63,13 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		if (method == null) {
 			throw new ExhaustedRetryException("Cannot locate recovery method", cause);
 		}
-		SimpleMetadata meta = methods.get(method);
+		SimpleMetadata meta = this.methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);
 		boolean methodAccessible = method.isAccessible();
 		try {
 			ReflectionUtils.makeAccessible(method);
 			@SuppressWarnings("unchecked")
-			T result = (T) ReflectionUtils.invokeMethod(method, target, argsToUse);
+			T result = (T) ReflectionUtils.invokeMethod(method, this.target, argsToUse);
 			return result;
 		}
 		finally {
@@ -81,8 +82,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
 		int min = Integer.MAX_VALUE;
 		Method result = null;
-		for (Method method : methods.keySet()) {
-			SimpleMetadata meta = methods.get(method);
+		for (Method method : this.methods.keySet()) {
+			SimpleMetadata meta = this.methods.get(method);
 			Class<? extends Throwable> type = meta.getType();
 			if (type == null) {
 				type = Throwable.class;
@@ -156,30 +157,31 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 								@SuppressWarnings("unchecked")
 								Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
 								types.put(type, method);
-								methods.put(method,
+								RecoverAnnotationRecoveryHandler.this.methods.put(method,
 										new SimpleMetadata(parameterTypes.length, type));
 							}
 							else {
-								classifier.setDefaultValue(method);
-								methods.put(method,
+								RecoverAnnotationRecoveryHandler.this.classifier
+										.setDefaultValue(method);
+								RecoverAnnotationRecoveryHandler.this.methods.put(method,
 										new SimpleMetadata(parameterTypes.length, null));
 							}
 						}
 					}
 				});
-		classifier.setTypeMap(types);
+		this.classifier.setTypeMap(types);
 		optionallyFilterMethodsBy(failingMethod.getReturnType());
 	}
 
 	private void optionallyFilterMethodsBy(Class<?> returnClass) {
 		Map<Method, SimpleMetadata> filteredMethods = new HashMap<Method, SimpleMetadata>();
-		for (Method method : methods.keySet()) {
+		for (Method method : this.methods.keySet()) {
 			if (method.getReturnType() == returnClass) {
-				filteredMethods.put(method, methods.get(method));
+				filteredMethods.put(method, this.methods.get(method));
 			}
 		}
 		if (filteredMethods.size() > 0) {
-			methods = filteredMethods;
+			this.methods = filteredMethods;
 		}
 	}
 
@@ -196,17 +198,17 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 
 		public int getArgCount() {
-			return argCount;
+			return this.argCount;
 		}
 
 		public Class<? extends Throwable> getType() {
-			return type;
+			return this.type;
 		}
 
 		public Object[] getArgs(Throwable t, Object[] args) {
 			Object[] result = new Object[getArgCount()];
 			int startArgs = 0;
-			if (type != null) {
+			if (this.type != null) {
 				result[0] = t;
 				startArgs = 1;
 			}

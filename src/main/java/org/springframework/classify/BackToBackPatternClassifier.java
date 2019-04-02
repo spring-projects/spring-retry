@@ -22,6 +22,8 @@ import java.util.Map;
  * one arbitrary type of object to another via a pattern matcher.
  *
  * @author Dave Syer
+ * @param <C> the type of thing to classify
+ * @param <T> the output of the classifier
  *
  */
 @SuppressWarnings("serial")
@@ -73,8 +75,9 @@ public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 	 * Classify the input and map to a String, then take that and put it into a pattern
 	 * matcher to match to an output value.
 	 */
+	@Override
 	public T classify(C classifiable) {
-		return matcher.classify(router.classify(classifiable));
+		return this.matcher.classify(this.router.classify(classifiable));
 	}
 
 }

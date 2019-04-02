@@ -16,16 +16,17 @@
 
 package org.springframework.retry.support;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.context.RetryContextSupport;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
-import org.springframework.retry.context.RetryContextSupport;
 
 /**
  * @author Dave Syer
@@ -47,7 +48,8 @@ public class RetrySynchronizationManagerTests {
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
 
-		template.execute(new RetryCallback<Object, Exception>() {
+		this.template.execute(new RetryCallback<Object, Exception>() {
+			@Override
 			public Object doWithRetry(RetryContext status) throws Exception {
 				RetryContext global = RetrySynchronizationManager.getContext();
 				assertNotNull(status);
@@ -89,6 +91,7 @@ public class RetrySynchronizationManagerTests {
 	/**
 	 * Clear all contexts starting with the current one and continuing until
 	 * {@link RetrySynchronizationManager#clear()} returns null.
+	 * @return a retry context
 	 */
 	public static RetryContext clearAll() {
 		RetryContext result = null;

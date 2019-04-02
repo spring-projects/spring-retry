@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
@@ -32,12 +33,10 @@ import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
+import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
-import org.springframework.retry.policy.RetryContextCache;
-import org.springframework.retry.policy.SoftReferenceMapRetryContextCache;
-import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.util.test.TestUtils;
 
@@ -78,7 +77,6 @@ public class RetryTemplateBuilderTest {
 
 	@Test
 	public void testBasicCustomization() {
-		RetryContextCache customCache = mock(SoftReferenceMapRetryContextCache.class);
 		RetryListener listener1 = mock(RetryListener.class);
 		RetryListener listener2 = mock(RetryListener.class);
 

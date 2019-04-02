@@ -53,8 +53,8 @@ public interface BackOffPolicy {
 	 * Back off/pause in an implementation-specific fashion. The passed in
 	 * {@link BackOffContext} corresponds to the one created by the call to {@link #start}
 	 * for a given retry operation set.
-	 * @throws BackOffInterruptedException if the attempt at back off is interrupted.
 	 * @param backOffContext the {@link BackOffContext}
+	 * @throws BackOffInterruptedException if the attempt at back off is interrupted.
 	 */
 	void backOff(BackOffContext backOffContext) throws BackOffInterruptedException;
 

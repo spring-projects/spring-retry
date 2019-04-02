@@ -1,7 +1,5 @@
 package org.springframework.retry.annotation;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,12 +7,15 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.junit.Test;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.junit.Assert.assertEquals;
 
 public class ProxyApplicationTests {
 
@@ -59,7 +60,7 @@ public class ProxyApplicationTests {
 				.getField(classLoader, "classes");
 		Set<Class<?>> news = new HashSet<Class<?>>();
 		for (Iterator<Class<?>> iterator = classes.iterator(); iterator.hasNext();) {
-			Class<?> cls = (Class<?>) iterator.next();
+			Class<?> cls = iterator.next();
 			if (!this.classes.contains(cls)) {
 				news.add(cls);
 			}

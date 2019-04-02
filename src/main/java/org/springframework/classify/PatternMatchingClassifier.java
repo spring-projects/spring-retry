@@ -25,7 +25,7 @@ import java.util.Map;
  * pattern key of "*".
  *
  * @author Dave Syer
- *
+ * @param <T> the output of the classifier
  */
 @SuppressWarnings("serial")
 public class PatternMatchingClassifier<T> implements Classifier<String, T> {
@@ -65,8 +65,9 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	 * @return the value matching the most specific pattern possible
 	 * @throws IllegalStateException if no matching value is found.
 	 */
+	@Override
 	public T classify(String classifiable) {
-		T value = values.match(classifiable);
+		T value = this.values.match(classifiable);
 		return value;
 	}
 

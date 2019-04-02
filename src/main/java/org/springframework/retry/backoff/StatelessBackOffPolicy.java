@@ -31,6 +31,7 @@ public abstract class StatelessBackOffPolicy implements BackOffPolicy {
 	 * Delegates directly to the {@link #doBackOff()} method without passing on the
 	 * {@link BackOffContext} argument which is not needed for stateless implementations.
 	 */
+	@Override
 	public final void backOff(BackOffContext backOffContext)
 			throws BackOffInterruptedException {
 		doBackOff();
@@ -40,12 +41,14 @@ public abstract class StatelessBackOffPolicy implements BackOffPolicy {
 	 * Returns '<code>null</code>'. Subclasses can add behaviour, e.g. initial sleep
 	 * before first attempt.
 	 */
+	@Override
 	public BackOffContext start(RetryContext status) {
 		return null;
 	}
 
 	/**
 	 * Sub-classes should implement this method to perform the actual back off.
+	 * @throws BackOffInterruptedException if the backoff is interrupted
 	 */
 	protected abstract void doBackOff() throws BackOffInterruptedException;
 

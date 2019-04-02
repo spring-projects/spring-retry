@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 /**
  * @author Dave Syer
  * @author Dan Garrette
+ * @param <S> the type of the thing to match a pattern on
  */
 public class PatternMatcher<S> {
 
@@ -42,8 +43,9 @@ public class PatternMatcher<S> {
 		super();
 		this.map = map;
 		// Sort keys to start with the most specific
-		sorted = new ArrayList<String>(map.keySet());
-		Collections.sort(sorted, new Comparator<String>() {
+		this.sorted = new ArrayList<String>(map.keySet());
+		Collections.sort(this.sorted, new Comparator<String>() {
+			@Override
 			public int compare(String o1, String o2) {
 				String s1 = o1; // .replace('?', '{');
 				String s2 = o2; // .replace('*', '}');
@@ -210,9 +212,9 @@ public class PatternMatcher<S> {
 		S value = null;
 		Assert.notNull(line, "A non-null key must be provided to match against.");
 
-		for (String key : sorted) {
+		for (String key : this.sorted) {
 			if (PatternMatcher.match(key, line)) {
-				value = map.get(key);
+				value = this.map.get(key);
 				break;
 			}
 		}

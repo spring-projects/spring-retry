@@ -16,21 +16,11 @@
 
 package org.springframework.retry.support;
 
-import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
-
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
+
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -42,6 +32,17 @@ import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.StatelessBackOffPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
+
+import static org.easymock.EasyMock.createStrictMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 /**
  * @author Rob Harrop
@@ -347,6 +348,7 @@ public class RetryTemplateTests {
 
 	/**
 	 * {@link BackOffPolicy} should apply also for exceptions that are re-thrown.
+	 * @throws Throwable on error
 	 */
 	@Test
 	public void testNoBackOffForRethrownException() throws Throwable {

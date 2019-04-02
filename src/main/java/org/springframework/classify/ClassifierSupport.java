@@ -21,7 +21,8 @@ package org.springframework.classify;
  * convenience members, like constants.
  *
  * @author Dave Syer
- *
+ * @param <C> the type of the thing to classify
+ * @param <T> the output of the classifier
  */
 @SuppressWarnings("serial")
 public class ClassifierSupport<C, T> implements Classifier<C, T> {
@@ -42,8 +43,9 @@ public class ClassifierSupport<C, T> implements Classifier<C, T> {
 	 *
 	 * @see org.springframework.classify.Classifier#classify(Object)
 	 */
+	@Override
 	public T classify(C throwable) {
-		return defaultValue;
+		return this.defaultValue;
 	}
 
 }

@@ -29,7 +29,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Dave Syer
  * @author Gary Russell
- *
+ * @param <T> the type of the thing to classify
+ * @param <C> the output of the classifier
  */
 @SuppressWarnings("serial")
 public class SubclassClassifier<T, C> implements Classifier<T, C> {
@@ -90,23 +91,24 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @return C the classified value
 	 * @param classifiable the classifiable thing
 	 */
+	@Override
 	public C classify(T classifiable) {
 
 		if (classifiable == null) {
-			return defaultValue;
+			return this.defaultValue;
 		}
 
 		@SuppressWarnings("unchecked")
 		Class<? extends T> exceptionClass = (Class<? extends T>) classifiable.getClass();
-		if (classified.containsKey(exceptionClass)) {
-			return classified.get(exceptionClass);
+		if (this.classified.containsKey(exceptionClass)) {
+			return this.classified.get(exceptionClass);
 		}
 
 		// check for subclasses
 		C value = null;
 		for (Class<?> cls = exceptionClass; !cls.equals(Object.class)
 				&& value == null; cls = cls.getSuperclass()) {
-			value = classified.get(cls);
+			value = this.classified.get(cls);
 		}
 
 		// ConcurrentHashMap doesn't allow nulls
@@ -115,7 +117,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		}
 
 		if (value == null) {
-			value = defaultValue;
+			value = this.defaultValue;
 		}
 
 		return value;
@@ -126,11 +128,11 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @return C the default value
 	 */
 	final public C getDefault() {
-		return defaultValue;
+		return this.defaultValue;
 	}
 
 	protected Map<Class<? extends T>, C> getClassified() {
-		return classified;
+		return this.classified;
 	}
 
 }

@@ -23,7 +23,8 @@ import org.springframework.util.Assert;
  * Wrapper for an object to adapt it to the {@link Classifier} interface.
  *
  * @author Dave Syer
- *
+ * @param <C> the type of the thing to classify
+ * @param <T> the output of the classifier
  */
 @SuppressWarnings("serial")
 public class ClassifierAdapter<C, T> implements Classifier<C, T> {
@@ -54,12 +55,12 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	 * @param delegate the classifier to delegate to
 	 */
 	public ClassifierAdapter(Classifier<C, T> delegate) {
-		classifier = delegate;
+		this.classifier = delegate;
 	}
 
 	public void setDelegate(Classifier<C, T> delegate) {
-		classifier = delegate;
-		invoker = null;
+		this.classifier = delegate;
+		this.invoker = null;
 	}
 
 	/**
@@ -73,26 +74,29 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	 * @param delegate an object with an annotated method
 	 */
 	public final void setDelegate(Object delegate) {
-		classifier = null;
-		invoker = MethodInvokerUtils.getMethodInvokerByAnnotation(
+		this.classifier = null;
+		this.invoker = MethodInvokerUtils.getMethodInvokerByAnnotation(
 				org.springframework.classify.annotation.Classifier.class, delegate);
-		if (invoker == null) {
-			invoker = MethodInvokerUtils
+		if (this.invoker == null) {
+			this.invoker = MethodInvokerUtils
 					.<C, T>getMethodInvokerForSingleArgument(delegate);
 		}
-		Assert.state(invoker != null, "No single argument public method with or without "
-				+ "@Classifier was found in delegate of type " + delegate.getClass());
+		Assert.state(this.invoker != null,
+				"No single argument public method with or without "
+						+ "@Classifier was found in delegate of type "
+						+ delegate.getClass());
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public T classify(C classifiable) {
-		if (classifier != null) {
-			return classifier.classify(classifiable);
+		if (this.classifier != null) {
+			return this.classifier.classify(classifiable);
 		}
-		return (T) invoker.invokeMethod(classifiable);
+		return (T) this.invoker.invokeMethod(classifiable);
 	}
 
 }
