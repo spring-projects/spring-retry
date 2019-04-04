@@ -16,17 +16,18 @@
 
 package org.springframework.retry.annotation;
 
-import static org.junit.Assert.assertEquals;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dave Syer
@@ -71,7 +72,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new SpecificException(),
 				ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
-		expected.expect(ExhaustedRetryException.class);
+		this.expected.expect(ExhaustedRetryException.class);
 		handler.recover(new Object[] { "Dave" }, new Error("Planned"));
 	}
 
@@ -140,6 +141,17 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	}
 
 	@Test
+	public void multipleQualifyingRecoverMethodsWithNoThrowable() {
+		Method foo = ReflectionUtils.findMethod(
+				MultipleQualifyingRecoversNoThrowable.class, "foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new MultipleQualifyingRecoversNoThrowable(), foo);
+		assertEquals(1,
+				handler.recover(new Object[] { null }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
 	public void multipleQualifyingRecoverMethodsReOrdered() {
 		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversReOrdered.class,
 				"foo", String.class);
@@ -165,8 +177,8 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	@Test
 	public void inheritanceOnArgumentClass() {
-		Method foo = ReflectionUtils.findMethod(
-				InheritanceOnArgumentClass.class, "foo", List.class);
+		Method foo = ReflectionUtils.findMethod(InheritanceOnArgumentClass.class, "foo",
+				List.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new InheritanceOnArgumentClass(), foo);
 		assertEquals(1, handler.recover(new Object[] { new ArrayList<String>() },
@@ -215,7 +227,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		}
 
 		public Throwable getCause() {
-			return cause;
+			return this.cause;
 		}
 
 	}
@@ -292,6 +304,25 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		@Recover
 		public Number quux(RuntimeException re, String name) {
 			return 3;
+		}
+
+	}
+
+	protected static class MultipleQualifyingRecoversNoThrowable {
+
+		@Retryable
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(String name, String nullable) {
+			return 1;
+		}
+
+		@Recover
+		public int fooRecover(int other, String nullable) {
+			return 2;
 		}
 
 	}

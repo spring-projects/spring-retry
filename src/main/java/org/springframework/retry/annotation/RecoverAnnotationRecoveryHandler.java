@@ -127,7 +127,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				startingIndex = 1;
 			}
 			for (int i = startingIndex; i < parameterTypes.length; i++) {
-				final Object argument = args[i - 1];
+				final Object argument = i - startingIndex < args.length
+						? args[i - startingIndex] : null;
 				if (argument == null) {
 					continue;
 				}
@@ -213,7 +214,12 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				result[0] = t;
 				startArgs = 1;
 			}
-			System.arraycopy(args, 0, result, startArgs, result.length - startArgs);
+			int length = result.length - startArgs > args.length ? args.length
+					: result.length - startArgs;
+			if (length == 0) {
+				return result;
+			}
+			System.arraycopy(args, 0, result, startArgs, length);
 			return result;
 		}
 
