@@ -4,7 +4,7 @@ Spring for Apache Hadoop (amongst others).
 Imperative retry is also supported for explicit usage. 
 
 ## Quick Start
-#### Declarative example:
+### Declarative example
 
 ```java
 @Configuration
@@ -37,7 +37,7 @@ The declarative approach to applying retry handling using the `@Retryable` annot
 runtime dependency on AOP classes. For details on how to resolve this dependency in your project see the 
 ['Java Configuration for Retry Proxies'](#javaConfigForRetryProxies) section below.
 
-#### Imperative example:
+### Imperative example
 
 Since version 1.3:
 ```java
