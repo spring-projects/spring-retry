@@ -16,14 +16,14 @@
 
 package org.springframework.classify;
 
-import org.junit.Test;
-
 import java.io.FileNotFoundException;
 import java.net.ConnectException;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -34,68 +34,68 @@ public class SubclassExceptionClassifierTests {
 
 	@Test
 	public void testClassifyNullIsDefault() {
-		assertEquals(classifier.classify(null), classifier.getDefault());
+		assertEquals(this.classifier.classify(null), this.classifier.getDefault());
 	}
 
 	@Test
 	public void testClassifyNull() {
-		assertNull(classifier.classify(null));
+		assertNull(this.classifier.classify(null));
 	}
 
 	@Test
 	public void testClassifyNullNonDefault() {
-		classifier = new SubclassClassifier<Throwable, String>("foo");
-		assertEquals("foo", classifier.classify(null));
+		this.classifier = new SubclassClassifier<Throwable, String>("foo");
+		assertEquals("foo", this.classifier.classify(null));
 	}
 
 	@Test
 	public void testClassifyRandomException() {
-		assertNull(classifier.classify(new IllegalStateException("Foo")));
+		assertNull(this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifyExactMatch() {
-		classifier
+		this.classifier
 				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
 						IllegalStateException.class, "foo"));
-		assertEquals("foo", classifier.classify(new IllegalStateException("Foo")));
+		assertEquals("foo", this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySubclassMatch() {
-		classifier
+		this.classifier
 				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
 						RuntimeException.class, "foo"));
-		assertEquals("foo", classifier.classify(new IllegalStateException("Foo")));
+		assertEquals("foo", this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySuperclassDoesNotMatch() {
-		classifier
+		this.classifier
 				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
 						IllegalStateException.class, "foo"));
-		assertEquals(classifier.getDefault(),
-				classifier.classify(new RuntimeException("Foo")));
+		assertEquals(this.classifier.getDefault(),
+				this.classifier.classify(new RuntimeException("Foo")));
 	}
 
 	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyAncestorMatch() {
-		classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
+		this.classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
 			{
 				put(Exception.class, "foo");
 				put(IllegalArgumentException.class, "bar");
 				put(RuntimeException.class, "spam");
 			}
 		});
-		assertEquals("spam", classifier.classify(new IllegalStateException("Foo")));
+		assertEquals("spam", this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyAncestorMatch2() {
-		classifier = new SubclassClassifier<Throwable, String>();
-		classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
+		this.classifier = new SubclassClassifier<Throwable, String>();
+		this.classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
 			{
 				put(SocketException.class, "1");
 				put(FileNotFoundException.class, "buz");
@@ -106,7 +106,7 @@ public class SubclassExceptionClassifierTests {
 				put(ConnectException.class, "2");
 			}
 		});
-		assertEquals("2", classifier.classify(new SubConnectException()));
+		assertEquals("2", this.classifier.classify(new SubConnectException()));
 	}
 
 	public static class SubConnectException extends ConnectException {

@@ -86,8 +86,9 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * Add a classification. The keys is the type and this will be mapped along with all
-	 * subclasses to the corresponding value. The most specific types will match first.
+	 * <<<<<<< HEAD Add a classification. The keys is the type and this will be mapped
+	 * along with all subclasses to the corresponding value. The most specific types will
+	 * match first.
 	 * @param type the type of the input object
 	 * @param target the target value for all such types
 	 */
@@ -96,8 +97,9 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * Return the value from the type map whose key is the class of the given Throwable,
-	 * or its nearest ancestor if a subclass.
+	 * ======= >>>>>>> f60e17b... Allow SubclassClassifier to work with interfaces Return
+	 * the value from the type map whose key is the class of the given Throwable, or its
+	 * nearest ancestor if a subclass.
 	 * @return C the classified value
 	 * @param classifiable the classifiable thing
 	 */
@@ -119,6 +121,19 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		for (Class<?> cls = exceptionClass; !cls.equals(Object.class)
 				&& value == null; cls = cls.getSuperclass()) {
 			value = this.classified.get(cls);
+		}
+
+		// check for interfaces subclasses
+		if (value == null) {
+			for (Class<?> cls = exceptionClass; !cls.equals(Object.class)
+					&& value == null; cls = cls.getSuperclass()) {
+				for (Class<?> ifc : cls.getInterfaces()) {
+					value = this.classified.get(ifc);
+					if (value != null) {
+						break;
+					}
+				}
+			}
 		}
 
 		// ConcurrentHashMap doesn't allow nulls
