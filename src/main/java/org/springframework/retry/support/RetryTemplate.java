@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.classify.Classifier;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -40,6 +41,7 @@ import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetryResultProcessor.Result;
 
 /**
  * Template class that simplifies the execution of operations with retry semantics.
@@ -94,6 +96,8 @@ public class RetryTemplate implements RetryOperations {
 
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
+	private Classifier<Object, RetryResultProcessor<?>> processors = null;
+
 	private boolean throwLastExceptionOnExhausted;
 
 	/**
@@ -130,6 +134,16 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	public void setRetryContextCache(RetryContextCache retryContextCache) {
 		this.retryContextCache = retryContextCache;
+	}
+
+	/**
+	 * Public setter for the retry result processors (if any). Default null (same as
+	 * empty).
+	 * @param processors the processors to set
+	 */
+	public void setRetryResultProcessors(
+			Classifier<Object, RetryResultProcessor<?>> processors) {
+		this.processors = processors;
 	}
 
 	/**
@@ -286,74 +300,11 @@ public class RetryTemplate implements RetryOperations {
 				}
 			}
 
-			/*
-			 * We allow the whole loop to be skipped if the policy or context already
-			 * forbid the first try. This is used in the case of external retry to allow a
-			 * recovery in handleRetryExhausted without the callback processing (which
-			 * would throw an exception).
-			 */
-			while (canRetry(retryPolicy, context) && !context.isExhaustedOnly()) {
-
-				try {
-					if (this.logger.isDebugEnabled()) {
-						this.logger.debug("Retry: count=" + context.getRetryCount());
-					}
-					// Reset the last exception, so if we are successful
-					// the close interceptors will not think we failed...
-					lastException = null;
-					return retryCallback.doWithRetry(context);
-				}
-				catch (Throwable e) {
-
-					lastException = e;
-
-					try {
-						registerThrowable(retryPolicy, state, context, e);
-					}
-					catch (Exception ex) {
-						throw new TerminatedRetryException("Could not register throwable", ex);
-					}
-					finally {
-						doOnErrorInterceptors(retryCallback, context, e);
-					}
-
-					if (canRetry(retryPolicy, context) && !context.isExhaustedOnly()) {
-						try {
-							backOffPolicy.backOff(backOffContext);
-						}
-						catch (BackOffInterruptedException ex) {
-							lastException = e;
-							// back off was prevented by another thread - fail the retry
-							if (this.logger.isDebugEnabled()) {
-								this.logger.debug("Abort retry because interrupted: count=" + context.getRetryCount());
-							}
-							throw ex;
-						}
-					}
-
-					if (this.logger.isDebugEnabled()) {
-						this.logger.debug("Checking for rethrow: count=" + context.getRetryCount());
-					}
-
-					if (shouldRethrow(retryPolicy, context, state)) {
-						if (this.logger.isDebugEnabled()) {
-							this.logger.debug("Rethrow in retry for policy: count=" + context.getRetryCount());
-						}
-						throw RetryTemplate.<E>wrapIfNecessary(e);
-					}
-
-				}
-
-				/*
-				 * A stateful attempt that can retry may rethrow the exception before now,
-				 * but if we get this far in a stateful retry there's a reason for it,
-				 * like a circuit breaker or a rollback classifier.
-				 */
-				if (state != null && context.hasAttribute(GLOBAL_STATE)) {
-					break;
-				}
+			Result<T> result = loop(retryCallback, state, context, backOffContext);
+			if (result.isComplete()) {
+				return result.getResult();
 			}
-
+			lastException = result.exception;
 			if (state == null && this.logger.isDebugEnabled()) {
 				this.logger.debug("Retry failed last attempt: count=" + context.getRetryCount());
 			}
@@ -363,12 +314,129 @@ public class RetryTemplate implements RetryOperations {
 
 		}
 		catch (Throwable e) {
+			lastException = e;
 			throw RetryTemplate.<E>wrapIfNecessary(e);
 		}
 		finally {
 			close(retryPolicy, context, state, lastException == null || exhausted);
 			doCloseInterceptors(retryCallback, context, lastException);
 			RetrySynchronizationManager.clear();
+		}
+
+	}
+
+	private <T, E extends Throwable> Result<T> safeLoop(RetryCallback<T, E> retryCallback,
+			RetryState state, RetryContext context, BackOffContext backOffContext) {
+		try {
+			return loop(retryCallback, state, context, backOffContext);
+		}
+		catch (Throwable ex) {
+			throw runtimeException(ex);
+		}
+	}
+
+	private <T, E extends Throwable> Result<T> loop(RetryCallback<T, E> retryCallback,
+			RetryState state, RetryContext context, BackOffContext backOffContext)
+			throws E {
+
+		Throwable lastException = null;
+
+		/*
+		 * We allow the whole loop to be skipped if the policy or context already forbid
+		 * the first try. This is used in the case of external retry to allow a recovery
+		 * in handleRetryExhausted without the callback processing (which would throw an
+		 * exception).
+		 */
+		while (canRetry(this.retryPolicy, context) && !context.isExhaustedOnly()) {
+
+			try {
+
+				if (this.logger.isDebugEnabled()) {
+					this.logger.debug("Retry: count=" + context.getRetryCount());
+				}
+				T result = retryCallback.doWithRetry(context);
+				if (result != null && this.processors != null) {
+					@SuppressWarnings("unchecked")
+					RetryResultProcessor<T> processor = (RetryResultProcessor<T>) this.processors
+							.classify(result);
+					if (processor != null) {
+						return processor.process(result,
+								() -> safeLoop(retryCallback, state, context,
+										backOffContext),
+								error -> safeHandleLoopException(retryCallback, state,
+										context, backOffContext, error));
+					}
+				}
+				return new Result<>(result);
+
+			}
+			catch (Throwable e) {
+
+				lastException = e;
+				handleLoopException(retryCallback, state, context, backOffContext, e);
+
+			}
+			/*
+			 * A stateful attempt that can retry may rethrow the exception before now, but
+			 * if we get this far in a stateful retry there's a reason for it, like a
+			 * circuit breaker or a rollback classifier.
+			 */
+			if (state != null && context.hasAttribute(GLOBAL_STATE)) {
+				break;
+			}
+		}
+		return new Result<>(
+				lastException == null ? context.getLastThrowable() : lastException);
+	}
+
+	private <T, E extends Throwable> void safeHandleLoopException(
+			RetryCallback<T, E> retryCallback, RetryState state, RetryContext context,
+			BackOffContext backOffContext, Throwable e) {
+		try {
+			handleLoopException(retryCallback, state, context, backOffContext, e);
+		}
+		catch (Throwable ex) {
+			throw runtimeException(ex);
+		}
+	}
+
+	private <T, E extends Throwable> void handleLoopException(
+			RetryCallback<T, E> retryCallback, RetryState state, RetryContext context,
+			BackOffContext backOffContext, Throwable e) throws E {
+		try {
+			registerThrowable(this.retryPolicy, state, context, e);
+		}
+		catch (Exception ex) {
+			throw new TerminatedRetryException("Could not register throwable", ex);
+		}
+		finally {
+			doOnErrorInterceptors(retryCallback, context, e);
+		}
+
+		if (canRetry(this.retryPolicy, context) && !context.isExhaustedOnly()) {
+			try {
+				this.backOffPolicy.backOff(backOffContext);
+			}
+			catch (BackOffInterruptedException ex) {
+				// back off was prevented by another thread - fail the retry
+				if (this.logger.isDebugEnabled()) {
+					this.logger.debug("Abort retry because interrupted: count="
+							+ context.getRetryCount());
+				}
+				throw ex;
+			}
+		}
+
+		if (this.logger.isDebugEnabled()) {
+			this.logger.debug("Checking for rethrow: count=" + context.getRetryCount());
+		}
+
+		if (shouldRethrow(this.retryPolicy, context, state)) {
+			if (this.logger.isDebugEnabled()) {
+				this.logger.debug(
+						"Rethrow in retry for policy: count=" + context.getRetryCount());
+			}
+			throw RetryTemplate.<E>wrapIfNecessary(e);
 		}
 
 	}
@@ -583,6 +651,26 @@ public class RetryTemplate implements RetryOperations {
 		else if (throwable instanceof Exception) {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) throwable;
+			return rethrow;
+		}
+		else {
+			throw new RetryException("Exception in retry", throwable);
+		}
+	}
+
+	/**
+	 * Re-throws the original throwable if it is an RuntimeException, and wraps
+	 * non-exceptions into {@link RetryException}.
+	 * @param throwable the input errror
+	 * @return a RuntimeException if possible
+	 * @throws RetryException if the throwable is checked
+	 */
+	static RuntimeException runtimeException(Throwable throwable) throws RetryException {
+		if (throwable instanceof Error) {
+			throw (Error) throwable;
+		}
+		else if (throwable instanceof RuntimeException) {
+			RuntimeException rethrow = (RuntimeException) throwable;
 			return rethrow;
 		}
 		else {
