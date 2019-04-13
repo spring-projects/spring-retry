@@ -75,7 +75,8 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		}
 		final String label = name;
 
-		RetryCallback<Object, Throwable> retryCallback = new RetryCallback<Object, Throwable>() {
+		RetryCallback<Object, Throwable> retryCallback = new MethodInvocationRetryCallback<Object, Throwable>(
+				invocation, label) {
 
 			public Object doWithRetry(RetryContext context) throws Exception {
 

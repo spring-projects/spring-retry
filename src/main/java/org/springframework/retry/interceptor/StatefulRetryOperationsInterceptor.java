@@ -168,7 +168,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 				this.rollbackClassifier);
 
 		Object result = this.retryOperations
-				.execute(new MethodInvocationRetryCallback(invocation, label),
+				.execute(new StatefulMethodInvocationRetryCallback(invocation, label),
 						this.recoverer != null
 								? new ItemRecovererCallback(args, this.recoverer) : null,
 						retryState);
@@ -204,21 +204,12 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * @author Dave Syer
 	 *
 	 */
-	private static final class MethodInvocationRetryCallback
-			implements RetryCallback<Object, Throwable> {
+	private static final class StatefulMethodInvocationRetryCallback
+			extends MethodInvocationRetryCallback<Object, Throwable> {
 
-		private final MethodInvocation invocation;
-
-		private String label;
-
-		private MethodInvocationRetryCallback(MethodInvocation invocation, String label) {
-			this.invocation = invocation;
-			if (StringUtils.hasText(label)) {
-				this.label = label;
-			}
-			else {
-				this.label = invocation.getMethod().toGenericString();
-			}
+		private StatefulMethodInvocationRetryCallback(MethodInvocation invocation,
+				String label) {
+			super(invocation, label);
 		}
 
 		@Override

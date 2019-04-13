@@ -16,22 +16,31 @@
 
 package org.springframework.retry.interceptor;
 
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.AllOf.allOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.listener.MethodInvocationRetryListenerSupport;
 import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -40,12 +49,11 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 public class RetryOperationsInterceptorTests {
+
+	private static int count;
+
+	private static int transactionCount;
 
 	private RetryOperationsInterceptor interceptor;
 
@@ -54,10 +62,6 @@ public class RetryOperationsInterceptorTests {
 	private ServiceImpl target;
 
 	private RetryContext context;
-
-	private static int count;
-
-	private static int transactionCount;
 
 	@Before
 	public void setUp() throws Exception {
@@ -92,6 +96,42 @@ public class RetryOperationsInterceptorTests {
 		this.service.service();
 		assertEquals(2, count);
 		assertEquals("FOO", this.context.getAttribute(RetryContext.NAME));
+	}
+
+	@Test
+	public void testDefaultInterceptorWithRetryListenerInspectingTheMethodInvocation()
+			throws Exception {
+
+		final String label = "FOO";
+		final String classTagName = "class";
+		final String methodTagName = "method";
+		final String labelTagName = "label";
+		final Map<String, String> monitoringTags = new HashMap<String, String>();
+		RetryTemplate template = new RetryTemplate();
+		template.setRetryPolicy(new SimpleRetryPolicy(2));
+		template.registerListener(new MethodInvocationRetryListenerSupport() {
+			@Override
+			protected <T, E extends Throwable> void doClose(RetryContext context,
+					MethodInvocationRetryCallback<T, E> callback, Throwable throwable) {
+				monitoringTags.put(labelTagName, callback.getLabel());
+				Method method = callback.getInvocation().getMethod();
+				monitoringTags.put(classTagName,
+						method.getDeclaringClass().getSimpleName());
+				monitoringTags.put(methodTagName, method.getName());
+			}
+		});
+
+		this.interceptor.setLabel(label);
+		this.interceptor.setRetryOperations(template);
+
+		((Advised) this.service).addAdvice(this.interceptor);
+		this.service.service();
+		assertEquals(2, count);
+		assertEquals(3, monitoringTags.entrySet().size());
+		assertThat(monitoringTags, allOf(hasEntry(labelTagName, label),
+				hasEntry(classTagName,
+						RetryOperationsInterceptorTests.Service.class.getSimpleName()),
+				hasEntry(methodTagName, "service")));
 	}
 
 	@Test

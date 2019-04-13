@@ -216,6 +216,35 @@ The open and close callbacks come before and after the entire retry in the simpl
 
 Note that when there is more than one listener, they are in a list, so there is an order. In this case open will be called in the same order while onError and close will be called in reverse order.
 
+### Listeners for reflective method invocations
+
+When dealing with methods annotated with `@Retryable` or with Spring AOP intercepted methods,
+spring-retry provides the possibility to inspect in detail the method invocation within the
+`RetryListener` implementation. Such a scenario could be particularly useful when there is a need
+to monitor how often a certain method call has been retried and expose it with detailed tagging
+information (e.g. : class name, method name, or even parameter values in some exotic cases).
+
+All that needs to be done is checking whe
+
+```java
+
+template.registerListener(new MethodInvocationRetryListenerSupport() {
+      @Override
+      protected <T, E extends Throwable> void doClose(RetryContext context,
+          MethodInvocationRetryCallback<T, E> callback, Throwable throwable) {
+        monitoringTags.put(labelTagName, callback.getLabel());
+        Method method = callback.getInvocation()
+            .getMethod();
+        monitoringTags.put(classTagName,
+            method.getDeclaringClass().getSimpleName());
+        monitoringTags.put(methodTagName, method.getName());
+
+        // register a monitoring counter with appropriate tags
+        // ...
+      }
+    });
+```
+
 ## Declarative Retry
 
 Sometimes there is some business processing that you know you want to retry every time it happens. The classic example of this is the remote service call. Spring Retry provides an AOP interceptor that wraps a method call in a `RetryOperations` for just this purpose. The `RetryOperationsInterceptor` executes the intercepted method and retries on failure according to the `RetryPolicy` in the provided `RepeatTemplate`.
