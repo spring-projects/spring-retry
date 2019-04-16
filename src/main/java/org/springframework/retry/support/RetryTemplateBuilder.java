@@ -40,8 +40,7 @@ import org.springframework.util.Assert;
  * builder method - see it's doc.
  *
  * <p>
- * Examples:
- * <pre>{@code
+ * Examples: <pre>{@code
  * RetryTemplate.builder()
  *      .maxAttempts(10)
  *      .exponentialBackoff(100, 2, 10000)
@@ -83,7 +82,6 @@ import org.springframework.util.Assert;
  *
  * @author Aleksandr Shamukov
  * @author Artem Bilan
- *
  * @since 1.3
  */
 public class RetryTemplateBuilder {

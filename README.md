@@ -218,13 +218,10 @@ Note that when there is more than one listener, they are in a list, so there is 
 
 ### Listeners for reflective method invocations
 
-When dealing with methods annotated with `@Retryable` or with Spring AOP intercepted methods,
-spring-retry provides the possibility to inspect in detail the method invocation within the
-`RetryListener` implementation. Such a scenario could be particularly useful when there is a need
-to monitor how often a certain method call has been retried and expose it with detailed tagging
-information (e.g. : class name, method name, or even parameter values in some exotic cases).
+When dealing with methods annotated with `@Retryable` or with Spring AOP intercepted methods, spring-retry provides the possibility to inspect in detail the method invocation within the `RetryListener` implementation.
 
-All that needs to be done is checking whe
+Such a scenario could be particularly useful when there is a need to monitor how often a certain method call has been retried and expose it with detailed tagging information (e.g. : class name, method name, or even parameter values in some exotic cases).
+
 
 ```java
 

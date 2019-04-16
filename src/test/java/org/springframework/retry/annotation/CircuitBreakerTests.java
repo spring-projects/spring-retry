@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 the original author or authors.
+ * Copyright 2015-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,10 @@ public class CircuitBreakerTests {
 			}
 		}
 
-		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}", openTimeoutExpression = "#{${bar:19}000}", resetTimeoutExpression = "#{${baz:20}000}", exceptionExpression = "#{#root instanceof RuntimeExpression}")
+		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}",
+				openTimeoutExpression = "#{${bar:19}000}",
+				resetTimeoutExpression = "#{${baz:20}000}",
+				exceptionExpression = "#{#root instanceof RuntimeExpression}")
 		public void expressionService() {
 			this.count++;
 		}

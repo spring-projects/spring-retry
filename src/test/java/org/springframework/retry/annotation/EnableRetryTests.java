@@ -458,7 +458,8 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(include = RuntimeException.class, exclude = IllegalStateException.class)
+		@Retryable(include = RuntimeException.class,
+				exclude = IllegalStateException.class)
 		public void service() {
 			if (count++ < 2) {
 				throw new IllegalStateException("Planned");
@@ -545,7 +546,11 @@ public class EnableRetryTests {
 			throw new RuntimeException("this cannot be retried");
 		}
 
-		@Retryable(exceptionExpression = "#{@exceptionChecker.${retryMethod}(#root)}", maxAttemptsExpression = "#{@integerFiveBean}", backoff = @Backoff(delayExpression = "#{${one}}", maxDelayExpression = "#{${five}}", multiplierExpression = "#{${onePointOne}}"))
+		@Retryable(exceptionExpression = "#{@exceptionChecker.${retryMethod}(#root)}",
+				maxAttemptsExpression = "#{@integerFiveBean}",
+				backoff = @Backoff(delayExpression = "#{${one}}",
+						maxDelayExpression = "#{${five}}",
+						multiplierExpression = "#{${onePointOne}}"))
 		public void service3() {
 			if (count++ < 8) {
 				throw new RuntimeException();
@@ -559,7 +564,8 @@ public class EnableRetryTests {
 			}
 		}
 
-		@Retryable(exceptionExpression = "message.contains('this can be retried')", include = RuntimeException.class)
+		@Retryable(exceptionExpression = "message.contains('this can be retried')",
+				include = RuntimeException.class)
 		public void service5() {
 			if (count++ < 11) {
 				throw new RuntimeException("this can be retried");
