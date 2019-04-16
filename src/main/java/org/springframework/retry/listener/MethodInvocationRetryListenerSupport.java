@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.springframework.retry.interceptor.MethodInvocationRetryCallback;
  * NOTE that this listener performs an action only when dealing with callbacks that are
  * instances of {@link MethodInvocationRetryCallback}.
  *
+ * @author Marius Grama
  * @since 1.3
  */
 public class MethodInvocationRetryListenerSupport implements RetryListener {
