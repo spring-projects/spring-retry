@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,6 @@
  */
 
 package org.springframework.retry.interceptor;
-
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.core.AllOf.allOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
@@ -48,6 +40,13 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
+
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class RetryOperationsInterceptorTests {
 
@@ -128,10 +127,10 @@ public class RetryOperationsInterceptorTests {
 		this.service.service();
 		assertEquals(2, count);
 		assertEquals(3, monitoringTags.entrySet().size());
-		assertThat(monitoringTags, allOf(hasEntry(labelTagName, label),
-				hasEntry(classTagName,
-						RetryOperationsInterceptorTests.Service.class.getSimpleName()),
-				hasEntry(methodTagName, "service")));
+		assertThat(monitoringTags.get(labelTagName), equalTo(label));
+		assertThat(monitoringTags.get(classTagName),
+				equalTo(RetryOperationsInterceptorTests.Service.class.getSimpleName()));
+		assertThat(monitoringTags.get(methodTagName), equalTo("service"));
 	}
 
 	@Test
