@@ -130,7 +130,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (argument == null) {
 					continue;
 				}
-				if (parameterTypes[i] != argument.getClass()) {
+				if (!parameterTypes[i].isAssignableFrom(argument.getClass())) {
 					return false;
 				}
 			}

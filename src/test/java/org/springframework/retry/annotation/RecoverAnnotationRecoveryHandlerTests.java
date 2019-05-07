@@ -25,6 +25,8 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dave Syer
@@ -158,6 +160,16 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		assertEquals(3, handler.recover(new Object[] { "Kevin" },
 				new UnsupportedOperationException("Planned")));
 
+	}
+
+	@Test
+	public void inheritanceOnArgumentClass() {
+		Method foo = ReflectionUtils.findMethod(
+				InheritanceOnArgumentClass.class, "foo", List.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new InheritanceOnArgumentClass(), foo);
+		assertEquals(1, handler.recover(new Object[] { new ArrayList<String>() },
+				new IllegalArgumentException("Planned")));
 	}
 
 	private static class InAccessibleRecover {
@@ -351,6 +363,25 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		@Recover
 		public int bazRecover(UnsupportedOperationException e, String name) {
 			return 3;
+		}
+
+	}
+
+	protected static class InheritanceOnArgumentClass {
+
+		@Retryable
+		public int foo(List<String> list) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable t, List<String> list) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable t, String name) {
+			return 2;
 		}
 
 	}
