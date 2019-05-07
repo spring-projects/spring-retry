@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Josh Long
  * @author Aldo Sinanaj
  * @author Randell Callahan
+ * @author Nathanaël Roberts
+ * @param <T> the type of the return value from the recovery
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -130,7 +132,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (argument == null) {
 					continue;
 				}
-				if (parameterTypes[i] != argument.getClass()) {
+				if (!parameterTypes[i].isAssignableFrom(argument.getClass())) {
 					return false;
 				}
 			}

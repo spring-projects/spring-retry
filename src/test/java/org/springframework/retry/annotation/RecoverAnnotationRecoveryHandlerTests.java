@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,15 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.util.ReflectionUtils;
 
 import static org.junit.Assert.assertEquals;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dave Syer
  * @author Aldo Sinanaj
  * @author Randell Callahan
+ * @author Nathanaël Roberts
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -170,6 +174,16 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		assertEquals(3, handler.recover(new Object[] { "Kevin" },
 				new UnsupportedOperationException("Planned")));
 
+	}
+
+	@Test
+	public void inheritanceOnArgumentClass() {
+		Method foo = ReflectionUtils.findMethod(
+				InheritanceOnArgumentClass.class, "foo", List.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new InheritanceOnArgumentClass(), foo);
+		assertEquals(1, handler.recover(new Object[] { new ArrayList<String>() },
+				new IllegalArgumentException("Planned")));
 	}
 
 	private static class InAccessibleRecover {
@@ -382,6 +396,25 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		@Recover
 		public int bazRecover(UnsupportedOperationException e, String name) {
 			return 3;
+		}
+
+	}
+
+	protected static class InheritanceOnArgumentClass {
+
+		@Retryable
+		public int foo(List<String> list) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable t, List<String> list) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable t, String name) {
+			return 2;
 		}
 
 	}
