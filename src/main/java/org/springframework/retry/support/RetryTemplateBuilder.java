@@ -16,10 +16,17 @@
 package org.springframework.retry.support;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
+import org.springframework.classify.SubclassClassifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -27,6 +34,7 @@ import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.backoff.SleepingBackOffPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
@@ -93,6 +101,10 @@ public class RetryTemplateBuilder {
 	private List<RetryListener> listeners;
 
 	private BinaryExceptionClassifierBuilder classifierBuilder;
+
+	private ScheduledExecutorService executorService;
+
+	private Map<Class<?>, RetryResultProcessor<?>> processors = new HashMap<>();
 
 	/* ---------------- Configure retry policy -------------- */
 
@@ -356,6 +368,28 @@ public class RetryTemplateBuilder {
 		return this;
 	}
 
+	/* ---------------- Async -------------- */
+
+	public RetryTemplateBuilder asyncRetry(ScheduledExecutorService reschedulingExecutor) {
+		this.executorService = reschedulingExecutor;
+		return asyncRetry();
+	}
+
+	/**
+	 * Enable async retry feature.
+	 * Due to no rescheduling executor is provided, a potential backoff will be performed
+	 * by Thread.sleep().
+	 */
+	public RetryTemplateBuilder asyncRetry() {
+		// todo: support interface classification (does not work yet)
+		this.processors.put(Future.class, new FutureRetryResultProcessor<>());
+		this.processors.put(FutureTask.class, new FutureRetryResultProcessor<>());
+		this.processors.put(CompletableFuture.class, new CompletableFutureRetryResultProcessor());
+
+		//todo
+		return this;
+	}
+
 	/* ---------------- Building -------------- */
 
 	/**
@@ -398,6 +432,20 @@ public class RetryTemplateBuilder {
 		if (this.listeners != null) {
 			retryTemplate.setListeners(this.listeners.toArray(new RetryListener[0]));
 		}
+
+		// Scheduler
+		if (this.executorService != null) {
+			retryTemplate.setReschedulingExecutor(executorService);
+
+			Assert.isTrue(backOffPolicy instanceof SleepingBackOffPolicy,
+					"Usage of a rescheduling executor makes sense "
+							+ "only with an instance of SleepingBackOffPolicy"
+			);
+		}
+
+		SubclassClassifier<Object, RetryResultProcessor<?>> classifier =
+				new SubclassClassifier<>(processors, null);
+		retryTemplate.setRetryResultProcessors(classifier);
 
 		return retryTemplate;
 	}

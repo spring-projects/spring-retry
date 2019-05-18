@@ -551,6 +551,48 @@ The preceding example uses a default `RetryTemplate` inside the interceptor. To 
 policies or listeners, you need only inject an instance of `RetryTemplate` into the
 interceptor.
 
+## Asynchronous retry
+### Terms
+```java
+
+CompletableFuture<HttpResponse<String>> completableFuture = retryTemplate.execute(
+                ctx -> httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        );
+```
+- __async callback__ - a callback that returns one of the supported async types (CompletableFuture, Future). Usually, async retry callback is one, that does not perform a heavy work by itself, but schedules the work to some worker and returns an instance of async type to track the progress. Failure of async callback itself usually means failure of scheduling (but not of actual work).
+Failure of async callback (of scheduling) and of actual job will both be retried on a common basis, according to configured policies.  
+
+- __job__ - a task with payload, usually heavy, which result will be available through the instance of async type, returned by async callback (and, consequently, by _execute_ method)
+
+- __rescheduling executor__ - an instance of executor, used for scheduling a new retry attempt after a delay (provided by a backoff policy). The type of executor is restricted by ScheduledExecutorService, to take advantage of its "schedule after delay" feature, which allows us to implement backoff without blocking a thread. Rescheduling executor is used for all retries except of initial scheduling retries (initial invocation of async callback).     
+
+### Initial invocation of async callback
+Invocation of template.execute(asyncCallback) returns when first scheduling of job succeeded, or all initial scheduling attempts failed. Retry template does not produce async containers by itself, therefore there is nothing to return from _execute_ until initial invocation succeed. Backoffs between failing initial scheduling attempts will be performed by default sleeper by means of Thread.sleep() on caller thread. Why this approach is used:
+- to be compatible with generic API of RetryOperations (where return type of callback equals to retrun type of execute(...))
+- to provide an additional mean of back pressure
+
+### Subsequent invocations of async callback
+If the first execution of the _job_ failed and a retry is allowed by the policy, the next invocation of the async callback will be scheduled on _rescheduling executor_   
+
+### Async callbacks without executor
+If executor is not provided, a backoff will be performed by Thread.sleep() on the client thread (for initial scheduling) or on the worker thread (for job failures, or for subsequent schedulings).
+
+### Configuration example
+```java
+RetryTemplate.builder()
+        // activte the async retry feature with an executor  				
+        .asyncRetry(Executors.newScheduledThreadPool(1))
+        .fixedBackoff(1000)
+        .build();
+
+RetryTemplate.builder()
+        // activte the async retry feature without an executor.
+        // Thread.sleep() will be used for backoff.
+        .asyncRetry()
+        .fixedBackoff(1000)
+        .build();
+```
+
 ## Contributing
 
 Spring Retry is released under the non-restrictive Apache 2.0 license

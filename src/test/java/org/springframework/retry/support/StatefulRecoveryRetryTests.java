@@ -140,7 +140,8 @@ public class StatefulRecoveryRetryTests {
 			}
 		};
 		Object result = null;
-		// On the second retry, the recovery path is taken...
+		// The recovery path is taken just after the first attempt.
+		// No rethrow, due to no rollback is required for this type of exception.
 		result = this.retryTemplate.execute(callback, recoveryCallback, state);
 		assertEquals(input, result); // default result is the item
 		assertEquals(1, this.count);

@@ -19,12 +19,18 @@ package org.springframework.retry.support;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryException;
+import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
 
 /**
  * A {@link RetryResultProcessor} for a {@link CompletableFuture}. If a
@@ -33,58 +39,47 @@ import org.springframework.retry.RetryException;
  *
  * @author Dave Syer
  */
-public class CompletableFutureRetryResultProcessor
-		implements RetryResultProcessor<CompletableFuture<?>> {
+public class CompletableFutureRetryResultProcessor<V>
+		extends AsyncRetryResultProcessor<CompletableFuture<V>> {
+
+	protected final Log logger = LogFactory.getLog(getClass());
 
 	@Override
-	public Result<CompletableFuture<?>> process(CompletableFuture<?> completable,
-			Supplier<Result<CompletableFuture<?>>> supplier,
-			Consumer<Throwable> handler) {
-		@SuppressWarnings("unchecked")
-		CompletableFuture<Object> typed = (CompletableFuture<Object>) completable;
-		CompletableFuture<?> handle = typed
-				.thenApply(value -> CompletableFuture.completedFuture(value))
-				.exceptionally(throwable -> apply(supplier, handler, throwable))
+	public Result<CompletableFuture<V>> process(CompletableFuture<V> completable,
+			Supplier<Result<CompletableFuture<V>>> supplier,
+			Consumer<Throwable> handler, ScheduledExecutorService reschedulingExecutor,
+			LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+			RetryContext ctx) {
+
+		CompletableFuture<V> handle = completable
+				.thenApply(CompletableFuture::completedFuture)
+				.exceptionally(throwable -> handleException(
+						supplier, handler, throwable, reschedulingExecutor, lastBackoffPeriodSupplier, ctx)
+				)
 				.thenCompose(Function.identity());
+
 		return new Result<>(handle);
 	}
 
-	private CompletableFuture<Object> apply(
-			Supplier<Result<CompletableFuture<?>>> supplier, Consumer<Throwable> handler,
-			Throwable throwable) {
-		Throwable error = throwable;
-		try {
-			if (throwable instanceof ExecutionException
-					|| throwable instanceof CompletionException) {
-				error = throwable.getCause();
-			}
-			handler.accept(error);
-			Result<CompletableFuture<?>> result = supplier.get();
-			if (result.isComplete()) {
-				@SuppressWarnings("unchecked")
-				CompletableFuture<Object> output = (CompletableFuture<Object>) result
-						.getResult();
-				return output;
-			}
-			throw result.exception;
-		}
-		catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			error = e;
-		}
-		catch (CompletionException e) {
-			error = e.getCause();
-		}
-		catch (ExecutionException e) {
-			error = e.getCause();
-		}
-		catch (RetryException e) {
-			error = e.getCause();
-		}
-		catch (Throwable e) {
-			error = e;
-		}
-		throw RetryTemplate.runtimeException(error);
-	}
+	protected CompletableFuture<V> scheduleNewAttemptAfterDelay(
+			Supplier<Result<CompletableFuture<V>>> supplier,
+			ScheduledExecutorService reschedulingExecutor, long rescheduleAfterMillis,
+			RetryContext ctx)
+	{
+		CompletableFuture<CompletableFuture<V>> futureOfFurtherScheduling = new CompletableFuture<>();
 
+		reschedulingExecutor.schedule(() -> {
+			try {
+				RetrySynchronizationManager.register(ctx);
+				futureOfFurtherScheduling.complete(doNewAttempt(supplier));
+			} catch (Throwable t) {
+				futureOfFurtherScheduling.completeExceptionally(t);
+				throw RetryTemplate.runtimeException(t);
+			} finally {
+				RetrySynchronizationManager.clear();
+			}
+		}, rescheduleAfterMillis, TimeUnit.MILLISECONDS);
+
+		return futureOfFurtherScheduling.thenCompose(Function.identity());
+	}
 }

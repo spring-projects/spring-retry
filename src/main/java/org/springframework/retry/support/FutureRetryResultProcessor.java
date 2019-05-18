@@ -16,45 +16,79 @@
 
 package org.springframework.retry.support;
 
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryException;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
 
 /**
+ * todo: check or remove after discussion
+ *
  * A {@link RetryResultProcessor} for a plain {@link Future}. If a {@link RetryCallback}
  * returns a <code>Future</code> this processor can be used internally by the
  * {@link RetryTemplate} to wrap it and process the result.
- *
+ *	
  * @author Dave Syer
  */
-public class FutureRetryResultProcessor implements RetryResultProcessor<Future<?>> {
+public class FutureRetryResultProcessor<V> extends AsyncRetryResultProcessor<Future<V>> {
 
 	@Override
-	public Result<Future<?>> process(Future<?> future,
-			Supplier<Result<Future<?>>> supplier, Consumer<Throwable> handler) {
-		return new Result<Future<?>>(new FutureWrapper(future, supplier, handler));
+	public Result<Future<V>> process(Future<V> future,
+			Supplier<Result<Future<V>>> supplier, Consumer<Throwable> handler,
+			ScheduledExecutorService reschedulingExecutor, LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+			RetryContext ctx) {
+		return new Result<>(new FutureWrapper(future, supplier, handler, this, reschedulingExecutor,
+				lastBackoffPeriodSupplier, ctx));
 	}
 
-	private class FutureWrapper implements Future<Object> {
+	@Override
+	protected Future<V> scheduleNewAttemptAfterDelay(Supplier<Result<Future<V>>> supplier,
+			ScheduledExecutorService reschedulingExecutor, long rescheduleAfterMillis, RetryContext ctx)
+			throws Throwable
+	{
+		ScheduledFuture<Future<V>> scheduledFuture = reschedulingExecutor.schedule(() -> {
+			try {
+				return doNewAttempt(supplier);
+			} catch (Throwable t) {
+				throw RetryTemplate.runtimeException(t);
+			}
+		}, rescheduleAfterMillis, TimeUnit.MILLISECONDS);
 
-		private Future<?> delegate;
+		return new FutureFlatter(scheduledFuture);
+	}
 
-		private Supplier<Result<Future<?>>> supplier;
+	private class FutureWrapper implements Future<V> {
+
+		private Future<V> delegate;
+
+		private Supplier<Result<Future<V>>> supplier;
 
 		private Consumer<Throwable> handler;
+		private AsyncRetryResultProcessor<Future<V>> processor;
+		private final ScheduledExecutorService reschedulingExecutor;
+		private final LastBackoffPeriodSupplier lastBackoffPeriodSupplier;
+		private RetryContext ctx;
 
-		FutureWrapper(Future<?> delegate, Supplier<Result<Future<?>>> supplier,
-				Consumer<Throwable> handler) {
+		FutureWrapper(Future<V> delegate, Supplier<Result<Future<V>>> supplier,
+				Consumer<Throwable> handler, AsyncRetryResultProcessor<Future<V>> processor,
+				ScheduledExecutorService reschedulingExecutor, LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+				RetryContext ctx) {
 			this.delegate = delegate;
 			this.supplier = supplier;
 			this.handler = handler;
+			this.processor = processor;
+			this.reschedulingExecutor = reschedulingExecutor;
+			this.lastBackoffPeriodSupplier = lastBackoffPeriodSupplier;
+			this.ctx = ctx;
 		}
 
 		@Override
@@ -73,62 +107,79 @@ public class FutureRetryResultProcessor implements RetryResultProcessor<Future<?
 		}
 
 		@Override
-		public Object get() throws InterruptedException, ExecutionException {
+		public V get() throws InterruptedException, ExecutionException {
 			try {
 				return this.delegate.get();
 			}
-			catch (ExecutionException e) {
-				return handle(e);
+			catch (Throwable e) {
+				return processor.handleException(supplier, handler, e, reschedulingExecutor, lastBackoffPeriodSupplier, ctx)
+						.get();
 			}
 		}
 
 		@Override
-		public Object get(long timeout, TimeUnit unit)
+		public V get(long timeout, TimeUnit unit)
 				throws InterruptedException, ExecutionException, TimeoutException {
 			try {
 				return this.delegate.get(timeout, unit);
 			}
-			catch (ExecutionException e) {
-				return handle(e, timeout, unit);
-			}
-		}
-
-		private Object handle(ExecutionException throwable) {
-			return handle(throwable, -1, null);
-		}
-
-		private Object handle(ExecutionException throwable, long timeout, TimeUnit unit) {
-			Throwable error = throwable.getCause();
-			try {
-				this.handler.accept(error);
-				Result<Future<?>> result = this.supplier.get();
-				if (result.isComplete()) {
-					if (timeout < 0) {
-						return result.getResult().get();
-					}
-					else {
-						return result.getResult().get(timeout, unit);
-					}
-				}
-				throw result.exception;
-			}
-			catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				error = e;
-			}
-			catch (CompletionException e) {
-				error = e.getCause();
-			}
-			catch (ExecutionException e) {
-				error = e.getCause();
-			}
-			catch (RetryException e) {
-				error = e.getCause();
-			}
 			catch (Throwable e) {
-				error = e;
+				return processor.handleException(supplier, handler, e, reschedulingExecutor, lastBackoffPeriodSupplier, ctx)
+						.get(timeout, unit);
 			}
-			throw RetryTemplate.runtimeException(error);
+		}
+
+	}
+
+	private class FutureFlatter implements Future<V> {
+
+		private Future<Future<V>> nestedFuture;
+
+		FutureFlatter(Future<Future<V>> nestedFuture) {
+			this.nestedFuture = nestedFuture;
+		}
+
+		@Override
+		public boolean cancel(boolean mayInterruptIfRunning) {
+			try {
+			if (this.nestedFuture.isDone()) {
+				return this.nestedFuture.get().cancel(mayInterruptIfRunning);
+			} else {
+				return this.nestedFuture.cancel(mayInterruptIfRunning);
+			}
+			} catch (Throwable t) {
+				throw RetryTemplate.runtimeException(t);
+			}
+	}
+
+		@Override
+		public boolean isCancelled() {
+			try {
+				return this.nestedFuture.isCancelled()
+						|| (this.nestedFuture.isDone() && this.nestedFuture.get().isCancelled());
+			} catch (Throwable t) {
+				throw RetryTemplate.runtimeException(t);
+			}
+		}
+
+		@Override
+		public boolean isDone() {
+			try {
+				return this.nestedFuture.isDone() && this.nestedFuture.get().isDone();
+			} catch (Throwable t) {
+				throw RetryTemplate.runtimeException(t);
+			}
+		}
+
+		@Override
+		public V get() throws InterruptedException, ExecutionException {
+			return this.nestedFuture.get().get();
+		}
+
+		@Override
+		public V get(long timeout, TimeUnit unit)
+				throws InterruptedException, ExecutionException, TimeoutException {
+			return this.nestedFuture.get(timeout, unit).get(timeout, unit);
 		}
 
 	}

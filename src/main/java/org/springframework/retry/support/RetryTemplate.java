@@ -19,6 +19,9 @@ package org.springframework.retry.support;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,11 +40,15 @@ import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
+import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
 import org.springframework.retry.backoff.NoBackOffPolicy;
+import org.springframework.retry.backoff.RememberPeriodSleeper;
+import org.springframework.retry.backoff.SleepingBackOffPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryResultProcessor.Result;
+import org.springframework.util.Assert;
 
 /**
  * Template class that simplifies the execution of operations with retry semantics.
@@ -90,15 +97,19 @@ public class RetryTemplate implements RetryOperations {
 
 	private volatile BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
+	private volatile LastBackoffPeriodSupplier lastBackoffPeriodSupplier = null;
+
 	private volatile RetryPolicy retryPolicy = new SimpleRetryPolicy(3);
 
 	private volatile RetryListener[] listeners = new RetryListener[0];
 
-	private RetryContextCache retryContextCache = new MapRetryContextCache();
+	private volatile RetryContextCache retryContextCache = new MapRetryContextCache();
 
-	private Classifier<Object, RetryResultProcessor<?>> processors = null;
+	private volatile Classifier<Object, RetryResultProcessor<?>> processors = null;
 
-	private boolean throwLastExceptionOnExhausted;
+	private volatile ScheduledExecutorService reschedulingExecutor = null;
+
+	private volatile boolean throwLastExceptionOnExhausted;
 
 	/**
 	 * Main entry point to configure RetryTemplate using fluent API. See
@@ -156,6 +167,11 @@ public class RetryTemplate implements RetryOperations {
 		this.listeners = Arrays.asList(listeners).toArray(new RetryListener[listeners.length]);
 	}
 
+	public void setReschedulingExecutor(ScheduledExecutorService reschedulingExecutor) {
+		this.reschedulingExecutor = reschedulingExecutor;
+		this.backOffPolicy = replaceSleeperIfNeed(backOffPolicy);
+	}
+
 	/**
 	 * Register an additional listener.
 	 * @param listener the {@link RetryListener}
@@ -172,7 +188,18 @@ public class RetryTemplate implements RetryOperations {
 	 * @param backOffPolicy the {@link BackOffPolicy}
 	 */
 	public void setBackOffPolicy(BackOffPolicy backOffPolicy) {
-		this.backOffPolicy = backOffPolicy;
+		this.backOffPolicy = replaceSleeperIfNeed(backOffPolicy);
+	}
+
+	private BackOffPolicy replaceSleeperIfNeed(BackOffPolicy backOffPolicy) {
+		if (reschedulingExecutor != null && backOffPolicy instanceof SleepingBackOffPolicy) {
+			this.logger.debug("Replacing the default sleeper by RememberPeriodSleeper to enable scheduler-based backoff.");
+			RememberPeriodSleeper rememberPeriodSleeper = new RememberPeriodSleeper();
+			lastBackoffPeriodSupplier = rememberPeriodSleeper;
+			return ((SleepingBackOffPolicy) backOffPolicy).withSleeper(rememberPeriodSleeper);
+		} else {
+			return backOffPolicy;
+		}
 	}
 
 	/**
@@ -364,7 +391,9 @@ public class RetryTemplate implements RetryOperations {
 								() -> safeLoop(retryCallback, state, context,
 										backOffContext),
 								error -> safeHandleLoopException(retryCallback, state,
-										context, backOffContext, error));
+										context, backOffContext, error), reschedulingExecutor,
+								lastBackoffPeriodSupplier,
+								context);
 					}
 				}
 				return new Result<>(result);
@@ -482,6 +511,7 @@ public class RetryTemplate implements RetryOperations {
 		registerContext(context, state);
 	}
 
+	// есть стейт, есть ключ, сохраняем данный контекст в кэш: ключ -> контекст
 	private void registerContext(RetryContext context, RetryState state) {
 		if (state != null) {
 			Object key = state.getKey();
@@ -665,7 +695,7 @@ public class RetryTemplate implements RetryOperations {
 	 * @return a RuntimeException if possible
 	 * @throws RetryException if the throwable is checked
 	 */
-	static RuntimeException runtimeException(Throwable throwable) throws RetryException {
+	public static RuntimeException runtimeException(Throwable throwable) throws RetryException {
 		if (throwable instanceof Error) {
 			throw (Error) throwable;
 		}

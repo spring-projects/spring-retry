@@ -16,8 +16,12 @@
 
 package org.springframework.retry.support;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
 
 /**
  * @author Dave Syer
@@ -25,7 +29,10 @@ import java.util.function.Supplier;
  */
 public interface RetryResultProcessor<T> {
 
-	Result<T> process(T input, Supplier<Result<T>> supplier, Consumer<Throwable> handler);
+	Result<T> process(T input, Supplier<Result<T>> supplier, Consumer<Throwable> handler,
+			ScheduledExecutorService reschedulingExecutor,
+			LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+			RetryContext ctx);
 
 	public static class Result<T> {
 
@@ -57,6 +64,12 @@ public interface RetryResultProcessor<T> {
 			return result;
 		}
 
+		public T getOrThrow() throws Throwable {
+			if (isComplete()) {
+				return result;
+			}
+			throw exception;
+		}
 	}
 
 }
