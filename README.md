@@ -1,3 +1,5 @@
+[![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-team/pipelines/spring-retry/badge)](https://ci.spring.io/?groups=spring-team) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
+
 This project provides declarative retry support for Spring
 applications. It is used in Spring Batch, Spring Integration,
 Spring for Apache Hadoop (amongst others).
