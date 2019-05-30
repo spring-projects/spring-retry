@@ -86,6 +86,16 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
+	 * Add a classification. The keys is the type and this will be mapped along with all
+	 * subclasses to the corresponding value. The most specific types will match first.
+	 * @param type the type of the input object
+	 * @param target the target value for all such types
+	 */
+	public void add(Class<? extends T> type, C target) {
+		this.classified.put(type, target);
+	}
+
+	/**
 	 * Return the value from the type map whose key is the class of the given Throwable,
 	 * or its nearest ancestor if a subclass.
 	 * @return C the classified value

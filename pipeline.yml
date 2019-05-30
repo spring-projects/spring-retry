@@ -17,6 +17,26 @@ resources:
   source:
     url: {{slack-url}}
   
+slack-failure: &slack-failure
+  put: slack
+  params:
+    attachments:
+    - color: danger
+      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <FAILURE>"
+      text: "<!here> Build has failed"
+      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
+      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+
+slack-success: &slack-success
+  put: slack
+  params:
+    attachments:
+    - color: good
+      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <SUCCESS>"
+      text: "Build has succeeded"
+      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
+      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
+
 jobs:
 - name: build
   plan:
@@ -106,23 +126,3 @@ jobs:
       spring_password: {{spring-password}}
     on_failure: *slack-failure
     on_success: *slack-success
-
-slack-failure: &slack-failure
-  put: slack
-  params:
-    attachments:
-    - color: danger
-      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <FAILURE>"
-      text: "<!here> Build has failed"
-      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
-      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
-
-slack-success: &slack-success
-  put: slack
-  params:
-    attachments:
-    - color: good
-      fallback: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME <SUCCESS>"
-      text: "Build has succeeded"
-      title: "$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME #$BUILD_NAME"
-      title_link: $ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME
