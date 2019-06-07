@@ -38,12 +38,16 @@ import org.springframework.util.ClassUtils;
  * Since version 1.3 it is not necessary to use this class. The same behaviour can be
  * achieved by constructing a {@link CompositeRetryPolicy} with
  * {@link MaxAttemptsRetryPolicy} and {@link BinaryExceptionClassifierRetryPolicy} inside,
- * that is actually performed by: <pre> {@code:
+ * that is actually performed by:
+ *
+ * <pre>
  * RetryTemplate.newBuilder()
  *                  .maxAttempts(3)
  *                  .retryOn(Exception.class)
  *                  .build();
- * }</pre> or by {@link org.springframework.retry.support.RetryTemplate#defaultInstance()}
+ * </pre>
+ *
+ * or by {@link org.springframework.retry.support.RetryTemplate#defaultInstance()}
  *
  * @author Dave Syer
  * @author Rob Harrop

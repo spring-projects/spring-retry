@@ -86,9 +86,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * <<<<<<< HEAD Add a classification. The keys is the type and this will be mapped
-	 * along with all subclasses to the corresponding value. The most specific types will
-	 * match first.
+	 * The keys is the type and this will be mapped along with all subclasses to the
+	 * corresponding value. The most specific types will match first.
 	 * @param type the type of the input object
 	 * @param target the target value for all such types
 	 */
@@ -97,9 +96,8 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * ======= >>>>>>> f60e17b... Allow SubclassClassifier to work with interfaces Return
-	 * the value from the type map whose key is the class of the given Throwable, or its
-	 * nearest ancestor if a subclass.
+	 * Return the value from the type map whose key is the class of the given Throwable,
+	 * or its nearest ancestor if a subclass.
 	 * @return C the classified value
 	 * @param classifiable the classifiable thing
 	 */
