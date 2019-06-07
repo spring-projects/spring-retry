@@ -35,24 +35,23 @@ import org.springframework.retry.interceptor.MethodInvocationRetryCallback;
  */
 public class MethodInvocationRetryListenerSupport implements RetryListener {
 
-	public <T, E extends Throwable> void close(RetryContext context,
-			RetryCallback<T, E> callback, Throwable throwable) {
+	public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
 		if (callback instanceof MethodInvocationRetryCallback) {
 			MethodInvocationRetryCallback<T, E> methodInvocationRetryCallback = (MethodInvocationRetryCallback<T, E>) callback;
 			doClose(context, methodInvocationRetryCallback, throwable);
 		}
 	}
 
-	public <T, E extends Throwable> void onError(RetryContext context,
-			RetryCallback<T, E> callback, Throwable throwable) {
+	public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
 		if (callback instanceof MethodInvocationRetryCallback) {
 			MethodInvocationRetryCallback<T, E> methodInvocationRetryCallback = (MethodInvocationRetryCallback<T, E>) callback;
 			doOnError(context, methodInvocationRetryCallback, throwable);
 		}
 	}
 
-	public <T, E extends Throwable> boolean open(RetryContext context,
-			RetryCallback<T, E> callback) {
+	public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
 		if (callback instanceof MethodInvocationRetryCallback) {
 			MethodInvocationRetryCallback<T, E> methodInvocationRetryCallback = (MethodInvocationRetryCallback<T, E>) callback;
 			return doOpen(context, methodInvocationRetryCallback);
@@ -62,8 +61,8 @@ public class MethodInvocationRetryListenerSupport implements RetryListener {
 		return true;
 	}
 
-	protected <T, E extends Throwable> void doClose(RetryContext context,
-			MethodInvocationRetryCallback<T, E> callback, Throwable throwable) {
+	protected <T, E extends Throwable> void doClose(RetryContext context, MethodInvocationRetryCallback<T, E> callback,
+			Throwable throwable) {
 	}
 
 	protected <T, E extends Throwable> void doOnError(RetryContext context,

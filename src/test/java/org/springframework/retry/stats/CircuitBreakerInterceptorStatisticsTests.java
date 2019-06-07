@@ -72,8 +72,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		result = callback.service("two");
 		assertEquals(RECOVERED, result);
 		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
-		assertEquals("There should only be one error because the circuit is now open", 1,
-				stats.getErrorCount());
+		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
 	}
 
 	@Configuration
@@ -127,8 +126,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		}
 
 		public boolean isOpen() {
-			return this.status != null
-					&& this.status.getAttribute("open") == Boolean.TRUE;
+			return this.status != null && this.status.getAttribute("open") == Boolean.TRUE;
 		}
 
 		public void setAttemptsBeforeSuccess(int attemptsBeforeSuccess) {

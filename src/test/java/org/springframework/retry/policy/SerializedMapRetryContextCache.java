@@ -26,8 +26,7 @@ public class SerializedMapRetryContextCache implements RetryContextCache {
 
 	private static final int DEFAULT_CAPACITY = 4096;
 
-	private Map<Object, byte[]> map = Collections
-			.synchronizedMap(new HashMap<Object, byte[]>());
+	private Map<Object, byte[]> map = Collections.synchronizedMap(new HashMap<Object, byte[]>());
 
 	@Override
 	public boolean containsKey(Object key) {

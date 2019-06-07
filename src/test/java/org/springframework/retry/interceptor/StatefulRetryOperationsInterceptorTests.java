@@ -74,16 +74,14 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor = new StatefulRetryOperationsInterceptor();
 		retryTemplate.registerListener(new RetryListenerSupport() {
 			@Override
-			public <T, E extends Throwable> void close(RetryContext context,
-					RetryCallback<T, E> callback, Throwable throwable) {
+			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+					Throwable throwable) {
 				StatefulRetryOperationsInterceptorTests.this.context = context;
 			}
 		});
 		interceptor.setRetryOperations(retryTemplate);
-		service = ProxyFactory.getProxy(Service.class,
-				new SingletonTargetSource(new ServiceImpl()));
-		transformer = ProxyFactory.getProxy(Transformer.class,
-				new SingletonTargetSource(new TransformerImpl()));
+		service = ProxyFactory.getProxy(Service.class, new SingletonTargetSource(new ServiceImpl()));
+		transformer = ProxyFactory.getProxy(Transformer.class, new SingletonTargetSource(new TransformerImpl()));
 		count = 0;
 	}
 
@@ -96,8 +94,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 	}
@@ -112,8 +109,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		assertEquals("FOO", context.getAttribute(RetryContext.NAME));
@@ -128,8 +124,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 	}
@@ -145,8 +140,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 	}
@@ -170,8 +164,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		service.service("foo");
@@ -190,8 +183,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		Collection<String> result = transformer.transform("foo");
@@ -210,8 +202,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		try {
@@ -221,8 +212,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		catch (ExhaustedRetryException e) {
 			// expected
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Retry exhausted"));
+			assertTrue("Wrong message: " + message, message.startsWith("Retry exhausted"));
 		}
 		assertEquals(1, count);
 	}
@@ -238,8 +228,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Object>() {
@@ -263,10 +252,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		MethodInvocation invocation = mock(MethodInvocation.class);
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
-		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor
-				.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class),
-				captor.capture());
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
 		assertNull(captor.getValue().getKey());
 	}
 
@@ -287,10 +274,8 @@ public class StatefulRetryOperationsInterceptorTests {
 		MethodInvocation invocation = mock(MethodInvocation.class);
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
-		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor
-				.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class),
-				captor.capture());
+		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
+		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
 		assertEquals("bar", captor.getValue().getKey());
 	}
 
@@ -305,8 +290,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		}
 		catch (Exception e) {
 			String message = e.getMessage();
-			assertTrue("Wrong message: " + message,
-					message.startsWith("Not enough calls"));
+			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
 		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {

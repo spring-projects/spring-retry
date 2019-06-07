@@ -73,8 +73,7 @@ public class RetryTemplateTests {
 			final AtomicInteger attempts = new AtomicInteger(0);
 			RetryCallback<String, IllegalStateException> callback = new RetryCallback<String, IllegalStateException>() {
 				@Override
-				public String doWithRetry(RetryContext context)
-						throws IllegalStateException {
+				public String doWithRetry(RetryContext context) throws IllegalStateException {
 					if (attempts.incrementAndGet() < attemptsBeforeSuccess) {
 						// The parametrized exception type in the callback is really just
 						// syntactic sugar since rules of erasure mean that the handler
@@ -160,11 +159,9 @@ public class RetryTemplateTests {
 
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(attempts,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						Exception.class, true)));
-		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(Collections
-				.<Class<? extends Throwable>>singleton(IllegalArgumentException.class),
-				false);
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(Exception.class, true)));
+		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
+				Collections.<Class<? extends Throwable>>singleton(IllegalArgumentException.class), false);
 		retryTemplate.execute(callback, new DefaultRetryState("foo", classifier));
 		assertEquals(attempts, callback.attempts);
 	}
@@ -173,8 +170,7 @@ public class RetryTemplateTests {
 	public void testSetExceptions() throws Throwable {
 		RetryTemplate template = new RetryTemplate();
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						RuntimeException.class, true));
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(RuntimeException.class, true));
 		template.setRetryPolicy(policy);
 
 		int attempts = 3;
@@ -268,13 +264,11 @@ public class RetryTemplateTests {
 						assertNotNull(RetryTemplateTests.this.context);
 						assertNotSame(status, RetryTemplateTests.this.context);
 						assertSame(RetryTemplateTests.this.context, status.getParent());
-						assertSame("The context should be the child", status,
-								RetrySynchronizationManager.getContext());
+						assertSame("The context should be the child", status, RetrySynchronizationManager.getContext());
 						return null;
 					}
 				});
-				assertSame("The context should be restored", status,
-						RetrySynchronizationManager.getContext());
+				assertSame("The context should be restored", status, RetrySynchronizationManager.getContext());
 				return result;
 			}
 		});
@@ -430,8 +424,7 @@ public class RetryTemplateTests {
 		}
 
 		@Override
-		public void backOff(BackOffContext backOffContext)
-				throws BackOffInterruptedException {
+		public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 			this.backOffCalls++;
 		}
 

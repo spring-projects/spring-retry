@@ -86,8 +86,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 	@Override
 	public RetryContext open(RetryContext parent) {
-		return new CircuitBreakerRetryContext(parent, this.delegate, this.resetTimeout,
-				this.openTimeout);
+		return new CircuitBreakerRetryContext(parent, this.delegate, this.resetTimeout, this.openTimeout);
 	}
 
 	@Override
@@ -117,8 +116,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 		private final AtomicInteger shortCircuitCount = new AtomicInteger();
 
-		public CircuitBreakerRetryContext(RetryContext parent, RetryPolicy policy,
-				long timeout, long openWindow) {
+		public CircuitBreakerRetryContext(RetryContext parent, RetryPolicy policy, long timeout, long openWindow) {
 			super(parent);
 			this.policy = policy;
 			this.timeout = timeout;
@@ -137,8 +135,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			setAttribute(CIRCUIT_SHORT_COUNT, shortCircuitCount.get());
 		}
 
-		private RetryContext createDelegateContext(RetryPolicy policy,
-				RetryContext parent) {
+		private RetryContext createDelegateContext(RetryPolicy policy, RetryContext parent) {
 			RetryContext context = policy.open(parent);
 			reset();
 			return context;

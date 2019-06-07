@@ -55,27 +55,23 @@ public class SubclassExceptionClassifierTests {
 
 	@Test
 	public void testClassifyExactMatch() {
-		this.classifier
-				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
-						IllegalStateException.class, "foo"));
+		this.classifier.setTypeMap(
+				Collections.<Class<? extends Throwable>, String>singletonMap(IllegalStateException.class, "foo"));
 		assertEquals("foo", this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySubclassMatch() {
-		this.classifier
-				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
-						RuntimeException.class, "foo"));
+		this.classifier.setTypeMap(
+				Collections.<Class<? extends Throwable>, String>singletonMap(RuntimeException.class, "foo"));
 		assertEquals("foo", this.classifier.classify(new IllegalStateException("Foo")));
 	}
 
 	@Test
 	public void testClassifySuperclassDoesNotMatch() {
-		this.classifier
-				.setTypeMap(Collections.<Class<? extends Throwable>, String>singletonMap(
-						IllegalStateException.class, "foo"));
-		assertEquals(this.classifier.getDefault(),
-				this.classifier.classify(new RuntimeException("Foo")));
+		this.classifier.setTypeMap(
+				Collections.<Class<? extends Throwable>, String>singletonMap(IllegalStateException.class, "foo"));
+		assertEquals(this.classifier.getDefault(), this.classifier.classify(new RuntimeException("Foo")));
 	}
 
 	@SuppressWarnings("serial")

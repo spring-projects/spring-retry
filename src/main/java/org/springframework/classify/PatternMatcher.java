@@ -220,8 +220,7 @@ public class PatternMatcher<S> {
 		}
 
 		if (value == null) {
-			throw new IllegalStateException(
-					"Could not find a matching pattern for key=[" + line + "]");
+			throw new IllegalStateException("Could not find a matching pattern for key=[" + line + "]");
 		}
 		return value;
 

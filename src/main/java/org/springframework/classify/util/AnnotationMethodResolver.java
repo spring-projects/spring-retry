@@ -44,8 +44,8 @@ public class AnnotationMethodResolver implements MethodResolver {
 	 */
 	public AnnotationMethodResolver(Class<? extends Annotation> annotationType) {
 		Assert.notNull(annotationType, "annotationType must not be null");
-		Assert.isTrue(ObjectUtils.containsElement(
-				annotationType.getAnnotation(Target.class).value(), ElementType.METHOD),
+		Assert.isTrue(
+				ObjectUtils.containsElement(annotationType.getAnnotation(Target.class).value(), ElementType.METHOD),
 				"Annotation [" + annotationType + "] is not a Method-level annotation.");
 		this.annotationType = annotationType;
 	}
@@ -81,15 +81,11 @@ public class AnnotationMethodResolver implements MethodResolver {
 		Assert.notNull(clazz, "class must not be null");
 		final AtomicReference<Method> annotatedMethod = new AtomicReference<Method>();
 		ReflectionUtils.doWithMethods(clazz, new ReflectionUtils.MethodCallback() {
-			public void doWith(Method method)
-					throws IllegalArgumentException, IllegalAccessException {
-				Annotation annotation = AnnotationUtils.findAnnotation(method,
-						annotationType);
+			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+				Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
 				if (annotation != null) {
-					Assert.isNull(annotatedMethod.get(),
-							"found more than one method on target class [" + clazz
-									+ "] with the annotation type [" + annotationType
-									+ "]");
+					Assert.isNull(annotatedMethod.get(), "found more than one method on target class [" + clazz
+							+ "] with the annotation type [" + annotationType + "]");
 					annotatedMethod.set(method);
 				}
 			}

@@ -68,15 +68,14 @@ public class RetryOperationsInterceptorTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.registerListener(new RetryListenerSupport() {
 			@Override
-			public <T, E extends Throwable> void close(RetryContext context,
-					RetryCallback<T, E> callback, Throwable throwable) {
+			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+					Throwable throwable) {
 				RetryOperationsInterceptorTests.this.context = context;
 			}
 		});
 		this.interceptor.setRetryOperations(retryTemplate);
 		this.target = new ServiceImpl();
-		this.service = ProxyFactory.getProxy(Service.class,
-				new SingletonTargetSource(this.target));
+		this.service = ProxyFactory.getProxy(Service.class, new SingletonTargetSource(this.target));
 		count = 0;
 		transactionCount = 0;
 	}
@@ -98,8 +97,7 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testDefaultInterceptorWithRetryListenerInspectingTheMethodInvocation()
-			throws Exception {
+	public void testDefaultInterceptorWithRetryListenerInspectingTheMethodInvocation() throws Exception {
 
 		final String label = "FOO";
 		final String classTagName = "class";
@@ -114,8 +112,7 @@ public class RetryOperationsInterceptorTests {
 					MethodInvocationRetryCallback<T, E> callback, Throwable throwable) {
 				monitoringTags.put(labelTagName, callback.getLabel());
 				Method method = callback.getInvocation().getMethod();
-				monitoringTags.put(classTagName,
-						method.getDeclaringClass().getSimpleName());
+				monitoringTags.put(classTagName, method.getDeclaringClass().getSimpleName());
 				monitoringTags.put(methodTagName, method.getName());
 			}
 		});
@@ -187,8 +184,7 @@ public class RetryOperationsInterceptorTests {
 	@Test
 	public void testOutsideTransaction() throws Exception {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				ClassUtils.addResourcePathToPackagePath(getClass(),
-						"retry-transaction-test.xml"));
+				ClassUtils.addResourcePathToPackagePath(getClass(), "retry-transaction-test.xml"));
 		Object object = context.getBean("bean");
 		assertNotNull(object);
 		assertTrue(object instanceof Service);
@@ -233,9 +229,7 @@ public class RetryOperationsInterceptorTests {
 			fail("IllegalStateException expected");
 		}
 		catch (IllegalStateException e) {
-			assertTrue(
-					"Exception message should contain MethodInvocation: "
-							+ e.getMessage(),
+			assertTrue("Exception message should contain MethodInvocation: " + e.getMessage(),
 					e.getMessage().indexOf("MethodInvocation") >= 0);
 		}
 	}
@@ -262,16 +256,14 @@ public class RetryOperationsInterceptorTests {
 
 		@Override
 		public void doTansactional() throws Exception {
-			if (TransactionSynchronizationManager.isActualTransactionActive()
-					&& !this.enteredTransaction) {
+			if (TransactionSynchronizationManager.isActualTransactionActive() && !this.enteredTransaction) {
 				transactionCount++;
-				TransactionSynchronizationManager
-						.registerSynchronization(new TransactionSynchronizationAdapter() {
-							@Override
-							public void beforeCompletion() {
-								ServiceImpl.this.enteredTransaction = false;
-							}
-						});
+				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+					@Override
+					public void beforeCompletion() {
+						ServiceImpl.this.enteredTransaction = false;
+					}
+				});
 				this.enteredTransaction = true;
 			}
 			count++;

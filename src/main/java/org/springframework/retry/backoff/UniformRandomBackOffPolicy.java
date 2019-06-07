@@ -115,8 +115,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 	}
 
 	public String toString() {
-		return "RandomBackOffPolicy[backOffPeriod=" + minBackOffPeriod + ", "
-				+ maxBackOffPeriod + "]";
+		return "RandomBackOffPolicy[backOffPeriod=" + minBackOffPeriod + ", " + maxBackOffPeriod + "]";
 	}
 
 }

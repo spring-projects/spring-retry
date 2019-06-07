@@ -61,13 +61,10 @@ public class ExponentialRandomBackOffPolicyTests {
 		assertEquals(MAX_RETRIES - 1, sleeps.size());
 		long initialInterval = backOffPolicy.getInitialInterval();
 		for (int i = 0; i < sleeps.size(); i++) {
-			long expectedMaxValue = 2 * (long) (initialInterval + initialInterval
-					* Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
-			assertTrue(
-					"Found a sleep [" + sleeps.get(i)
-							+ "] which exceeds our max expected value of "
-							+ expectedMaxValue + " at interval " + i,
-					sleeps.get(i) < expectedMaxValue);
+			long expectedMaxValue = 2 * (long) (initialInterval
+					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
+			assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max expected value of "
+					+ expectedMaxValue + " at interval " + i, sleeps.get(i) < expectedMaxValue);
 		}
 	}
 
@@ -77,8 +74,7 @@ public class ExponentialRandomBackOffPolicyTests {
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
 		RetrySimulation simulation = simulator.executeSimulation(NUM_TRIALS);
 
-		System.out.println("Ran " + NUM_TRIALS + " backoff trials.  Each trial retried "
-				+ MAX_RETRIES + " times");
+		System.out.println("Ran " + NUM_TRIALS + " backoff trials.  Each trial retried " + MAX_RETRIES + " times");
 		System.out.println("Policy: " + backOffPolicy);
 		System.out.println("All generated backoffs:");
 		System.out.println("    " + simulation.getPercentiles());

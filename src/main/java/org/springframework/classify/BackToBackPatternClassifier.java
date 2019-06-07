@@ -44,8 +44,7 @@ public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 	 * @param router see {@link #setRouterDelegate(Object)}
 	 * @param matcher see {@link #setMatcherMap(Map)}
 	 */
-	public BackToBackPatternClassifier(Classifier<C, String> router,
-			Classifier<String, T> matcher) {
+	public BackToBackPatternClassifier(Classifier<C, String> router, Classifier<String, T> matcher) {
 		super();
 		this.router = router;
 		this.matcher = matcher;

@@ -54,10 +54,8 @@ public class BinaryExceptionClassifierBuilder {
 
 	private List<Class<? extends Throwable>> exceptionClasses = new ArrayList<Class<? extends Throwable>>();
 
-	public BinaryExceptionClassifierBuilder retryOn(
-			Class<? extends Throwable> throwable) {
-		Assert.isTrue(isWhiteList == null || isWhiteList,
-				"Please use only retryOn() or only notRetryOn()");
+	public BinaryExceptionClassifierBuilder retryOn(Class<? extends Throwable> throwable) {
+		Assert.isTrue(isWhiteList == null || isWhiteList, "Please use only retryOn() or only notRetryOn()");
 		Assert.notNull(throwable, "Exception class can not be null");
 		isWhiteList = true;
 		exceptionClasses.add(throwable);
@@ -65,10 +63,8 @@ public class BinaryExceptionClassifierBuilder {
 
 	}
 
-	public BinaryExceptionClassifierBuilder notRetryOn(
-			Class<? extends Throwable> throwable) {
-		Assert.isTrue(isWhiteList == null || !isWhiteList,
-				"Please use only retryOn() or only notRetryOn()");
+	public BinaryExceptionClassifierBuilder notRetryOn(Class<? extends Throwable> throwable) {
+		Assert.isTrue(isWhiteList == null || !isWhiteList, "Please use only retryOn() or only notRetryOn()");
 		Assert.notNull(throwable, "Exception class can not be null");
 		isWhiteList = false;
 		exceptionClasses.add(throwable);
@@ -84,10 +80,17 @@ public class BinaryExceptionClassifierBuilder {
 		Assert.isTrue(!exceptionClasses.isEmpty(),
 				"Attempt to build classifier with empty rules. To build always true, or always false "
 						+ "instance, please use explicit rule for Throwable");
-		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
-				exceptionClasses, isWhiteList // using white list means classifying
-												// provided classes as "true" (is
-												// retryable)
+		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(exceptionClasses, isWhiteList // using
+																											// white
+																											// list
+																											// means
+																											// classifying
+																											// provided
+																											// classes
+																											// as
+																											// "true"
+																											// (is
+																											// retryable)
 		);
 		classifier.setTraverseCauses(traverseCauses);
 		return classifier;

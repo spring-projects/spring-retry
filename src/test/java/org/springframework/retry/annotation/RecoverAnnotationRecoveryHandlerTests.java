@@ -43,26 +43,22 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	@Test
 	public void defaultRecoverMethod() {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
-				new DefaultRecover(),
-				ReflectionUtils.findMethod(DefaultRecover.class, "foo", String.class));
-		assertEquals(1, handler.recover(new Object[] { "Dave" },
-				new RuntimeException("Planned")));
+				new DefaultRecover(), ReflectionUtils.findMethod(DefaultRecover.class, "foo", String.class));
+		assertEquals(1, handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
 	}
 
 	@Test
 	public void fewerArgs() {
-		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
-				new FewerArgs(), ReflectionUtils.findMethod(FewerArgs.class, "foo",
-						String.class, int.class));
-		assertEquals(1, handler.recover(new Object[] { "Dave" },
-				new RuntimeException("Planned")));
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(new FewerArgs(),
+				ReflectionUtils.findMethod(FewerArgs.class, "foo", String.class, int.class));
+		assertEquals(1, handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
 	}
 
 	@Test
 	public void noArgs() {
 		NoArgs target = new NoArgs();
-		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
-				target, ReflectionUtils.findMethod(NoArgs.class, "foo"));
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(target,
+				ReflectionUtils.findMethod(NoArgs.class, "foo"));
 		handler.recover(new Object[0], new RuntimeException("Planned"));
 		assertEquals("Planned", target.getCause().getMessage());
 	}
@@ -70,8 +66,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	@Test
 	public void noMatch() {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
-				new SpecificException(),
-				ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
+				new SpecificException(), ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
 		this.expected.expect(ExhaustedRetryException.class);
 		handler.recover(new Object[] { "Dave" }, new Error("Planned"));
 	}
@@ -79,110 +74,91 @@ public class RecoverAnnotationRecoveryHandlerTests {
 	@Test
 	public void specificRecoverMethod() {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
-				new SpecificRecover(),
-				ReflectionUtils.findMethod(SpecificRecover.class, "foo", String.class));
-		assertEquals(2, handler.recover(new Object[] { "Dave" },
-				new RuntimeException("Planned")));
+				new SpecificRecover(), ReflectionUtils.findMethod(SpecificRecover.class, "foo", String.class));
+		assertEquals(2, handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
 	}
 
 	@Test
 	public void inAccessibleRecoverMethods() {
-		Method foo = ReflectionUtils.findMethod(InAccessibleRecover.class, "foo",
-				String.class);
+		Method foo = ReflectionUtils.findMethod(InAccessibleRecover.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new InAccessibleRecover(), foo);
-		assertEquals(1, handler.recover(new Object[] { "Dave" },
-				new RuntimeException("Planned")));
+		assertEquals(1, handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void specificReturnTypeRecoverMethod() {
 		RecoverAnnotationRecoveryHandler<?> fooHandler = new RecoverAnnotationRecoveryHandler<Integer>(
-				new InheritanceReturnTypeRecover(), ReflectionUtils.findMethod(
-						InheritanceReturnTypeRecover.class, "foo", String.class));
-		assertEquals(1, fooHandler.recover(new Object[] { "Aldo" },
-				new RuntimeException("Planned")));
-		assertEquals(2, fooHandler.recover(new Object[] { "Aldo" },
-				new IllegalStateException("Planned")));
+				new InheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(InheritanceReturnTypeRecover.class, "foo", String.class));
+		assertEquals(1, fooHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
+		assertEquals(2, fooHandler.recover(new Object[] { "Aldo" }, new IllegalStateException("Planned")));
 
 	}
 
 	@Test
 	public void parentReturnTypeRecoverMethod() {
 		RecoverAnnotationRecoveryHandler<?> barHandler = new RecoverAnnotationRecoveryHandler<Double>(
-				new InheritanceReturnTypeRecover(), ReflectionUtils.findMethod(
-						InheritanceReturnTypeRecover.class, "bar", String.class));
-		assertEquals(3, barHandler.recover(new Object[] { "Aldo" },
-				new RuntimeException("Planned")));
+				new InheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(InheritanceReturnTypeRecover.class, "bar", String.class));
+		assertEquals(3, barHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void multipleQualifyingRecoverMethods() {
-		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class, "foo",
-				String.class);
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecovers(), foo);
-		assertEquals(1, handler.recover(new Object[] { "Randell" },
-				new RuntimeException("Planned")));
+		assertEquals(1, handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void multipleQualifyingRecoverMethodsWithNull() {
-		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class, "foo",
-				String.class);
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecovers.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecovers(), foo);
-		assertEquals(1,
-				handler.recover(new Object[] { null }, new RuntimeException("Planned")));
+		assertEquals(1, handler.recover(new Object[] { null }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void multipleQualifyingRecoverMethodsWithNoThrowable() {
-		Method foo = ReflectionUtils.findMethod(
-				MultipleQualifyingRecoversNoThrowable.class, "foo", String.class);
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversNoThrowable.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecoversNoThrowable(), foo);
-		assertEquals(1,
-				handler.recover(new Object[] { null }, new RuntimeException("Planned")));
+		assertEquals(1, handler.recover(new Object[] { null }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void multipleQualifyingRecoverMethodsReOrdered() {
-		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversReOrdered.class,
-				"foo", String.class);
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversReOrdered.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecoversReOrdered(), foo);
-		assertEquals(3, handler.recover(new Object[] { "Randell" },
-				new RuntimeException("Planned")));
+		assertEquals(3, handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
 
 	}
 
 	@Test
 	public void multipleQualifyingRecoverMethodsExtendsThrowable() {
-		Method foo = ReflectionUtils.findMethod(
-				MultipleQualifyingRecoversExtendsThrowable.class, "foo", String.class);
+		Method foo = ReflectionUtils.findMethod(MultipleQualifyingRecoversExtendsThrowable.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecoversExtendsThrowable(), foo);
-		assertEquals(2, handler.recover(new Object[] { "Kevin" },
-				new IllegalArgumentException("Planned")));
-		assertEquals(3, handler.recover(new Object[] { "Kevin" },
-				new UnsupportedOperationException("Planned")));
+		assertEquals(2, handler.recover(new Object[] { "Kevin" }, new IllegalArgumentException("Planned")));
+		assertEquals(3, handler.recover(new Object[] { "Kevin" }, new UnsupportedOperationException("Planned")));
 
 	}
 
 	@Test
 	public void inheritanceOnArgumentClass() {
-		Method foo = ReflectionUtils.findMethod(InheritanceOnArgumentClass.class, "foo",
-				List.class);
+		Method foo = ReflectionUtils.findMethod(InheritanceOnArgumentClass.class, "foo", List.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new InheritanceOnArgumentClass(), foo);
-		assertEquals(1, handler.recover(new Object[] { new ArrayList<String>() },
-				new IllegalArgumentException("Planned")));
+		assertEquals(1,
+				handler.recover(new Object[] { new ArrayList<String>() }, new IllegalArgumentException("Planned")));
 	}
 
 	private static class InAccessibleRecover {

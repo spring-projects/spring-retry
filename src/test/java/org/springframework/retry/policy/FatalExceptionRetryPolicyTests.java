@@ -87,16 +87,14 @@ public class FatalExceptionRetryPolicyTests {
 
 		Object result = null;
 		try {
-			retryTemplate.execute(callback, recoveryCallback,
-					new DefaultRetryState("foo"));
+			retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo"));
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException e) {
 			// If stateful we have to always rethrow. Clients who want special
 			// cases have to implement them in the callback
 		}
-		result = retryTemplate.execute(callback, recoveryCallback,
-				new DefaultRetryState("foo"));
+		result = retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo"));
 		// Callback is called once: the recovery path should also be called
 		assertEquals(1, callback.attempts);
 		assertEquals("bar", result);

@@ -47,8 +47,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	 * to create a {@link Classifier} to locate a policy.
 	 */
 	public void setPolicyMap(Map<Class<? extends Throwable>, RetryPolicy> policyMap) {
-		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(
-				policyMap, new NeverRetryPolicy());
+		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(policyMap, new NeverRetryPolicy());
 	}
 
 	/**
@@ -57,8 +56,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	 * should be used, but not both.
 	 * @param exceptionClassifier ExceptionClassifier to use
 	 */
-	public void setExceptionClassifier(
-			Classifier<Throwable, RetryPolicy> exceptionClassifier) {
+	public void setExceptionClassifier(Classifier<Throwable, RetryPolicy> exceptionClassifier) {
 		this.exceptionClassifier = exceptionClassifier;
 	}
 
@@ -89,8 +87,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	 * @see org.springframework.retry.RetryPolicy#open(RetryContext)
 	 */
 	public RetryContext open(RetryContext parent) {
-		return new ExceptionClassifierRetryContext(parent, exceptionClassifier)
-				.open(parent);
+		return new ExceptionClassifierRetryContext(parent, exceptionClassifier).open(parent);
 	}
 
 	/**
@@ -105,8 +102,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 		((RetryContextSupport) context).registerThrowable(throwable);
 	}
 
-	private static class ExceptionClassifierRetryContext extends RetryContextSupport
-			implements RetryPolicy {
+	private static class ExceptionClassifierRetryContext extends RetryContextSupport implements RetryPolicy {
 
 		final private Classifier<Throwable, RetryPolicy> exceptionClassifier;
 
@@ -141,8 +137,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
 		public void registerThrowable(RetryContext context, Throwable throwable) {
 			policy = exceptionClassifier.classify(throwable);
-			Assert.notNull(policy,
-					"Could not locate policy for exception=[" + throwable + "].");
+			Assert.notNull(policy, "Could not locate policy for exception=[" + throwable + "].");
 			this.context = getContext(policy, context.getParent());
 			policy.registerThrowable(this.context, throwable);
 		}

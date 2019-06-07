@@ -11,14 +11,12 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @SuppressWarnings("serial")
 public class ResourcelessTransactionManager extends AbstractPlatformTransactionManager {
 
-	protected void doBegin(Object transaction, TransactionDefinition definition)
-			throws TransactionException {
+	protected void doBegin(Object transaction, TransactionDefinition definition) throws TransactionException {
 		((ResourcelessTransaction) transaction).begin();
 	}
 
 	protected void doCommit(DefaultTransactionStatus status) throws TransactionException {
-		logger.debug("Committing resourceless transaction on [" + status.getTransaction()
-				+ "]");
+		logger.debug("Committing resourceless transaction on [" + status.getTransaction() + "]");
 	}
 
 	protected Object doGetTransaction() throws TransactionException {
@@ -30,39 +28,32 @@ public class ResourcelessTransactionManager extends AbstractPlatformTransactionM
 		}
 		else {
 			@SuppressWarnings("unchecked")
-			Stack<Object> stack = (Stack<Object>) TransactionSynchronizationManager
-					.getResource(this);
+			Stack<Object> stack = (Stack<Object>) TransactionSynchronizationManager.getResource(this);
 			resources = stack;
 		}
 		resources.push(transaction);
 		return transaction;
 	}
 
-	protected void doRollback(DefaultTransactionStatus status)
-			throws TransactionException {
-		logger.debug("Rolling back resourceless transaction on ["
-				+ status.getTransaction() + "]");
+	protected void doRollback(DefaultTransactionStatus status) throws TransactionException {
+		logger.debug("Rolling back resourceless transaction on [" + status.getTransaction() + "]");
 	}
 
-	protected boolean isExistingTransaction(Object transaction)
-			throws TransactionException {
+	protected boolean isExistingTransaction(Object transaction) throws TransactionException {
 		if (TransactionSynchronizationManager.hasResource(this)) {
 			@SuppressWarnings("unchecked")
-			Stack<Object> stack = (Stack<Object>) TransactionSynchronizationManager
-					.getResource(this);
+			Stack<Object> stack = (Stack<Object>) TransactionSynchronizationManager.getResource(this);
 			return stack.size() > 1;
 		}
 		return ((ResourcelessTransaction) transaction).isActive();
 	}
 
-	protected void doSetRollbackOnly(DefaultTransactionStatus status)
-			throws TransactionException {
+	protected void doSetRollbackOnly(DefaultTransactionStatus status) throws TransactionException {
 	}
 
 	protected void doCleanupAfterCompletion(Object transaction) {
 		@SuppressWarnings("unchecked")
-		Stack<Object> list = (Stack<Object>) TransactionSynchronizationManager
-				.getResource(this);
+		Stack<Object> list = (Stack<Object>) TransactionSynchronizationManager.getResource(this);
 		Stack<Object> resources = list;
 		resources.clear();
 		TransactionSynchronizationManager.unbindResource(this);

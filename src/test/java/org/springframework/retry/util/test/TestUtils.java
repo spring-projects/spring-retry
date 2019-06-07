@@ -51,16 +51,14 @@ public class TestUtils {
 				return null;
 			}
 			else {
-				throw new IllegalArgumentException(
-						"intermediate property '" + tokens[i] + "' is null");
+				throw new IllegalArgumentException("intermediate property '" + tokens[i] + "' is null");
 			}
 		}
 		return value;
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T getPropertyValue(Object root, String propertyPath,
-			Class<T> type) {
+	public static <T> T getPropertyValue(Object root, String propertyPath, Class<T> type) {
 		Object value = getPropertyValue(root, propertyPath);
 		if (value != null) {
 			Assert.isAssignable(type, value.getClass());

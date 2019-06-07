@@ -44,8 +44,7 @@ public class ProxyApplicationTests {
 
 	@SuppressWarnings("resource")
 	private void runAndClose() {
-		ConfigurableApplicationContext run = new AnnotationConfigApplicationContext(
-				Empty.class);
+		ConfigurableApplicationContext run = new AnnotationConfigApplicationContext(Empty.class);
 		run.close();
 		while (run.getParent() != null) {
 			((ConfigurableApplicationContext) run.getParent()).close();
@@ -56,8 +55,7 @@ public class ProxyApplicationTests {
 	private int count() {
 		URLClassLoader classLoader = (URLClassLoader) getClass().getClassLoader();
 		@SuppressWarnings("unchecked")
-		Vector<Class<?>> classes = (Vector<Class<?>>) ReflectionTestUtils
-				.getField(classLoader, "classes");
+		Vector<Class<?>> classes = (Vector<Class<?>>) ReflectionTestUtils.getField(classLoader, "classes");
 		Set<Class<?>> news = new HashSet<Class<?>>();
 		for (Iterator<Class<?>> iterator = classes.iterator(); iterator.hasNext();) {
 			Class<?> cls = iterator.next();

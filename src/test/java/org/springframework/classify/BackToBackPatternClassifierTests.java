@@ -27,7 +27,7 @@ import org.springframework.classify.annotation.Classifier;
 
 /**
  * @author Dave Syer
- * 
+ *
  */
 public class BackToBackPatternClassifierTests {
 
@@ -50,8 +50,7 @@ public class BackToBackPatternClassifierTests {
 	@Test
 	public void testCreateFromConstructor() {
 		classifier = new BackToBackPatternClassifier<String, String>(
-				new PatternMatchingClassifier<String>(
-						Collections.singletonMap("oof", "bucket")),
+				new PatternMatchingClassifier<String>(Collections.singletonMap("oof", "bucket")),
 				new PatternMatchingClassifier<String>(map));
 		assertEquals("spam", classifier.classify("oof"));
 	}
@@ -77,8 +76,7 @@ public class BackToBackPatternClassifierTests {
 	}
 
 	@SuppressWarnings("serial")
-	private class RouterDelegate
-			implements org.springframework.classify.Classifier<Object, String> {
+	private class RouterDelegate implements org.springframework.classify.Classifier<Object, String> {
 
 		@Override
 		public String classify(Object classifiable) {

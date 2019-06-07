@@ -32,11 +32,10 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testWhiteList() {
-		RetryTemplate.builder().infiniteRetry().retryOn(IOException.class)
-				.uniformRandomBackoff(1000, 3000).build();
+		RetryTemplate.builder().infiniteRetry().retryOn(IOException.class).uniformRandomBackoff(1000, 3000).build();
 
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
-				.retryOn(IOException.class).retryOn(TimeoutException.class).build();
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder().retryOn(IOException.class)
+				.retryOn(TimeoutException.class).build();
 
 		Assert.assertTrue(classifier.classify(new IOException()));
 		// should not retry due to traverseCauses=fasle
@@ -47,9 +46,8 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testWhiteListWithTraverseCauses() {
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
-				.retryOn(IOException.class).retryOn(TimeoutException.class)
-				.traversingCauses().build();
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder().retryOn(IOException.class)
+				.retryOn(TimeoutException.class).traversingCauses().build();
 
 		Assert.assertTrue(classifier.classify(new IOException()));
 		// should retry due to traverseCauses=true
@@ -62,23 +60,20 @@ public class BinaryExceptionClassifierBuilderTest {
 
 	@Test
 	public void testBlackList() {
-		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder()
-				.notRetryOn(Error.class).notRetryOn(InterruptedException.class)
-				.traversingCauses().build();
+		BinaryExceptionClassifier classifier = BinaryExceptionClassifier.builder().notRetryOn(Error.class)
+				.notRetryOn(InterruptedException.class).traversingCauses().build();
 
 		// should not retry due to OutOfMemoryError is a subclass of Error
 		Assert.assertFalse(classifier.classify(new OutOfMemoryError()));
 		Assert.assertFalse(classifier.classify(new InterruptedException()));
 		Assert.assertTrue(classifier.classify(new Throwable()));
 		// should retry due to traverseCauses=true
-		Assert.assertFalse(
-				classifier.classify(new RuntimeException(new InterruptedException())));
+		Assert.assertFalse(classifier.classify(new RuntimeException(new InterruptedException())));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testFailOnNotationMix() {
-		BinaryExceptionClassifier.builder().retryOn(IOException.class)
-				.notRetryOn(OutOfMemoryError.class);
+		BinaryExceptionClassifier.builder().retryOn(IOException.class).notRetryOn(OutOfMemoryError.class);
 	}
 
 }

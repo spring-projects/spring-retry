@@ -108,8 +108,7 @@ public class RetryTemplateBuilder {
 	 */
 	public RetryTemplateBuilder maxAttempts(int maxAttempts) {
 		Assert.isTrue(maxAttempts > 0, "Number of attempts should be positive");
-		Assert.isNull(this.baseRetryPolicy,
-				"You have already selected another retry policy");
+		Assert.isNull(this.baseRetryPolicy, "You have already selected another retry policy");
 		this.baseRetryPolicy = new MaxAttemptsRetryPolicy(maxAttempts);
 		return this;
 	}
@@ -125,8 +124,7 @@ public class RetryTemplateBuilder {
 	 */
 	public RetryTemplateBuilder withinMillis(long timeout) {
 		Assert.isTrue(timeout > 0, "Timeout should be positive");
-		Assert.isNull(this.baseRetryPolicy,
-				"You have already selected another retry policy");
+		Assert.isNull(this.baseRetryPolicy, "You have already selected another retry policy");
 		TimeoutRetryPolicy timeoutRetryPolicy = new TimeoutRetryPolicy();
 		timeoutRetryPolicy.setTimeout(timeout);
 		this.baseRetryPolicy = timeoutRetryPolicy;
@@ -142,8 +140,7 @@ public class RetryTemplateBuilder {
 	 * @see TimeoutRetryPolicy
 	 */
 	public RetryTemplateBuilder infiniteRetry() {
-		Assert.isNull(this.baseRetryPolicy,
-				"You have already selected another retry policy");
+		Assert.isNull(this.baseRetryPolicy, "You have already selected another retry policy");
 		this.baseRetryPolicy = new AlwaysRetryPolicy();
 		return this;
 	}
@@ -159,8 +156,7 @@ public class RetryTemplateBuilder {
 	 */
 	public RetryTemplateBuilder customPolicy(RetryPolicy policy) {
 		Assert.notNull(policy, "Policy should not be null");
-		Assert.isNull(this.baseRetryPolicy,
-				"You have already selected another retry policy");
+		Assert.isNull(this.baseRetryPolicy, "You have already selected another retry policy");
 		this.baseRetryPolicy = policy;
 		return this;
 	}
@@ -179,8 +175,7 @@ public class RetryTemplateBuilder {
 	 * @return this
 	 * @see ExponentialBackOffPolicy
 	 */
-	public RetryTemplateBuilder exponentialBackoff(long initialInterval,
-			double multiplier, long maxInterval) {
+	public RetryTemplateBuilder exponentialBackoff(long initialInterval, double multiplier, long maxInterval) {
 		return exponentialBackoff(initialInterval, multiplier, maxInterval, false);
 	}
 
@@ -199,15 +194,14 @@ public class RetryTemplateBuilder {
 	 * @see ExponentialBackOffPolicy
 	 * @see ExponentialRandomBackOffPolicy
 	 */
-	public RetryTemplateBuilder exponentialBackoff(long initialInterval,
-			double multiplier, long maxInterval, boolean withRandom) {
+	public RetryTemplateBuilder exponentialBackoff(long initialInterval, double multiplier, long maxInterval,
+			boolean withRandom) {
 		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
 		Assert.isTrue(initialInterval >= 1, "Initial interval should be >= 1");
 		Assert.isTrue(multiplier > 1, "Multiplier should be > 1");
-		Assert.isTrue(maxInterval > initialInterval,
-				"Max interval should be > than initial interval");
-		ExponentialBackOffPolicy policy = withRandom
-				? new ExponentialRandomBackOffPolicy() : new ExponentialBackOffPolicy();
+		Assert.isTrue(maxInterval > initialInterval, "Max interval should be > than initial interval");
+		ExponentialBackOffPolicy policy = withRandom ? new ExponentialRandomBackOffPolicy()
+				: new ExponentialBackOffPolicy();
 		policy.setInitialInterval(initialInterval);
 		policy.setMultiplier(multiplier);
 		policy.setMaxInterval(maxInterval);
@@ -241,8 +235,7 @@ public class RetryTemplateBuilder {
 		Assert.isNull(this.backOffPolicy, "You have already selected backoff policy");
 		Assert.isTrue(minInterval >= 1, "Min interval should be >= 1");
 		Assert.isTrue(maxInterval >= 1, "Max interval should be >= 1");
-		Assert.isTrue(maxInterval > minInterval,
-				"Max interval should be > than min interval");
+		Assert.isTrue(maxInterval > minInterval, "Max interval should be > than min interval");
 		UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
 		policy.setMinBackOffPeriod(minInterval);
 		policy.setMaxBackOffPeriod(maxInterval);
@@ -379,8 +372,7 @@ public class RetryTemplateBuilder {
 
 		// Exception classifier
 
-		BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null
-				? this.classifierBuilder.build()
+		BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null ? this.classifierBuilder.build()
 				: BinaryExceptionClassifier.defaultClassifier();
 
 		// Retry policy

@@ -32,8 +32,7 @@ public abstract class StatelessBackOffPolicy implements BackOffPolicy {
 	 * {@link BackOffContext} argument which is not needed for stateless implementations.
 	 */
 	@Override
-	public final void backOff(BackOffContext backOffContext)
-			throws BackOffInterruptedException {
+	public final void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 		doBackOff();
 	}
 

@@ -52,8 +52,7 @@ public class RetrySimulator {
 
 	private final RetryPolicy retryPolicy;
 
-	public RetrySimulator(SleepingBackOffPolicy<?> backOffPolicy,
-			RetryPolicy retryPolicy) {
+	public RetrySimulator(SleepingBackOffPolicy<?> backOffPolicy, RetryPolicy retryPolicy) {
 		this.backOffPolicy = backOffPolicy;
 		this.retryPolicy = retryPolicy;
 	}
@@ -78,8 +77,7 @@ public class RetrySimulator {
 	 */
 	public List<Long> executeSingleSimulation() {
 		StealingSleeper stealingSleeper = new StealingSleeper();
-		SleepingBackOffPolicy<?> stealingBackoff = backOffPolicy
-				.withSleeper(stealingSleeper);
+		SleepingBackOffPolicy<?> stealingBackoff = backOffPolicy.withSleeper(stealingSleeper);
 
 		RetryTemplate template = new RetryTemplate();
 		template.setBackOffPolicy(stealingBackoff);

@@ -90,8 +90,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 				 */
 				if (invocation instanceof ProxyMethodInvocation) {
 					try {
-						return ((ProxyMethodInvocation) invocation).invocableClone()
-								.proceed();
+						return ((ProxyMethodInvocation) invocation).invocableClone().proceed();
 					}
 					catch (Exception e) {
 						throw e;
@@ -113,8 +112,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		};
 
 		if (recoverer != null) {
-			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(
-					invocation.getArguments(), recoverer);
+			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(), recoverer);
 			return this.retryOperations.execute(retryCallback, recoveryCallback);
 		}
 
@@ -135,8 +133,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		/**
 		 * @param args the item that failed.
 		 */
-		private ItemRecovererCallback(Object[] args,
-				MethodInvocationRecoverer<?> recoverer) {
+		private ItemRecovererCallback(Object[] args, MethodInvocationRecoverer<?> recoverer) {
 			this.args = Arrays.asList(args).toArray();
 			this.recoverer = recoverer;
 		}

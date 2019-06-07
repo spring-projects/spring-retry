@@ -109,9 +109,9 @@ public class DefaultRetryStatistics extends AttributeAccessorSupport
 
 	@Override
 	public String toString() {
-		return "DefaultRetryStatistics [name=" + name + ", startedCount=" + startedCount
-				+ ", completeCount=" + completeCount + ", recoveryCount=" + recoveryCount
-				+ ", errorCount=" + errorCount + ", abortCount=" + abortCount + "]";
+		return "DefaultRetryStatistics [name=" + name + ", startedCount=" + startedCount + ", completeCount="
+				+ completeCount + ", recoveryCount=" + recoveryCount + ", errorCount=" + errorCount + ", abortCount="
+				+ abortCount + "]";
 	}
 
 }

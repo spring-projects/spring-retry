@@ -54,18 +54,14 @@ public class SimpleMethodInvoker implements MethodInvoker {
 
 	public SimpleMethodInvoker(Object object, String methodName, Class<?>... paramTypes) {
 		Assert.notNull(object, "Object to invoke must not be null");
-		Method method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName,
-				paramTypes);
+		Method method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, paramTypes);
 		if (method == null) {
 			// try with no params
-			method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName,
-					new Class[] {});
+			method = ClassUtils.getMethodIfAvailable(object.getClass(), methodName, new Class[] {});
 		}
 
-		Assert.notNull(method,
-				"No methods found for name: [" + methodName + "] in class: ["
-						+ object.getClass() + "] with arguments of type: ["
-						+ Arrays.toString(paramTypes) + "]");
+		Assert.notNull(method, "No methods found for name: [" + methodName + "] in class: [" + object.getClass()
+				+ "] with arguments of type: [" + Arrays.toString(paramTypes) + "]");
 
 		this.object = object;
 		this.method = method;
@@ -82,8 +78,7 @@ public class SimpleMethodInvoker implements MethodInvoker {
 	@Override
 	public Object invokeMethod(Object... args) {
 		Assert.state(this.parameterTypes.length == args.length,
-				"Wrong number of arguments, expected no more than: ["
-						+ this.parameterTypes.length + "]");
+				"Wrong number of arguments, expected no more than: [" + this.parameterTypes.length + "]");
 
 		try {
 			// Extract the target from an Advised as late as possible
@@ -92,9 +87,8 @@ public class SimpleMethodInvoker implements MethodInvoker {
 			return method.invoke(target, args);
 		}
 		catch (Exception e) {
-			throw new IllegalArgumentException("Unable to invoke method: [" + this.method
-					+ "] on object: [" + this.object + "] with arguments: ["
-					+ Arrays.toString(args) + "]", e);
+			throw new IllegalArgumentException("Unable to invoke method: [" + this.method + "] on object: ["
+					+ this.object + "] with arguments: [" + Arrays.toString(args) + "]", e);
 		}
 	}
 
@@ -106,8 +100,7 @@ public class SimpleMethodInvoker implements MethodInvoker {
 					source = ((Advised) target).getTargetSource().getTarget();
 				}
 				catch (Exception e) {
-					throw new IllegalStateException("Could not extract target from proxy",
-							e);
+					throw new IllegalStateException("Could not extract target from proxy", e);
 				}
 				if (source instanceof Advised) {
 					source = extractTarget(source, method);

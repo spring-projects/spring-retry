@@ -56,27 +56,22 @@ public class RetryContextSerializationTests {
 	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<Object[]>();
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-				true);
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
 		scanner.addIncludeFilter(new AssignableTypeFilter(RetryPolicy.class));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Test.*")));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Mock.*")));
-		Set<BeanDefinition> candidates = scanner
-				.findCandidateComponents("org.springframework.retry.policy");
+		Set<BeanDefinition> candidates = scanner.findCandidateComponents("org.springframework.retry.policy");
 		for (BeanDefinition beanDefinition : candidates) {
 			try {
-				result.add(new Object[] { BeanUtils.instantiate(ClassUtils
-						.resolveClassName(beanDefinition.getBeanClassName(), null)) });
+				result.add(new Object[] {
+						BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
 			}
 			catch (Exception e) {
-				logger.warn(
-						"Cannot create instance of " + beanDefinition.getBeanClassName(),
-						e);
+				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName(), e);
 			}
 		}
 		ExceptionClassifierRetryPolicy extra = new ExceptionClassifierRetryPolicy();
-		extra.setExceptionClassifier(
-				new SubclassClassifier<Throwable, RetryPolicy>(new AlwaysRetryPolicy()));
+		extra.setExceptionClassifier(new SubclassClassifier<Throwable, RetryPolicy>(new AlwaysRetryPolicy()));
 		result.add(new Object[] { extra });
 		return result;
 	}
@@ -92,15 +87,12 @@ public class RetryContextSerializationTests {
 		policy.registerThrowable(context, new RuntimeException());
 		assertEquals(1, context.getRetryCount());
 		assertEquals(1,
-				((RetryContext) SerializationUtils
-						.deserialize(SerializationUtils.serialize(context)))
-								.getRetryCount());
+				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount());
 	}
 
 	@Test
 	public void testSerializationCycleForPolicy() {
-		assertTrue(SerializationUtils.deserialize(
-				SerializationUtils.serialize(policy)) instanceof RetryPolicy);
+		assertTrue(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy);
 	}
 
 }

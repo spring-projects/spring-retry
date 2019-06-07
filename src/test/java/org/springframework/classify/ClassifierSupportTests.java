@@ -24,17 +24,14 @@ public class ClassifierSupportTests {
 
 	@Test
 	public void testClassifyNullIsDefault() {
-		ClassifierSupport<String, String> classifier = new ClassifierSupport<String, String>(
-				"foo");
+		ClassifierSupport<String, String> classifier = new ClassifierSupport<String, String>("foo");
 		assertEquals(classifier.classify(null), "foo");
 	}
 
 	@Test
 	public void testClassifyRandomException() {
-		ClassifierSupport<Throwable, String> classifier = new ClassifierSupport<Throwable, String>(
-				"foo");
-		assertEquals(classifier.classify(new IllegalStateException("Foo")),
-				classifier.classify(null));
+		ClassifierSupport<Throwable, String> classifier = new ClassifierSupport<Throwable, String>("foo");
+		assertEquals(classifier.classify(new IllegalStateException("Foo")), classifier.classify(null));
 	}
 
 }

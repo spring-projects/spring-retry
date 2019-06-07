@@ -80,30 +80,24 @@ public class CircuitBreakerStatisticsTests {
 
 	@Test
 	public void testCircuitOpenWhenNotRetryable() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
-		Object result = this.retryTemplate.execute(this.callback, this.recovery,
-				this.state);
-		MutableRetryStatistics stats = (MutableRetryStatistics) repository
-				.findOne("test");
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		assertEquals(1, stats.getStartedCount());
 		assertEquals(RECOVERED, result);
 		result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(RECOVERED, result);
 		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
-		assertEquals("There should only be one error because the circuit is now open", 1,
-				stats.getErrorCount());
+		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
 		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		// Both recoveries are through a short circuit because we used NeverRetryPolicy
-		assertEquals(2,
-				stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
+		assertEquals(2, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
 		resetAndAssert(this.cache, stats);
 	}
 
 	@Test
 	public void testFailedRecoveryCountsAsAbort() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.recovery = new RecoveryCallback<Object>() {
 			@Override
 			public Object recover(RetryContext context) throws Exception {
@@ -117,8 +111,7 @@ public class CircuitBreakerStatisticsTests {
 		catch (ExhaustedRetryException e) {
 			// Fine
 		}
-		MutableRetryStatistics stats = (MutableRetryStatistics) repository
-				.findOne("test");
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		assertEquals(1, stats.getStartedCount());
 		assertEquals(1, stats.getAbortCount());
 		assertEquals(0, stats.getRecoveryCount());
@@ -126,8 +119,7 @@ public class CircuitBreakerStatisticsTests {
 
 	@Test
 	public void testCircuitOpenWithNoRecovery() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
@@ -139,11 +131,9 @@ public class CircuitBreakerStatisticsTests {
 		}
 		catch (Exception e) {
 		}
-		MutableRetryStatistics stats = (MutableRetryStatistics) repository
-				.findOne("test");
+		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		assertEquals("There should be two aborts", 2, stats.getAbortCount());
-		assertEquals("There should only be one error because the circuit is now open", 1,
-				stats.getErrorCount());
+		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
 		assertEquals(true, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN));
 		resetAndAssert(this.cache, stats);
 	}
@@ -151,8 +141,7 @@ public class CircuitBreakerStatisticsTests {
 	private void resetAndAssert(RetryContextCache cache, MutableRetryStatistics stats) {
 		reset(cache.get("retry"));
 		listener.close(cache.get("retry"), callback, null);
-		assertEquals(0,
-				stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
+		assertEquals(0, stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_SHORT_COUNT));
 	}
 
 	private void reset(RetryContext retryContext) {

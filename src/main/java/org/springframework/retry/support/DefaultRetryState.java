@@ -57,8 +57,7 @@ public class DefaultRetryState implements RetryState {
 	 * @param key the key
 	 * @param rollbackClassifier the rollback {@link Classifier}
 	 */
-	public DefaultRetryState(Object key,
-			Classifier<? super Throwable, Boolean> rollbackClassifier) {
+	public DefaultRetryState(Object key, Classifier<? super Throwable, Boolean> rollbackClassifier) {
 		this(key, false, rollbackClassifier);
 	}
 
@@ -113,8 +112,7 @@ public class DefaultRetryState implements RetryState {
 
 	@Override
 	public String toString() {
-		return String.format("[%s: key=%s, forceRefresh=%b]", getClass().getSimpleName(),
-				key, forceRefresh);
+		return String.format("[%s: key=%s, forceRefresh=%b]", getClass().getSimpleName(), key, forceRefresh);
 	}
 
 }

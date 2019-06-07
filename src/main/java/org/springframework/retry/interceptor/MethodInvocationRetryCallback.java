@@ -37,8 +37,7 @@ import org.springframework.util.StringUtils;
  * @author Marius Grama
  * @since 1.3
  */
-public abstract class MethodInvocationRetryCallback<T, E extends Throwable>
-		implements RetryCallback<T, E> {
+public abstract class MethodInvocationRetryCallback<T, E extends Throwable> implements RetryCallback<T, E> {
 
 	protected final MethodInvocation invocation;
 

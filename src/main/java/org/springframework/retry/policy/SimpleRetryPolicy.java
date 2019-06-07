@@ -60,8 +60,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	private volatile int maxAttempts;
 
-	private BinaryExceptionClassifier retryableClassifier = new BinaryExceptionClassifier(
-			false);
+	private BinaryExceptionClassifier retryableClassifier = new BinaryExceptionClassifier(false);
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the default number of retry attempts,
@@ -85,8 +84,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @param maxAttempts the maximum number of attempts
 	 * @param retryableExceptions the map of exceptions that are retryable
 	 */
-	public SimpleRetryPolicy(int maxAttempts,
-			Map<Class<? extends Throwable>, Boolean> retryableExceptions) {
+	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions) {
 		this(maxAttempts, retryableExceptions, false);
 	}
 
@@ -99,8 +97,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * map value (true/false).
 	 * @param traverseCauses is this clause traversable
 	 */
-	public SimpleRetryPolicy(int maxAttempts,
-			Map<Class<? extends Throwable>, Boolean> retryableExceptions,
+	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses) {
 		this(maxAttempts, retryableExceptions, traverseCauses, false);
 	}
@@ -116,13 +113,11 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @param traverseCauses is this clause traversable
 	 * @param defaultValue the default action.
 	 */
-	public SimpleRetryPolicy(int maxAttempts,
-			Map<Class<? extends Throwable>, Boolean> retryableExceptions,
+	public SimpleRetryPolicy(int maxAttempts, Map<Class<? extends Throwable>, Boolean> retryableExceptions,
 			boolean traverseCauses, boolean defaultValue) {
 		super();
 		this.maxAttempts = maxAttempts;
-		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions,
-				defaultValue);
+		this.retryableClassifier = new BinaryExceptionClassifier(retryableExceptions, defaultValue);
 		this.retryableClassifier.setTraverseCauses(traverseCauses);
 	}
 
@@ -166,8 +161,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	@Override
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
-		return (t == null || retryForException(t))
-				&& context.getRetryCount() < this.maxAttempts;
+		return (t == null || retryForException(t)) && context.getRetryCount() < this.maxAttempts;
 	}
 
 	/**
@@ -218,8 +212,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	@Override
 	public String toString() {
-		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + this.maxAttempts
-				+ "]";
+		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + this.maxAttempts + "]";
 	}
 
 }

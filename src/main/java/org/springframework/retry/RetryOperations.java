@@ -51,8 +51,8 @@ public interface RetryOperations {
 	 * and that returned by the {@link RecoveryCallback} otherwise.
 	 * @throws E any {@link Exception} raised by the unsuccessful retry.
 	 */
-	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
-			RecoveryCallback<T> recoveryCallback) throws E;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback)
+			throws E;
 
 	/**
 	 * A simple stateful retry. Execute the supplied {@link RetryCallback} with a target
@@ -73,8 +73,8 @@ public interface RetryOperations {
 	 * @throws ExhaustedRetryException if the last attempt for this state has already been
 	 * reached
 	 */
-	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
-			RetryState retryState) throws E, ExhaustedRetryException;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState)
+			throws E, ExhaustedRetryException;
 
 	/**
 	 * A stateful retry with a recovery path. Execute the supplied {@link RetryCallback}
@@ -91,7 +91,7 @@ public interface RetryOperations {
 	 * @throws E any {@link Exception} raised by the {@link RecoveryCallback} upon
 	 * unsuccessful retry.
 	 */
-	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
-			RecoveryCallback<T> recoveryCallback, RetryState retryState) throws E;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+			RetryState retryState) throws E;
 
 }

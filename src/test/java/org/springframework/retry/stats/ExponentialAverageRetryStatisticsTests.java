@@ -31,8 +31,7 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ExponentialAverageRetryStatisticsTests {
 
-	private ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(
-			"test");
+	private ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics("test");
 
 	@Test
 	public void pointless() throws Exception {
@@ -94,8 +93,7 @@ public class ExponentialAverageRetryStatisticsTests {
 		stats.incrementAbortCount();
 		assertEquals(1, stats.getAbortCount());
 		// Wind back time to epoch 0
-		ReflectionTestUtils.setField(ReflectionTestUtils.getField(stats, "abort"),
-				"lastTime", 0);
+		ReflectionTestUtils.setField(ReflectionTestUtils.getField(stats, "abort"), "lastTime", 0);
 		// rounds down to 1
 		assertEquals(0, stats.getRollingAbortCount());
 	}

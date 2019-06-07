@@ -38,8 +38,7 @@ import org.springframework.util.ClassUtils;
  * @author Artem Bilan
  */
 @SuppressWarnings("serial")
-public class ExponentialBackOffPolicy
-		implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
+public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
 
 	protected final Log logger = LogFactory.getLog(this.getClass());
 
@@ -160,15 +159,13 @@ public class ExponentialBackOffPolicy
 	 * 'increment' values.
 	 */
 	public BackOffContext start(RetryContext context) {
-		return new ExponentialBackOffContext(this.initialInterval, this.multiplier,
-				this.maxInterval);
+		return new ExponentialBackOffContext(this.initialInterval, this.multiplier, this.maxInterval);
 	}
 
 	/**
 	 * Pause for a length of time equal to ' <code>exp(backOffContext.expSeed)</code>'.
 	 */
-	public void backOff(BackOffContext backOffContext)
-			throws BackOffInterruptedException {
+	public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 		ExponentialBackOffContext context = (ExponentialBackOffContext) backOffContext;
 		try {
 			long sleepTime = context.getSleepAndIncrement();
@@ -190,8 +187,7 @@ public class ExponentialBackOffPolicy
 
 		private long maxInterval;
 
-		public ExponentialBackOffContext(long expSeed, double multiplier,
-				long maxInterval) {
+		public ExponentialBackOffContext(long expSeed, double multiplier, long maxInterval) {
 			this.interval = expSeed;
 			this.multiplier = multiplier;
 			this.maxInterval = maxInterval;
@@ -227,8 +223,8 @@ public class ExponentialBackOffPolicy
 	}
 
 	public String toString() {
-		return ClassUtils.getShortName(getClass()) + "[initialInterval=" + initialInterval
-				+ ", multiplier=" + multiplier + ", maxInterval=" + maxInterval + "]";
+		return ClassUtils.getShortName(getClass()) + "[initialInterval=" + initialInterval + ", multiplier="
+				+ multiplier + ", maxInterval=" + maxInterval + "]";
 	}
 
 }

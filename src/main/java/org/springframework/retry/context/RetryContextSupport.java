@@ -24,8 +24,7 @@ import org.springframework.retry.RetryPolicy;
  * @author Dave Syer
  */
 @SuppressWarnings("serial")
-public class RetryContextSupport extends AttributeAccessorSupport
-		implements RetryContext {
+public class RetryContextSupport extends AttributeAccessorSupport implements RetryContext {
 
 	private final RetryContext parent;
 
@@ -80,8 +79,8 @@ public class RetryContextSupport extends AttributeAccessorSupport
 
 	@Override
 	public String toString() {
-		return String.format("[RetryContext: count=%d, lastException=%s, exhausted=%b]",
-				count, lastException, terminate);
+		return String.format("[RetryContext: count=%d, lastException=%s, exhausted=%b]", count, lastException,
+				terminate);
 	}
 
 }

@@ -58,9 +58,8 @@ public class SimpleRetryPolicyTests {
 
 		// We retry any exceptions except...
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(
-						IllegalStateException.class, false),
-				true, true);
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalStateException.class, false), true,
+				true);
 		RetryContext context = policy.open(null);
 
 		// ...so we can't retry this one...

@@ -65,10 +65,8 @@ public class CircuitBreakerRetryTemplateTests {
 
 	@Test
 	public void testCircuitOpenWhenNotRetryable() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
-		Object result = this.retryTemplate.execute(this.callback, this.recovery,
-				this.state);
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(1, this.callback.getAttempts());
 		assertEquals(RECOVERED, result);
 		result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
@@ -79,8 +77,7 @@ public class CircuitBreakerRetryTemplateTests {
 
 	@Test
 	public void testCircuitOpenWithNoRecovery() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {
 			this.retryTemplate.execute(this.callback, this.state);
@@ -101,11 +98,9 @@ public class CircuitBreakerRetryTemplateTests {
 
 	@Test
 	public void testCircuitOpensWhenDelegateNotRetryable() throws Throwable {
-		this.retryTemplate
-				.setRetryPolicy(new CircuitBreakerRetryPolicy(new SimpleRetryPolicy()));
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new SimpleRetryPolicy()));
 		this.callback.setAttemptsBeforeSuccess(10);
-		Object result = this.retryTemplate.execute(this.callback, this.recovery,
-				this.state);
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(1, this.callback.getAttempts());
 		assertEquals(RECOVERED, result);
 		assertFalse(this.callback.status.isOpen());
@@ -119,13 +114,11 @@ public class CircuitBreakerRetryTemplateTests {
 
 	@Test
 	public void testWindowResetsAfterTimeout() throws Throwable {
-		CircuitBreakerRetryPolicy retryPolicy = new CircuitBreakerRetryPolicy(
-				new SimpleRetryPolicy());
+		CircuitBreakerRetryPolicy retryPolicy = new CircuitBreakerRetryPolicy(new SimpleRetryPolicy());
 		this.retryTemplate.setRetryPolicy(retryPolicy);
 		retryPolicy.setOpenTimeout(100);
 		this.callback.setAttemptsBeforeSuccess(10);
-		Object result = this.retryTemplate.execute(this.callback, this.recovery,
-				this.state);
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(1, this.callback.getAttempts());
 		assertEquals(RECOVERED, result);
 		assertFalse(this.callback.status.isOpen());
@@ -139,12 +132,10 @@ public class CircuitBreakerRetryTemplateTests {
 
 	@Test
 	public void testCircuitClosesAfterTimeout() throws Throwable {
-		CircuitBreakerRetryPolicy retryPolicy = new CircuitBreakerRetryPolicy(
-				new NeverRetryPolicy());
+		CircuitBreakerRetryPolicy retryPolicy = new CircuitBreakerRetryPolicy(new NeverRetryPolicy());
 		this.retryTemplate.setRetryPolicy(retryPolicy);
 		retryPolicy.setResetTimeout(100);
-		Object result = this.retryTemplate.execute(this.callback, this.recovery,
-				this.state);
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertEquals(1, this.callback.getAttempts());
 		assertEquals(RECOVERED, result);
 		assertTrue(this.callback.status.isOpen());

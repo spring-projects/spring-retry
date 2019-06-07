@@ -36,8 +36,8 @@ public class StatisticsListener extends RetryListenerSupport {
 	}
 
 	@Override
-	public <T, E extends Throwable> void close(RetryContext context,
-			RetryCallback<T, E> callback, Throwable throwable) {
+	public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
 		String name = getName(context);
 		if (name != null) {
 			if (!isExhausted(context) || isGlobal(context)) {
@@ -69,8 +69,8 @@ public class StatisticsListener extends RetryListenerSupport {
 	}
 
 	@Override
-	public <T, E extends Throwable> void onError(RetryContext context,
-			RetryCallback<T, E> callback, Throwable throwable) {
+	public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
 		String name = getName(context);
 		if (name != null) {
 			if (!hasState(context)) {

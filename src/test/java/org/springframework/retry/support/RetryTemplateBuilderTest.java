@@ -64,15 +64,11 @@ public class RetryTemplateBuilderTest {
 		Assert.assertTrue(policyTuple.baseRetryPolicy instanceof MaxAttemptsRetryPolicy);
 		assertDefaultClassifier(policyTuple);
 
-		Assert.assertFalse(getPropertyValue(template, "throwLastExceptionOnExhausted",
-				Boolean.class));
-		Assert.assertTrue(getPropertyValue(template,
-				"retryContextCache") instanceof MapRetryContextCache);
-		Assert.assertEquals(0,
-				getPropertyValue(template, "listeners", RetryListener[].class).length);
+		Assert.assertFalse(getPropertyValue(template, "throwLastExceptionOnExhausted", Boolean.class));
+		Assert.assertTrue(getPropertyValue(template, "retryContextCache") instanceof MapRetryContextCache);
+		Assert.assertEquals(0, getPropertyValue(template, "listeners", RetryListener[].class).length);
 
-		Assert.assertTrue(
-				getPropertyValue(template, "backOffPolicy") instanceof NoBackOffPolicy);
+		Assert.assertTrue(getPropertyValue(template, "backOffPolicy") instanceof NoBackOffPolicy);
 	}
 
 	@Test
@@ -80,31 +76,26 @@ public class RetryTemplateBuilderTest {
 		RetryListener listener1 = mock(RetryListener.class);
 		RetryListener listener2 = mock(RetryListener.class);
 
-		RetryTemplate template = RetryTemplate.builder().maxAttempts(10)
-				.exponentialBackoff(99, 1.5, 1717).retryOn(IOException.class)
-				.traversingCauses().withListener(listener1)
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).exponentialBackoff(99, 1.5, 1717)
+				.retryOn(IOException.class).traversingCauses().withListener(listener1)
 				.withListeners(Collections.singletonList(listener2)).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy
-				.getExceptionClassifier();
+		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
 		Assert.assertTrue(classifier.classify(new FileNotFoundException()));
 		Assert.assertFalse(classifier.classify(new RuntimeException()));
 		Assert.assertFalse(classifier.classify(new OutOfMemoryError()));
 
 		Assert.assertTrue(policyTuple.baseRetryPolicy instanceof MaxAttemptsRetryPolicy);
-		Assert.assertEquals(10,
-				((MaxAttemptsRetryPolicy) policyTuple.baseRetryPolicy).getMaxAttempts());
+		Assert.assertEquals(10, ((MaxAttemptsRetryPolicy) policyTuple.baseRetryPolicy).getMaxAttempts());
 
-		List<RetryListener> listeners = Arrays
-				.asList(getPropertyValue(template, "listeners", RetryListener[].class));
+		List<RetryListener> listeners = Arrays.asList(getPropertyValue(template, "listeners", RetryListener[].class));
 		Assert.assertEquals(2, listeners.size());
 		Assert.assertTrue(listeners.contains(listener1));
 		Assert.assertTrue(listeners.contains(listener2));
 
-		Assert.assertTrue(getPropertyValue(template,
-				"backOffPolicy") instanceof ExponentialBackOffPolicy);
+		Assert.assertTrue(getPropertyValue(template, "backOffPolicy") instanceof ExponentialBackOffPolicy);
 	}
 
 	/* ---------------- Retry policy -------------- */
@@ -122,8 +113,7 @@ public class RetryTemplateBuilderTest {
 		assertDefaultClassifier(policyTuple);
 
 		Assert.assertTrue(policyTuple.baseRetryPolicy instanceof TimeoutRetryPolicy);
-		Assert.assertEquals(10000,
-				((TimeoutRetryPolicy) policyTuple.baseRetryPolicy).getTimeout());
+		Assert.assertEquals(10000, ((TimeoutRetryPolicy) policyTuple.baseRetryPolicy).getTimeout());
 	}
 
 	@Test
@@ -140,8 +130,7 @@ public class RetryTemplateBuilderTest {
 	public void testCustomPolicy() {
 		RetryPolicy customPolicy = mock(RetryPolicy.class);
 
-		RetryTemplate template = RetryTemplate.builder().customPolicy(customPolicy)
-				.build();
+		RetryTemplate template = RetryTemplate.builder().customPolicy(customPolicy).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 
@@ -150,8 +139,7 @@ public class RetryTemplateBuilderTest {
 	}
 
 	private void assertDefaultClassifier(PolicyTuple policyTuple) {
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy
-				.getExceptionClassifier();
+		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
 		Assert.assertTrue(classifier.classify(new Exception()));
 		Assert.assertTrue(classifier.classify(new Exception(new Error())));
 		Assert.assertFalse(classifier.classify(new Error()));
@@ -167,8 +155,7 @@ public class RetryTemplateBuilderTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testFailOnNotationMix() {
-		RetryTemplate.builder().retryOn(IOException.class)
-				.notRetryOn(OutOfMemoryError.class);
+		RetryTemplate.builder().retryOn(IOException.class).notRetryOn(OutOfMemoryError.class);
 	}
 
 	/* ---------------- BackOff -------------- */
@@ -185,25 +172,20 @@ public class RetryTemplateBuilderTest {
 
 	@Test
 	public void testUniformRandomBackOff() {
-		RetryTemplate template = RetryTemplate.builder().uniformRandomBackoff(10, 100)
-				.build();
-		Assert.assertTrue(getPropertyValue(template,
-				"backOffPolicy") instanceof UniformRandomBackOffPolicy);
+		RetryTemplate template = RetryTemplate.builder().uniformRandomBackoff(10, 100).build();
+		Assert.assertTrue(getPropertyValue(template, "backOffPolicy") instanceof UniformRandomBackOffPolicy);
 	}
 
 	@Test
 	public void testNoBackOff() {
 		RetryTemplate template = RetryTemplate.builder().noBackoff().build();
-		Assert.assertTrue(
-				getPropertyValue(template, "backOffPolicy") instanceof NoBackOffPolicy);
+		Assert.assertTrue(getPropertyValue(template, "backOffPolicy") instanceof NoBackOffPolicy);
 	}
 
 	@Test
 	public void testExpBackOffWithRandom() {
-		RetryTemplate template = RetryTemplate.builder()
-				.exponentialBackoff(10, 2, 500, true).build();
-		Assert.assertTrue(getPropertyValue(template,
-				"backOffPolicy") instanceof ExponentialRandomBackOffPolicy);
+		RetryTemplate template = RetryTemplate.builder().exponentialBackoff(10, 2, 500, true).build();
+		Assert.assertTrue(getPropertyValue(template, "backOffPolicy") instanceof ExponentialRandomBackOffPolicy);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -230,15 +212,13 @@ public class RetryTemplateBuilderTest {
 		BinaryExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy;
 
 		static PolicyTuple extractWithAsserts(RetryTemplate template) {
-			CompositeRetryPolicy compositeRetryPolicy = getPropertyValue(template,
-					"retryPolicy", CompositeRetryPolicy.class);
+			CompositeRetryPolicy compositeRetryPolicy = getPropertyValue(template, "retryPolicy",
+					CompositeRetryPolicy.class);
 			PolicyTuple res = new PolicyTuple();
 
-			Assert.assertFalse(
-					getPropertyValue(compositeRetryPolicy, "optimistic", Boolean.class));
+			Assert.assertFalse(getPropertyValue(compositeRetryPolicy, "optimistic", Boolean.class));
 
-			for (final RetryPolicy policy : getPropertyValue(compositeRetryPolicy,
-					"policies", RetryPolicy[].class)) {
+			for (final RetryPolicy policy : getPropertyValue(compositeRetryPolicy, "policies", RetryPolicy[].class)) {
 				if (policy instanceof BinaryExceptionClassifierRetryPolicy) {
 					res.exceptionClassifierRetryPolicy = (BinaryExceptionClassifierRetryPolicy) policy;
 				}

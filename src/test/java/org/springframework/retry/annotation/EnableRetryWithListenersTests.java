@@ -35,8 +35,7 @@ public class EnableRetryWithListenersTests {
 
 	@Test
 	public void vanilla() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		service.service();
 		assertEquals(1, context.getBean(TestConfiguration.class).count);
@@ -47,8 +46,7 @@ public class EnableRetryWithListenersTests {
 	public void overrideListener() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfigurationMultipleListeners.class);
-		ServiceWithOverriddenListener service = context
-				.getBean(ServiceWithOverriddenListener.class);
+		ServiceWithOverriddenListener service = context.getBean(ServiceWithOverriddenListener.class);
 		service.service();
 		assertEquals(1, context.getBean(TestConfigurationMultipleListeners.class).count1);
 		assertEquals(0, context.getBean(TestConfigurationMultipleListeners.class).count2);
@@ -70,8 +68,8 @@ public class EnableRetryWithListenersTests {
 		public RetryListener listener() {
 			return new RetryListenerSupport() {
 				@Override
-				public <T, E extends Throwable> void close(RetryContext context,
-						RetryCallback<T, E> callback, Throwable throwable) {
+				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+						Throwable throwable) {
 					count++;
 				}
 			};
@@ -96,8 +94,8 @@ public class EnableRetryWithListenersTests {
 		public RetryListener listener1() {
 			return new RetryListenerSupport() {
 				@Override
-				public <T, E extends Throwable> void close(RetryContext context,
-						RetryCallback<T, E> callback, Throwable throwable) {
+				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+						Throwable throwable) {
 					count1++;
 				}
 			};
@@ -107,8 +105,8 @@ public class EnableRetryWithListenersTests {
 		public RetryListener listener2() {
 			return new RetryListenerSupport() {
 				@Override
-				public <T, E extends Throwable> void close(RetryContext context,
-						RetryCallback<T, E> callback, Throwable throwable) {
+				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+						Throwable throwable) {
 					count2++;
 				}
 			};

@@ -28,16 +28,14 @@ public class SubclassClassifierTests {
 	@Test
 	public void testClassifyInterface() {
 		SubclassClassifier<Object, String> classifier = new SubclassClassifier<Object, String>();
-		classifier.setTypeMap(
-				Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
+		classifier.setTypeMap(Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
 		assertEquals("foo", classifier.classify(new Foo()));
 	}
 
 	@Test
 	public void testClassifyInterfaceOfParent() {
 		SubclassClassifier<Object, String> classifier = new SubclassClassifier<Object, String>();
-		classifier.setTypeMap(
-				Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
+		classifier.setTypeMap(Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
 		assertEquals("foo", classifier.classify(new Bar()));
 	}
 

@@ -34,8 +34,7 @@ public class DefaultRetryStatisticsFactory implements RetryStatisticsFactory {
 
 	@Override
 	public MutableRetryStatistics create(String name) {
-		ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(
-				name);
+		ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics(name);
 		stats.setWindow(window);
 		return stats;
 	}

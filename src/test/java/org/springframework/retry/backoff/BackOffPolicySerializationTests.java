@@ -53,23 +53,19 @@ public class BackOffPolicySerializationTests {
 	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<Object[]>();
-		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-				true);
+		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
 		scanner.addIncludeFilter(new AssignableTypeFilter(BackOffPolicy.class));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Test.*")));
 		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Mock.*")));
-		scanner.addExcludeFilter(
-				new RegexPatternTypeFilter(Pattern.compile(".*Configuration.*")));
-		Set<BeanDefinition> candidates = scanner
-				.findCandidateComponents("org.springframework.retry");
+		scanner.addExcludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*Configuration.*")));
+		Set<BeanDefinition> candidates = scanner.findCandidateComponents("org.springframework.retry");
 		for (BeanDefinition beanDefinition : candidates) {
 			try {
-				result.add(new Object[] { BeanUtils.instantiate(ClassUtils
-						.resolveClassName(beanDefinition.getBeanClassName(), null)) });
+				result.add(new Object[] {
+						BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
 			}
 			catch (Exception e) {
-				logger.warn(
-						"Cannot create instance of " + beanDefinition.getBeanClassName());
+				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName());
 			}
 		}
 		return result;
@@ -83,8 +79,7 @@ public class BackOffPolicySerializationTests {
 	public void testSerializationCycleForContext() {
 		BackOffContext context = policy.start(new RetryContextSupport(null));
 		if (context != null) {
-			assertTrue(SerializationUtils.deserialize(
-					SerializationUtils.serialize(context)) instanceof BackOffContext);
+			assertTrue(SerializationUtils.deserialize(SerializationUtils.serialize(context)) instanceof BackOffContext);
 		}
 	}
 

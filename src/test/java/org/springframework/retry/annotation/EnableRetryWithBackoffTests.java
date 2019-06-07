@@ -38,20 +38,17 @@ public class EnableRetryWithBackoffTests {
 
 	@Test
 	public void vanilla() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		service.service();
-		assertEquals("[1000, 1000]",
-				context.getBean(PeriodSleeper.class).getPeriods().toString());
+		assertEquals("[1000, 1000]", context.getBean(PeriodSleeper.class).getPeriods().toString());
 		assertEquals(3, service.getCount());
 		context.close();
 	}
 
 	@Test
 	public void type() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		RandomService service = context.getBean(RandomService.class);
 		service.service();
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
@@ -62,30 +59,24 @@ public class EnableRetryWithBackoffTests {
 
 	@Test
 	public void exponential() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				TestConfiguration.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		ExponentialService service = context.getBean(ExponentialService.class);
 		service.service();
 		assertEquals(3, service.getCount());
-		assertEquals("[1000, 1100]",
-				context.getBean(PeriodSleeper.class).getPeriods().toString());
+		assertEquals("[1000, 1100]", context.getBean(PeriodSleeper.class).getPeriods().toString());
 		context.close();
 	}
 
 	@Test
 	public void randomExponential() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				TestConfiguration.class);
-		ExponentialRandomService service = context
-				.getBean(ExponentialRandomService.class);
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		ExponentialRandomService service = context.getBean(ExponentialRandomService.class);
 		service.service(1);
 		assertEquals(3, service.getCount());
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
-		assertNotEquals("[1000, 1100]",
-				context.getBean(PeriodSleeper.class).getPeriods().toString());
+		assertNotEquals("[1000, 1100]", context.getBean(PeriodSleeper.class).getPeriods().toString());
 		assertTrue("Wrong periods: " + periods, periods.get(0) > 1000);
-		assertTrue("Wrong periods: " + periods,
-				periods.get(1) > 1100 && periods.get(1) < 1210);
+		assertTrue("Wrong periods: " + periods, periods.get(1) > 1100 && periods.get(1) < 1210);
 		context.close();
 	}
 
@@ -192,8 +183,7 @@ public class EnableRetryWithBackoffTests {
 
 		private int count = 0;
 
-		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1,
-				random = true))
+		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, random = true))
 		public void service(int value) {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");

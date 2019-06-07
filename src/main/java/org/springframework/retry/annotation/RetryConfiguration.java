@@ -62,8 +62,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  */
 @SuppressWarnings("serial")
 @Configuration
-public class RetryConfiguration extends AbstractPointcutAdvisor
-		implements IntroductionAdvisor, BeanFactoryAware {
+public class RetryConfiguration extends AbstractPointcutAdvisor implements IntroductionAdvisor, BeanFactoryAware {
 
 	private Advice advice;
 
@@ -88,8 +87,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 	@PostConstruct
 	public void init() {
-		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(
-				1);
+		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
@@ -155,8 +153,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	 * @param retryAnnotationTypes the retry annotation types to introspect
 	 * @return the applicable Pointcut object, or {@code null} if none
 	 */
-	protected Pointcut buildPointcut(
-			Set<Class<? extends Annotation>> retryAnnotationTypes) {
+	protected Pointcut buildPointcut(Set<Class<? extends Annotation>> retryAnnotationTypes) {
 		ComposablePointcut result = null;
 		for (Class<? extends Annotation> retryAnnotationType : retryAnnotationTypes) {
 			Pointcut filter = new AnnotationClassOrMethodPointcut(retryAnnotationType);
@@ -170,8 +167,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		return result;
 	}
 
-	private final class AnnotationClassOrMethodPointcut
-			extends StaticMethodMatcherPointcut {
+	private final class AnnotationClassOrMethodPointcut extends StaticMethodMatcherPointcut {
 
 		private final MethodMatcher methodResolver;
 
@@ -182,8 +178,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 		@Override
 		public boolean matches(Method method, Class<?> targetClass) {
-			return getClassFilter().matches(targetClass)
-					|| this.methodResolver.matches(method, targetClass);
+			return getClassFilter().matches(targetClass) || this.methodResolver.matches(method, targetClass);
 		}
 
 		@Override
@@ -195,8 +190,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 				return false;
 			}
 			AnnotationClassOrMethodPointcut otherAdvisor = (AnnotationClassOrMethodPointcut) other;
-			return ObjectUtils.nullSafeEquals(this.methodResolver,
-					otherAdvisor.methodResolver);
+			return ObjectUtils.nullSafeEquals(this.methodResolver, otherAdvisor.methodResolver);
 		}
 
 	}
@@ -229,13 +223,11 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 			final AtomicBoolean found = new AtomicBoolean(false);
 			ReflectionUtils.doWithMethods(clazz, new MethodCallback() {
 				@Override
-				public void doWith(Method method)
-						throws IllegalArgumentException, IllegalAccessException {
+				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 					if (found.get()) {
 						return;
 					}
-					Annotation annotation = AnnotationUtils.findAnnotation(method,
-							annotationType);
+					Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
 					if (annotation != null) {
 						found.set(true);
 					}

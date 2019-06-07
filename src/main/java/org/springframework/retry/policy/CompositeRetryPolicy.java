@@ -151,8 +151,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 
 		RetryPolicy[] policies;
 
-		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts,
-				RetryPolicy[] policies) {
+		public CompositeRetryContext(RetryContext parent, List<RetryContext> contexts, RetryPolicy[] policies) {
 			super(parent);
 			this.contexts = contexts.toArray(new RetryContext[contexts.size()]);
 			this.policies = policies;

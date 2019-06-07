@@ -118,8 +118,7 @@ public class StatefulRetryIntegrationTests {
 	}
 
 	@Test
-	public void testExternalRetryWithSuccessOnRetryAndSerializedContext()
-			throws Throwable {
+	public void testExternalRetryWithSuccessOnRetryAndSerializedContext() throws Throwable {
 		MockRetryCallback callback = new MockRetryCallback();
 
 		RetryState retryState = new DefaultRetryState("foo");
@@ -215,8 +214,7 @@ public class StatefulRetryIntegrationTests {
 	 * @author Dave Syer
 	 *
 	 */
-	private static final class MockRetryCallback
-			implements RetryCallback<String, Exception> {
+	private static final class MockRetryCallback implements RetryCallback<String, Exception> {
 
 		int attempts = 0;
 
