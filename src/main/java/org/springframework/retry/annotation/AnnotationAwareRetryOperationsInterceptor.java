@@ -33,8 +33,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -163,9 +163,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 				Map<Method, MethodInterceptor> delegatesForTarget = this.delegates.get(target);
 				if (!delegatesForTarget.containsKey(method)) {
-					Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
+					Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
 					if (retryable == null) {
-						retryable = AnnotationUtils.findAnnotation(method.getDeclaringClass(), Retryable.class);
+						retryable = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Retryable.class);
 					}
 					if (retryable == null) {
 						retryable = findAnnotationOnTarget(target, method);
@@ -193,9 +193,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private Retryable findAnnotationOnTarget(Object target, Method method) {
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			Retryable retryable = AnnotationUtils.findAnnotation(targetMethod, Retryable.class);
+			Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod, Retryable.class);
 			if (retryable == null) {
-				retryable = AnnotationUtils.findAnnotation(targetMethod.getDeclaringClass(), Retryable.class);
+				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(), Retryable.class);
 			}
 
 			return retryable;
@@ -217,7 +217,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryContextCache(this.retryContextCache);
 
-		CircuitBreaker circuit = AnnotationUtils.findAnnotation(method, CircuitBreaker.class);
+		CircuitBreaker circuit = AnnotatedElementUtils.findMergedAnnotation(method, CircuitBreaker.class);
 		if (circuit != null) {
 			RetryPolicy policy = getRetryPolicy(circuit);
 			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
@@ -290,7 +290,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				if (AnnotationUtils.findAnnotation(method, Recover.class) != null) {
+				if (AnnotatedElementUtils.findMergedAnnotation(method, Recover.class) != null) {
 					foundRecoverable.set(true);
 				}
 			}
