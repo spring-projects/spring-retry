@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RecoveryCallback;
-import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
 import org.springframework.retry.RetryState;

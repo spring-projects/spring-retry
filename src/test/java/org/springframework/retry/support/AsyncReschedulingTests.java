@@ -36,14 +36,12 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 
-	/**
+	/*
 	 * Scheduling retry + job immediate success.
 	 *
-	 * - async callback succeeds at 3rd attempt
-	 * - actual job succeeds on 1st attempt
-	 * - no backoff
+	 * - async callback succeeds at 3rd attempt - actual job succeeds on 1st attempt - no
+	 * backoff
 	 */
-
 	@Test
 	public void testInitialSchedulingEventualSuccessCF() throws Throwable {
 		doTestInitialSchedulingEventualSuccess(new CompletableFutureRetryCallback());
@@ -55,30 +53,25 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	}
 
 	private <A> void doTestInitialSchedulingEventualSuccess(AbstractRetryCallback<A> callback) throws Throwable {
-		RetryTemplate template = RetryTemplate.builder()
-				.maxAttempts(5)
-				.noBackoff()
-				.asyncRetry()
-				.build();
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(5).noBackoff().asyncRetry().build();
 
 		callback.setAttemptsBeforeSchedulingSuccess(3);
 		callback.setAttemptsBeforeJobSuccess(1);
 		assertEquals(callback.defaultResult, callback.awaitItself(template.execute(callback)));
 
-		// All invocations before first successful scheduling should be performed by the caller thread
+		// All invocations before first successful scheduling should be performed by the
+		// caller thread
 		assertEquals(Collections.nCopies(3, Thread.currentThread().getName()), callback.schedulerThreadNames);
 
 		assertEquals(1, callback.jobAttempts.get());
 	}
 
-    /**
+	/*
 	 * Immediate success of both scheduling and job.
 	 *
-     * - async callback, that does not fail itself
-     * - actual job succeeds on 1st attempt
-     * - backoff is not necessary
-     */
-    
+	 * - async callback, that does not fail itself - actual job succeeds on 1st attempt -
+	 * backoff is not necessary
+	 */
 	@Test
 	public void testImmediateSuccessCF() throws Throwable {
 		doTestImmediateSuccess(new CompletableFutureRetryCallback());
@@ -92,10 +85,7 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	private <A> void doTestImmediateSuccess(AbstractRetryCallback<A> callback) throws Throwable {
 		ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
 
-		RetryTemplate template = RetryTemplate.builder()
-				.fixedBackoff(10000)
-				.asyncRetry(executor)
-				.build();
+		RetryTemplate template = RetryTemplate.builder().fixedBackoff(10000).asyncRetry(executor).build();
 
 		callback.setAttemptsBeforeSchedulingSuccess(1);
 		callback.setAttemptsBeforeJobSuccess(1);
@@ -106,18 +96,17 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 
 		assertEquals(1, callback.jobAttempts.get());
 
-		// No interaction with the rescheduling executor should be performed if the first execution of the job succeeds.
+		// No interaction with the rescheduling executor should be performed if the first
+		// execution of the job succeeds.
 		verifyZeroInteractions(executor);
 	}
 
-    /**
+	/*
 	 * Async retry with rescheduler.
-	 * 
-     * - async callback, that does not fail itself
-     * - actual job succeeds on 3rd attempt
-     * - backoff is performed using executor, without Thread.sleep()
-     */
-
+	 *
+	 * - async callback, that does not fail itself - actual job succeeds on 3rd attempt -
+	 * backoff is performed using executor, without Thread.sleep()
+	 */
 	@Test
 	public void testAsyncRetryWithReschedulerCF() throws Throwable {
 		doTestAsyncRetryWithRescheduler(new CompletableFutureRetryCallback());
@@ -127,87 +116,74 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	public void testAsyncRetryWithReschedulerF() throws Throwable {
 		doTestAsyncRetryWithRescheduler(new FutureRetryCallback());
 	}
-	
+
 	private <A> void doTestAsyncRetryWithRescheduler(AbstractRetryCallback<A> callback) throws Throwable {
 
-        int targetFixedBackoff = 150;
+		int targetFixedBackoff = 150;
 
 		ScheduledExecutorService executor = getNamedScheduledExecutor();
 
-        RetryTemplate template = RetryTemplate.builder()
-				.maxAttempts(4)
-				.fixedBackoff(targetFixedBackoff)
-				.asyncRetry(executor)
-				.build();
-        
-        callback.setAttemptsBeforeSchedulingSuccess(1);
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(4).fixedBackoff(targetFixedBackoff)
+				.asyncRetry(executor).build();
+
+		callback.setAttemptsBeforeSchedulingSuccess(1);
 		callback.setAttemptsBeforeJobSuccess(3);
 		assertEquals(callback.defaultResult, callback.awaitItself(template.execute(callback)));
 		assertEquals(3, callback.jobAttempts.get());
 
-		// All invocations after the first successful scheduling should be performed by the the rescheduler thread
-		assertEquals(Arrays.asList(
-				Thread.currentThread().getName(),
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME
-		), callback.schedulerThreadNames);
+		// All invocations after the first successful scheduling should be performed by
+		// the the rescheduler thread
+		assertEquals(Arrays.asList(Thread.currentThread().getName(), SCHEDULER_THREAD_NAME, SCHEDULER_THREAD_NAME),
+				callback.schedulerThreadNames);
 
 		assertRememberingSleeper(template);
 
-        // Expected backoff should be performed
-        List<Long> moments = callback.invocationMoments;
-        for (int i = 0; i < moments.size() - 1; i++) {
-            long approxBackoff = moments.get(i + 1) - moments.get(i);
-            assertTrue(approxBackoff > targetFixedBackoff);
-        }
-    }
+		// Expected backoff should be performed
+		List<Long> moments = callback.invocationMoments;
+		for (int i = 0; i < moments.size() - 1; i++) {
+			long approxBackoff = moments.get(i + 1) - moments.get(i);
+			assertTrue(approxBackoff > targetFixedBackoff);
+		}
+	}
 
-    /**
+	/*
 	 * Async retry without backoff
-	 * 
-     * - async callback succeeds on 2nd attempt
-     * - actual job succeeds on 3nd attempt
-     * - default zero backoff is used (which has no sleeper at all),
-     *   and therefore rescheduler executor is not used at all
-     */
-
+	 *
+	 * - async callback succeeds on 2nd attempt - actual job succeeds on 3nd attempt -
+	 * default zero backoff is used (which has no sleeper at all), and therefore
+	 * rescheduler executor is not used at all
+	 */
 	@Test
 	public void testAsyncRetryWithoutBackoffCF() throws Throwable {
 		doTestAsyncRetryWithoutBackoff(new CompletableFutureRetryCallback());
 	}
 
-	// todo: problem: a Future can start retrying only when user calls get(). Consider to not support Future at all.
-	/*@Test
-	public void testAsyncRetryWithoutBackoffF() throws Throwable {
-		doTestAsyncRetryWithoutBackoff(new FutureRetryCallback());
-	}*/
-	
-    private <A> void doTestAsyncRetryWithoutBackoff(AbstractRetryCallback<A> callback) throws Throwable {
-        RetryTemplate template = RetryTemplate.builder()
-                .maxAttempts(4)
-				.asyncRetry()
-                .build();
-
-        callback.setAttemptsBeforeSchedulingSuccess(2);
-        callback.setAttemptsBeforeJobSuccess(3);
-        assertEquals(callback.defaultResult, callback.awaitItself(template.execute(callback)));
-        assertEquals(4, callback.schedulingAttempts.get());
-        assertEquals(3, callback.jobAttempts.get());
-
-        // All invocations after the first successful scheduling should be performed by the
-		// the worker thread (because not backoff and no rescheduler thread)
-        assertEquals(Arrays.asList(
-                Thread.currentThread().getName(),
-                Thread.currentThread().getName(),
-				WORKER_THREAD_NAME,
-				WORKER_THREAD_NAME
-        ), callback.schedulerThreadNames);
-    }
-
-	/**
-	 * Exhausted on scheduling retries
+	// todo: problem: a Future can start retrying only when user calls get(). Consider to
+	// not support Future at all.
+	/*
+	 * @Test public void testAsyncRetryWithoutBackoffF() throws Throwable {
+	 * doTestAsyncRetryWithoutBackoff(new FutureRetryCallback()); }
 	 */
 
+	private <A> void doTestAsyncRetryWithoutBackoff(AbstractRetryCallback<A> callback) throws Throwable {
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(4).asyncRetry().build();
+
+		callback.setAttemptsBeforeSchedulingSuccess(2);
+		callback.setAttemptsBeforeJobSuccess(3);
+		assertEquals(callback.defaultResult, callback.awaitItself(template.execute(callback)));
+		assertEquals(4, callback.schedulingAttempts.get());
+		assertEquals(3, callback.jobAttempts.get());
+
+		// All invocations after the first successful scheduling should be performed by
+		// the
+		// the worker thread (because not backoff and no rescheduler thread)
+		assertEquals(Arrays.asList(Thread.currentThread().getName(), Thread.currentThread().getName(),
+				WORKER_THREAD_NAME, WORKER_THREAD_NAME), callback.schedulerThreadNames);
+	}
+
+	/*
+	 * Exhausted on scheduling retries
+	 */
 	@Test
 	public void testExhaustOnSchedulingCF() throws Throwable {
 		doTestExhaustOnScheduling(new CompletableFutureRetryCallback());
@@ -217,13 +193,9 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	public void testExhaustOnSchedulingF() throws Throwable {
 		doTestExhaustOnScheduling(new FutureRetryCallback());
 	}
-	
+
 	private <A> void doTestExhaustOnScheduling(AbstractRetryCallback<A> callback) throws Throwable {
-		RetryTemplate template = RetryTemplate.builder()
-				.maxAttempts(2)
-				.asyncRetry()
-				.fixedBackoff(100)
-				.build();
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(2).asyncRetry().fixedBackoff(100).build();
 
 		callback.setAttemptsBeforeSchedulingSuccess(5);
 		callback.setAttemptsBeforeJobSuccess(5);
@@ -231,20 +203,18 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 		try {
 			callback.awaitItself(template.execute(callback));
 			fail("An exception should be thrown above");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			assertSame(e, callback.exceptionToThrow);
 		}
 
-		assertEquals(Arrays.asList(
-				Thread.currentThread().getName(),
-				Thread.currentThread().getName()
-		), callback.schedulerThreadNames);
+		assertEquals(Arrays.asList(Thread.currentThread().getName(), Thread.currentThread().getName()),
+				callback.schedulerThreadNames);
 	}
 
-	/**
+	/*
 	 * Exhausted on job retries
 	 */
-	
 	@Test
 	public void testExhaustOnJobWithReschedulerCF() throws Throwable {
 		doTestExhaustOnJobWithRescheduler(new CompletableFutureRetryCallback());
@@ -256,36 +226,30 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	}
 
 	private <A> void doTestExhaustOnJobWithRescheduler(AbstractRetryCallback<A> callback) throws Throwable {
-		RetryTemplate template = RetryTemplate.builder()
-				.maxAttempts(5)
-				.asyncRetry(getNamedScheduledExecutor())
-				.exponentialBackoff(10, 2, 100)
-				.build();
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(5).asyncRetry(getNamedScheduledExecutor())
+				.exponentialBackoff(10, 2, 100).build();
 
 		callback.setAttemptsBeforeSchedulingSuccess(1);
 		callback.setAttemptsBeforeJobSuccess(6);
 
 		try {
+			@SuppressWarnings("unused")
 			Object v = callback.awaitItself(template.execute(callback));
 			fail("An exception should be thrown above");
-			// Single wrapping by CompletionException is expected by CompletableFuture contract
-		} catch (Exception ce) {
+			// Single wrapping by CompletionException is expected by CompletableFuture
+			// contract
+		}
+		catch (Exception ce) {
 			assertSame(ce.getCause(), callback.exceptionToThrow);
 		}
 
-		assertEquals(Arrays.asList(
-				Thread.currentThread().getName(),
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME
-		), callback.schedulerThreadNames);
+		assertEquals(Arrays.asList(Thread.currentThread().getName(), SCHEDULER_THREAD_NAME, SCHEDULER_THREAD_NAME,
+				SCHEDULER_THREAD_NAME, SCHEDULER_THREAD_NAME), callback.schedulerThreadNames);
 	}
 
 	// todo: rejected execution
 	// todo: interrupt executor
 	// rethrow not too late
-
 
 	/*
 	 * Nested rescheduling
@@ -295,33 +259,31 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 	public void testNested() throws Throwable {
 		ScheduledExecutorService executor = getNamedScheduledExecutor();
 
-		RetryTemplate outerTemplate = RetryTemplate.builder()
-				.infiniteRetry()
-				.asyncRetry(executor)
-				.fixedBackoff(10)
+		RetryTemplate outerTemplate = RetryTemplate.builder().infiniteRetry().asyncRetry(executor).fixedBackoff(10)
 				.build();
 
-		RetryTemplate innerTemplate = RetryTemplate.builder()
-				.infiniteRetry()
-				.asyncRetry(executor)
-				.fixedBackoff(10)
+		RetryTemplate innerTemplate = RetryTemplate.builder().infiniteRetry().asyncRetry(executor).fixedBackoff(10)
 				.build();
 
 		CompletableFutureRetryCallback innerCallback = new CompletableFutureRetryCallback();
 		innerCallback.setAttemptsBeforeSchedulingSuccess(3);
 		innerCallback.setAttemptsBeforeJobSuccess(3);
 		innerCallback.setCustomCodeBeforeScheduling(ctx -> {
-			// The current context should be available via RetrySynchronizationManager while scheduling
+			// The current context should be available via RetrySynchronizationManager
+			// while scheduling
 			// (withing user's async callback itself)
 			assertEquals(ctx, RetrySynchronizationManager.getContext());
 
-			// We have no control over user's worker thread, so we can not implicitly set/get the parent
+			// We have no control over user's worker thread, so we can not implicitly
+			// set/get the parent
 			// context via RetrySynchronizationManager.
 			assertNull(ctx.getParent());
 		});
 		innerCallback.setResultSupplier(ctx -> {
-			// There is no way to implicitly pass the context into the worker thread, because the worker executor,
-			// thread and callback are fully controlled by the user. The retry engine deals with only
+			// There is no way to implicitly pass the context into the worker thread,
+			// because the worker executor,
+			// thread and callback are fully controlled by the user. The retry engine
+			// deals with only
 			// scheduling/rescheduling and their result (e.g. CompletableFuture)
 			assertNull(RetrySynchronizationManager.getContext());
 
@@ -332,7 +294,8 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 		outerCallback.setAttemptsBeforeSchedulingSuccess(3);
 		outerCallback.setAttemptsBeforeJobSuccess(3);
 		outerCallback.setCustomCodeBeforeScheduling(ctx -> {
-			// The current context should be available via RetrySynchronizationManager while scheduling
+			// The current context should be available via RetrySynchronizationManager
+			// while scheduling
 			// (withing user's async callback itself)
 			assertEquals(ctx, RetrySynchronizationManager.getContext());
 		});
@@ -347,41 +310,31 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 
 				// Return inner result as outer result
 				return innerResult;
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		});
-
 
 		Object outerResult = outerCallback.awaitItself(outerTemplate.execute(outerCallback));
 		assertEquals(innerCallback.defaultResult, outerResult);
 
 		assertEquals(Arrays.asList(
 				// initial scheduling of the outer callback
-				Thread.currentThread().getName(),
-				Thread.currentThread().getName(),
-				Thread.currentThread().getName(),
+				Thread.currentThread().getName(), Thread.currentThread().getName(), Thread.currentThread().getName(),
 				// rescheduling of the outer callback
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME
-		), outerCallback.schedulerThreadNames);
+				SCHEDULER_THREAD_NAME, SCHEDULER_THREAD_NAME), outerCallback.schedulerThreadNames);
 
 		assertEquals(Arrays.asList(
 				// initial scheduling of the inner callback
-				WORKER_THREAD_NAME,
-				WORKER_THREAD_NAME,
-				WORKER_THREAD_NAME,
+				WORKER_THREAD_NAME, WORKER_THREAD_NAME, WORKER_THREAD_NAME,
 				// rescheduling of the inner callback
-				SCHEDULER_THREAD_NAME,
-				SCHEDULER_THREAD_NAME
-		), innerCallback.schedulerThreadNames);
+				SCHEDULER_THREAD_NAME, SCHEDULER_THREAD_NAME), innerCallback.schedulerThreadNames);
 	}
 
-
-	/**
+	/*
 	 * Test with additional chained completable futures.
 	 */
-	
 	@Test
 	public void testAdditionalChainedCF() throws Throwable {
 
@@ -397,10 +350,7 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 						});
 			}
 		};
-		RetryTemplate template = RetryTemplate.builder()
-				.maxAttempts(4)
-				.asyncRetry()
-				.build();
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(4).asyncRetry().build();
 
 		callback.setAttemptsBeforeSchedulingSuccess(2);
 		callback.setAttemptsBeforeJobSuccess(3);
@@ -417,19 +367,16 @@ public class AsyncReschedulingTests extends AbstractAsyncRetryTest {
 		assertEquals(4, callback.schedulingAttempts.get());
 		assertEquals(3, callback.jobAttempts.get());
 
-		// All invocations after the first successful scheduling should be performed by the
+		// All invocations after the first successful scheduling should be performed by
+		// the
 		// the worker thread (because not backoff and no rescheduler thread)
-		assertEquals(Arrays.asList(
-				Thread.currentThread().getName(),
-				Thread.currentThread().getName(),
-				WORKER_THREAD_NAME,
-				WORKER_THREAD_NAME
-		), callback.schedulerThreadNames);
+		assertEquals(Arrays.asList(Thread.currentThread().getName(), Thread.currentThread().getName(),
+				WORKER_THREAD_NAME, WORKER_THREAD_NAME), callback.schedulerThreadNames);
 	}
-
 
 	// todo: test stateful rescheduling
 	// todo: test RejectedExecutionException on rescheduler
 	// todo: test InterruptedException
 	// todo: support declarative async
+
 }

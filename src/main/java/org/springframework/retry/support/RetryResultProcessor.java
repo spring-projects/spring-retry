@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.springframework.retry.RetryContext;
-import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
+import org.springframework.retry.backoff.BackoffPeriodSupplier;
 
 /**
  * @author Dave Syer
@@ -30,8 +30,7 @@ import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
 public interface RetryResultProcessor<T> {
 
 	Result<T> process(T input, Supplier<Result<T>> supplier, Consumer<Throwable> handler,
-			ScheduledExecutorService reschedulingExecutor,
-			LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+			ScheduledExecutorService reschedulingExecutor, BackoffPeriodSupplier lastBackoffPeriodSupplier,
 			RetryContext ctx);
 
 	public static class Result<T> {
@@ -70,6 +69,7 @@ public interface RetryResultProcessor<T> {
 			}
 			throw exception;
 		}
+
 	}
 
 }

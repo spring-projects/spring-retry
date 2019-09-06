@@ -23,8 +23,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -36,12 +34,8 @@ import org.springframework.classify.SubclassClassifier;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
 
 /**
  * @author Dave Syer
@@ -49,23 +43,22 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
 public class AsyncRetryTemplateTests extends AbstractAsyncRetryTest {
 
 	private RetryTemplate retryTemplate;
-	
+
 	@Before
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void init() {
-//		org.apache.log4j.BasicConfigurator.configure();
-		
+		// org.apache.log4j.BasicConfigurator.configure();
+
 		Logger root = Logger.getRootLogger();
 		root.removeAllAppenders();
 		root.addAppender(new ConsoleAppender(new PatternLayout("%r [%t] %p %c{1} %x - %m%n")));
 		Logger.getRootLogger().setLevel(Level.TRACE);
-		
+
 		this.retryTemplate = new RetryTemplate();
 		Map<Class<?>, RetryResultProcessor<?>> map = new HashMap<>();
 		map.put(Future.class, new FutureRetryResultProcessor());
 		map.put(CompletableFuture.class, new CompletableFutureRetryResultProcessor());
-		SubclassClassifier processors = new SubclassClassifier(map,
-				(RetryResultProcessor<?>) null);
+		SubclassClassifier processors = new SubclassClassifier(map, (RetryResultProcessor<?>) null);
 		this.retryTemplate.setRetryResultProcessors(processors);
 	}
 
@@ -78,27 +71,22 @@ public class AsyncRetryTemplateTests extends AbstractAsyncRetryTest {
 			SimpleRetryPolicy policy = new SimpleRetryPolicy(x);
 			this.retryTemplate.setRetryPolicy(policy);
 			CompletableFuture<Object> result = this.retryTemplate.execute(callback);
-			assertEquals(callback.defaultResult,
-					result.get(10000L, TimeUnit.MILLISECONDS));
+			assertEquals(callback.defaultResult, result.get(10000L, TimeUnit.MILLISECONDS));
 			assertEquals(x, callback.jobAttempts.get());
 		}
 	}
 
 	// todo: remove of fix after discussion
-	/*@Test
-	public void testSuccessfulRetryFuture() throws Throwable {
-		for (int x = 1; x <= 10; x++) {
-			FutureRetryCallback callback = new FutureRetryCallback();
-			callback.setAttemptsBeforeSchedulingSuccess(1);
-			callback.setAttemptsBeforeJobSuccess(x);
-			SimpleRetryPolicy policy = new SimpleRetryPolicy(x + 1);
-			this.retryTemplate.setRetryPolicy(policy);
-			Future<Object> result = this.retryTemplate.execute(callback);
-			assertEquals(callback.defaultResult,
-					result.get(10000L, TimeUnit.MILLISECONDS));
-			assertEquals(x, callback.jobAttempts.get());
-		}
-	}*/
+	/*
+	 * @Test public void testSuccessfulRetryFuture() throws Throwable { for (int x = 1; x
+	 * <= 10; x++) { FutureRetryCallback callback = new FutureRetryCallback();
+	 * callback.setAttemptsBeforeSchedulingSuccess(1);
+	 * callback.setAttemptsBeforeJobSuccess(x); SimpleRetryPolicy policy = new
+	 * SimpleRetryPolicy(x + 1); this.retryTemplate.setRetryPolicy(policy); Future<Object>
+	 * result = this.retryTemplate.execute(callback); assertEquals(callback.defaultResult,
+	 * result.get(10000L, TimeUnit.MILLISECONDS)); assertEquals(x,
+	 * callback.jobAttempts.get()); } }
+	 */
 
 	@Test
 	public void testBackOffInvoked() throws Throwable {
@@ -111,8 +99,7 @@ public class AsyncRetryTemplateTests extends AbstractAsyncRetryTest {
 			this.retryTemplate.setRetryPolicy(policy);
 			this.retryTemplate.setBackOffPolicy(backOff);
 			CompletableFuture<Object> result = this.retryTemplate.execute(callback);
-			assertEquals(callback.defaultResult,
-					result.get(10000L, TimeUnit.MILLISECONDS));
+			assertEquals(callback.defaultResult, result.get(10000L, TimeUnit.MILLISECONDS));
 			assertEquals(x, callback.jobAttempts.get());
 			assertEquals(1, backOff.startCalls);
 			assertEquals(x - 1, backOff.backOffCalls);
@@ -133,11 +120,11 @@ public class AsyncRetryTemplateTests extends AbstractAsyncRetryTest {
 			fail("Expected IllegalArgumentException");
 		}
 		catch (ExecutionException e) {
-			assertTrue("Expected IllegalArgumentException",
-					e.getCause() instanceof IllegalArgumentException);
+			assertTrue("Expected IllegalArgumentException", e.getCause() instanceof IllegalArgumentException);
 			assertEquals(retryAttempts, callback.jobAttempts.get());
 			return;
 		}
 		fail("Expected IllegalArgumentException");
 	}
+
 }

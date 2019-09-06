@@ -51,7 +51,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
+		MethodInvocationRetryCallback<?, ?> callback = mock(MethodInvocationRetryCallback.class);
 		support.close(context, callback, null);
 
 		assertEquals(1, callsOnDoCloseMethod.get());
@@ -68,7 +68,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		RetryCallback callback = mock(RetryCallback.class);
+		RetryCallback<?, ?> callback = mock(RetryCallback.class);
 		support.close(context, callback, null);
 
 		assertEquals(0, callsOnDoCloseMethod.get());
@@ -96,7 +96,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
+		MethodInvocationRetryCallback<?, ?> callback = mock(MethodInvocationRetryCallback.class);
 		support.onError(context, callback, null);
 
 		assertEquals(1, callsOnDoOnErrorMethod.get());
@@ -120,7 +120,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
+		MethodInvocationRetryCallback<?, ?> callback = mock(MethodInvocationRetryCallback.class);
 		assertTrue(support.open(context, callback));
 
 		assertEquals(1, callsOnDoOpenMethod.get());

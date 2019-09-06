@@ -16,69 +16,64 @@
 
 package org.springframework.retry.support;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryException;
-import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
+import org.springframework.retry.backoff.BackoffPeriodSupplier;
 
 /**
  * @author Dave Syer
+ * @param <T> The result type
  */
 public abstract class AsyncRetryResultProcessor<T> implements RetryResultProcessor<T> {
-    private static final Log logger = LogFactory.getLog(AsyncRetryResultProcessor.class);
 
-    protected T doNewAttempt(Supplier<Result<T>> supplier) throws Throwable {
-        logger.debug("Performing the next async callback invocation...");
-        return supplier.get().getOrThrow();
-    }
+	private static final Log logger = LogFactory.getLog(AsyncRetryResultProcessor.class);
 
-    protected abstract T scheduleNewAttemptAfterDelay(
-            Supplier<Result<T>> supplier,
-            ScheduledExecutorService reschedulingExecutor,
-            long rescheduleAfterMillis,
-            RetryContext ctx
-    ) throws Throwable;
+	protected T doNewAttempt(Supplier<Result<T>> supplier) throws Throwable {
+		logger.debug("Performing the next async callback invocation...");
+		return supplier.get().getOrThrow();
+	}
 
-    protected T handleException(Supplier<Result<T>> supplier,
-            Consumer<Throwable> handler,
-            Throwable throwable,
-            ScheduledExecutorService reschedulingExecutor,
-            LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
-            RetryContext ctx) {
-        try {
-            handler.accept(unwrapIfNeed(throwable));
+	protected abstract T scheduleNewAttemptAfterDelay(Supplier<Result<T>> supplier,
+			ScheduledExecutorService reschedulingExecutor, long rescheduleAfterMillis, RetryContext ctx)
+			throws Throwable;
 
-            if (reschedulingExecutor == null || lastBackoffPeriodSupplier == null) {
-                return doNewAttempt(supplier);
-            } else {
-                long rescheduleAfterMillis = lastBackoffPeriodSupplier.get();
-                logger.debug("Scheduling a next retry with a delay = " + rescheduleAfterMillis + " millis...");
-                return scheduleNewAttemptAfterDelay(supplier, reschedulingExecutor, rescheduleAfterMillis, ctx);
-            }
-        }
-        catch (Throwable t) {
-            throw RetryTemplate.runtimeException(unwrapIfNeed(t));
-        }
-    }
+	protected T handleException(Supplier<Result<T>> supplier, Consumer<Throwable> handler, Throwable throwable,
+			ScheduledExecutorService reschedulingExecutor, BackoffPeriodSupplier lastBackoffPeriodSupplier,
+			RetryContext ctx) {
+		try {
+			handler.accept(unwrapIfNeed(throwable));
 
-    static Throwable unwrapIfNeed(Throwable throwable) {
-        if (throwable instanceof ExecutionException
-                || throwable instanceof CompletionException
-                || throwable instanceof RetryException) {
-            return throwable.getCause();
-        } else {
-            return throwable;
-        }
-    }
+			if (reschedulingExecutor == null || lastBackoffPeriodSupplier == null) {
+				return doNewAttempt(supplier);
+			}
+			else {
+				long rescheduleAfterMillis = lastBackoffPeriodSupplier.get();
+				logger.debug("Scheduling a next retry with a delay = " + rescheduleAfterMillis + " millis...");
+				return scheduleNewAttemptAfterDelay(supplier, reschedulingExecutor, rescheduleAfterMillis, ctx);
+			}
+		}
+		catch (Throwable t) {
+			throw RetryTemplate.runtimeException(unwrapIfNeed(t));
+		}
+	}
+
+	static Throwable unwrapIfNeed(Throwable throwable) {
+		if (throwable instanceof ExecutionException || throwable instanceof CompletionException
+				|| throwable instanceof RetryException) {
+			return throwable.getCause();
+		}
+		else {
+			return throwable;
+		}
+	}
+
 }

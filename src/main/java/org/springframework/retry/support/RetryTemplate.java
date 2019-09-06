@@ -19,9 +19,7 @@ package org.springframework.retry.support;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +38,7 @@ import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
-import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
+import org.springframework.retry.backoff.BackoffPeriodSupplier;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.RememberPeriodSleeper;
 import org.springframework.retry.backoff.SleepingBackOffPolicy;
@@ -48,7 +46,6 @@ import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryResultProcessor.Result;
-import org.springframework.util.Assert;
 
 /**
  * Template class that simplifies the execution of operations with retry semantics.
@@ -97,7 +94,7 @@ public class RetryTemplate implements RetryOperations {
 
 	private volatile BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
-	private volatile LastBackoffPeriodSupplier lastBackoffPeriodSupplier = null;
+	private volatile BackoffPeriodSupplier lastBackoffPeriodSupplier = null;
 
 	private volatile RetryPolicy retryPolicy = new SimpleRetryPolicy(3);
 
@@ -152,8 +149,7 @@ public class RetryTemplate implements RetryOperations {
 	 * empty).
 	 * @param processors the processors to set
 	 */
-	public void setRetryResultProcessors(
-			Classifier<Object, RetryResultProcessor<?>> processors) {
+	public void setRetryResultProcessors(Classifier<Object, RetryResultProcessor<?>> processors) {
 		this.processors = processors;
 	}
 
@@ -193,11 +189,13 @@ public class RetryTemplate implements RetryOperations {
 
 	private BackOffPolicy replaceSleeperIfNeed(BackOffPolicy backOffPolicy) {
 		if (reschedulingExecutor != null && backOffPolicy instanceof SleepingBackOffPolicy) {
-			this.logger.debug("Replacing the default sleeper by RememberPeriodSleeper to enable scheduler-based backoff.");
+			this.logger
+					.debug("Replacing the default sleeper by RememberPeriodSleeper to enable scheduler-based backoff.");
 			RememberPeriodSleeper rememberPeriodSleeper = new RememberPeriodSleeper();
 			lastBackoffPeriodSupplier = rememberPeriodSleeper;
-			return ((SleepingBackOffPolicy) backOffPolicy).withSleeper(rememberPeriodSleeper);
-		} else {
+			return ((SleepingBackOffPolicy<?>) backOffPolicy).withSleeper(rememberPeriodSleeper);
+		}
+		else {
 			return backOffPolicy;
 		}
 	}
@@ -352,8 +350,8 @@ public class RetryTemplate implements RetryOperations {
 
 	}
 
-	private <T, E extends Throwable> Result<T> safeLoop(RetryCallback<T, E> retryCallback,
-			RetryState state, RetryContext context, BackOffContext backOffContext) {
+	private <T, E extends Throwable> Result<T> safeLoop(RetryCallback<T, E> retryCallback, RetryState state,
+			RetryContext context, BackOffContext backOffContext) {
 		try {
 			return loop(retryCallback, state, context, backOffContext);
 		}
@@ -362,9 +360,8 @@ public class RetryTemplate implements RetryOperations {
 		}
 	}
 
-	private <T, E extends Throwable> Result<T> loop(RetryCallback<T, E> retryCallback,
-			RetryState state, RetryContext context, BackOffContext backOffContext)
-			throws E {
+	private <T, E extends Throwable> Result<T> loop(RetryCallback<T, E> retryCallback, RetryState state,
+			RetryContext context, BackOffContext backOffContext) throws E {
 
 		Throwable lastException = null;
 
@@ -384,16 +381,11 @@ public class RetryTemplate implements RetryOperations {
 				T result = retryCallback.doWithRetry(context);
 				if (result != null && this.processors != null) {
 					@SuppressWarnings("unchecked")
-					RetryResultProcessor<T> processor = (RetryResultProcessor<T>) this.processors
-							.classify(result);
+					RetryResultProcessor<T> processor = (RetryResultProcessor<T>) this.processors.classify(result);
 					if (processor != null) {
-						return processor.process(result,
-								() -> safeLoop(retryCallback, state, context,
-										backOffContext),
-								error -> safeHandleLoopException(retryCallback, state,
-										context, backOffContext, error), reschedulingExecutor,
-								lastBackoffPeriodSupplier,
-								context);
+						return processor.process(result, () -> safeLoop(retryCallback, state, context, backOffContext),
+								error -> safeHandleLoopException(retryCallback, state, context, backOffContext, error),
+								reschedulingExecutor, lastBackoffPeriodSupplier, context);
 					}
 				}
 				return new Result<>(result);
@@ -414,13 +406,11 @@ public class RetryTemplate implements RetryOperations {
 				break;
 			}
 		}
-		return new Result<>(
-				lastException == null ? context.getLastThrowable() : lastException);
+		return new Result<>(lastException == null ? context.getLastThrowable() : lastException);
 	}
 
-	private <T, E extends Throwable> void safeHandleLoopException(
-			RetryCallback<T, E> retryCallback, RetryState state, RetryContext context,
-			BackOffContext backOffContext, Throwable e) {
+	private <T, E extends Throwable> void safeHandleLoopException(RetryCallback<T, E> retryCallback, RetryState state,
+			RetryContext context, BackOffContext backOffContext, Throwable e) {
 		try {
 			handleLoopException(retryCallback, state, context, backOffContext, e);
 		}
@@ -429,9 +419,8 @@ public class RetryTemplate implements RetryOperations {
 		}
 	}
 
-	private <T, E extends Throwable> void handleLoopException(
-			RetryCallback<T, E> retryCallback, RetryState state, RetryContext context,
-			BackOffContext backOffContext, Throwable e) throws E {
+	private <T, E extends Throwable> void handleLoopException(RetryCallback<T, E> retryCallback, RetryState state,
+			RetryContext context, BackOffContext backOffContext, Throwable e) throws E {
 		try {
 			registerThrowable(this.retryPolicy, state, context, e);
 		}
@@ -449,8 +438,7 @@ public class RetryTemplate implements RetryOperations {
 			catch (BackOffInterruptedException ex) {
 				// back off was prevented by another thread - fail the retry
 				if (this.logger.isDebugEnabled()) {
-					this.logger.debug("Abort retry because interrupted: count="
-							+ context.getRetryCount());
+					this.logger.debug("Abort retry because interrupted: count=" + context.getRetryCount());
 				}
 				throw ex;
 			}
@@ -462,8 +450,7 @@ public class RetryTemplate implements RetryOperations {
 
 		if (shouldRethrow(this.retryPolicy, context, state)) {
 			if (this.logger.isDebugEnabled()) {
-				this.logger.debug(
-						"Rethrow in retry for policy: count=" + context.getRetryCount());
+				this.logger.debug("Rethrow in retry for policy: count=" + context.getRetryCount());
 			}
 			throw RetryTemplate.<E>wrapIfNecessary(e);
 		}

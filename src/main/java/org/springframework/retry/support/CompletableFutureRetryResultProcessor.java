@@ -17,8 +17,6 @@
 package org.springframework.retry.support;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -27,10 +25,10 @@ import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
-import org.springframework.retry.RetryException;
-import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
+import org.springframework.retry.backoff.BackoffPeriodSupplier;
 
 /**
  * A {@link RetryResultProcessor} for a {@link CompletableFuture}. If a
@@ -38,48 +36,45 @@ import org.springframework.retry.backoff.LastBackoffPeriodSupplier;
  * used internally by the {@link RetryTemplate} to wrap it and process the result.
  *
  * @author Dave Syer
+ * @param <V> The result type
  */
-public class CompletableFutureRetryResultProcessor<V>
-		extends AsyncRetryResultProcessor<CompletableFuture<V>> {
+public class CompletableFutureRetryResultProcessor<V> extends AsyncRetryResultProcessor<CompletableFuture<V>> {
 
 	protected final Log logger = LogFactory.getLog(getClass());
 
 	@Override
 	public Result<CompletableFuture<V>> process(CompletableFuture<V> completable,
-			Supplier<Result<CompletableFuture<V>>> supplier,
-			Consumer<Throwable> handler, ScheduledExecutorService reschedulingExecutor,
-			LastBackoffPeriodSupplier lastBackoffPeriodSupplier,
+			Supplier<Result<CompletableFuture<V>>> supplier, Consumer<Throwable> handler,
+			ScheduledExecutorService reschedulingExecutor, BackoffPeriodSupplier lastBackoffPeriodSupplier,
 			RetryContext ctx) {
 
 		CompletableFuture<V> handle = completable
-				.thenApply(CompletableFuture::completedFuture)
-				.exceptionally(throwable -> handleException(
-						supplier, handler, throwable, reschedulingExecutor, lastBackoffPeriodSupplier, ctx)
-				)
+				.thenApply(CompletableFuture::completedFuture).exceptionally(throwable -> handleException(supplier,
+						handler, throwable, reschedulingExecutor, lastBackoffPeriodSupplier, ctx))
 				.thenCompose(Function.identity());
 
 		return new Result<>(handle);
 	}
 
-	protected CompletableFuture<V> scheduleNewAttemptAfterDelay(
-			Supplier<Result<CompletableFuture<V>>> supplier,
-			ScheduledExecutorService reschedulingExecutor, long rescheduleAfterMillis,
-			RetryContext ctx)
-	{
+	protected CompletableFuture<V> scheduleNewAttemptAfterDelay(Supplier<Result<CompletableFuture<V>>> supplier,
+			ScheduledExecutorService reschedulingExecutor, long rescheduleAfterMillis, RetryContext ctx) {
 		CompletableFuture<CompletableFuture<V>> futureOfFurtherScheduling = new CompletableFuture<>();
 
 		reschedulingExecutor.schedule(() -> {
 			try {
 				RetrySynchronizationManager.register(ctx);
 				futureOfFurtherScheduling.complete(doNewAttempt(supplier));
-			} catch (Throwable t) {
+			}
+			catch (Throwable t) {
 				futureOfFurtherScheduling.completeExceptionally(t);
 				throw RetryTemplate.runtimeException(t);
-			} finally {
+			}
+			finally {
 				RetrySynchronizationManager.clear();
 			}
 		}, rescheduleAfterMillis, TimeUnit.MILLISECONDS);
 
 		return futureOfFurtherScheduling.thenCompose(Function.identity());
 	}
+
 }

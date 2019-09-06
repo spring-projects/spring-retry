@@ -376,17 +376,17 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
-	 * Enable async retry feature.
-	 * Due to no rescheduling executor is provided, a potential backoff will be performed
-	 * by Thread.sleep().
+	 * Enable async retry feature. Due to no rescheduling executor is provided, a
+	 * potential backoff will be performed by Thread.sleep().
+	 * @return A new RetryTemplateBuilder for an async retry
 	 */
 	public RetryTemplateBuilder asyncRetry() {
 		// todo: support interface classification (does not work yet)
 		this.processors.put(Future.class, new FutureRetryResultProcessor<>());
 		this.processors.put(FutureTask.class, new FutureRetryResultProcessor<>());
-		this.processors.put(CompletableFuture.class, new CompletableFutureRetryResultProcessor());
+		this.processors.put(CompletableFuture.class, new CompletableFutureRetryResultProcessor<Object>());
 
-		//todo
+		// todo
 		return this;
 	}
 
@@ -438,13 +438,10 @@ public class RetryTemplateBuilder {
 			retryTemplate.setReschedulingExecutor(executorService);
 
 			Assert.isTrue(backOffPolicy instanceof SleepingBackOffPolicy,
-					"Usage of a rescheduling executor makes sense "
-							+ "only with an instance of SleepingBackOffPolicy"
-			);
+					"Usage of a rescheduling executor makes sense " + "only with an instance of SleepingBackOffPolicy");
 		}
 
-		SubclassClassifier<Object, RetryResultProcessor<?>> classifier =
-				new SubclassClassifier<>(processors, null);
+		SubclassClassifier<Object, RetryResultProcessor<?>> classifier = new SubclassClassifier<>(processors, null);
 		retryTemplate.setRetryResultProcessors(classifier);
 
 		return retryTemplate;

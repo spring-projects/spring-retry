@@ -46,11 +46,12 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
  * @author Dave Syer
  */
 public class AbstractAsyncRetryTest {
-	
-	/* ---------------- Async callbacks implementations for different types -------------- */
 
-	static class CompletableFutureRetryCallback
-			extends AbstractRetryCallback<CompletableFuture<Object>> {
+	/*
+	 * ---------------- Async callbacks implementations for different types --------------
+	 */
+
+	static class CompletableFutureRetryCallback extends AbstractRetryCallback<CompletableFuture<Object>> {
 
 		@Override
 		public CompletableFuture<Object> schedule(Supplier<Object> callback, ExecutorService workerExecutor) {
@@ -61,11 +62,11 @@ public class AbstractAsyncRetryTest {
 		Object awaitItself(CompletableFuture<Object> asyncType) {
 			return asyncType.join();
 		}
+
 	}
 
-	static class FutureRetryCallback
-			extends AbstractRetryCallback<Future<Object>> {
-		
+	static class FutureRetryCallback extends AbstractRetryCallback<Future<Object>> {
+
 		@Override
 		public Future<Object> schedule(Supplier<Object> callback, ExecutorService executor) {
 			return executor.submit(callback::get);
@@ -75,39 +76,43 @@ public class AbstractAsyncRetryTest {
 		Object awaitItself(Future<Object> asyncType) throws Throwable {
 			return asyncType.get();
 		}
+
 	}
 
-	static abstract class AbstractRetryCallback<A>
-			implements RetryCallback<A, Exception> {
+	static abstract class AbstractRetryCallback<A> implements RetryCallback<A, Exception> {
 
 		final Object defaultResult = new Object();
+
 		final Log logger = LogFactory.getLog(getClass());
 
 		final AtomicInteger jobAttempts = new AtomicInteger();
+
 		final AtomicInteger schedulingAttempts = new AtomicInteger();
 
 		volatile int attemptsBeforeSchedulingSuccess;
+
 		volatile int attemptsBeforeJobSuccess;
 
 		volatile RuntimeException exceptionToThrow = new RuntimeException();
 
 		volatile Function<RetryContext, Object> resultSupplier = ctx -> defaultResult;
-		volatile Consumer<RetryContext> customCodeBeforeScheduling = ctx -> {};
+
+		volatile Consumer<RetryContext> customCodeBeforeScheduling = ctx -> {
+		};
 
 		final List<String> schedulerThreadNames = new CopyOnWriteArrayList<>();
+
 		final List<Long> invocationMoments = new CopyOnWriteArrayList<>();
 
-		final ExecutorService workerExecutor = Executors.newSingleThreadExecutor(
-				getNamedThreadFactory(WORKER_THREAD_NAME)
-		);
+		final ExecutorService workerExecutor = Executors
+				.newSingleThreadExecutor(getNamedThreadFactory(WORKER_THREAD_NAME));
 
 		public abstract A schedule(Supplier<Object> callback, ExecutorService executor);
 
 		abstract Object awaitItself(A asyncType) throws Throwable;
 
 		@Override
-		public A doWithRetry(RetryContext ctx)
-				throws Exception {
+		public A doWithRetry(RetryContext ctx) throws Exception {
 			rememberThreadName();
 			rememberInvocationMoment();
 
@@ -117,9 +122,11 @@ public class AbstractAsyncRetryTest {
 
 			return schedule(() -> {
 				try {
-					// a hack to avoid running CompletableFuture#thenApplyAsync in the caller thread
+					// a hack to avoid running CompletableFuture#thenApplyAsync in the
+					// caller thread
 					Thread.sleep(100L);
-				} catch (InterruptedException e) {
+				}
+				catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				throwIfJobTooEarly();
@@ -127,7 +134,7 @@ public class AbstractAsyncRetryTest {
 				return resultSupplier.apply(ctx);
 			}, workerExecutor);
 		}
-		
+
 		void rememberInvocationMoment() {
 			invocationMoments.add(System.currentTimeMillis());
 		}
@@ -169,8 +176,8 @@ public class AbstractAsyncRetryTest {
 		void setCustomCodeBeforeScheduling(Consumer<RetryContext> customCodeBeforeScheduling) {
 			this.customCodeBeforeScheduling = customCodeBeforeScheduling;
 		}
-	}
 
+	}
 
 	static class MockBackOffStrategy implements BackOffPolicy {
 
@@ -188,8 +195,7 @@ public class AbstractAsyncRetryTest {
 		}
 
 		@Override
-		public void backOff(BackOffContext backOffContext)
-				throws BackOffInterruptedException {
+		public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 			this.backOffCalls++;
 		}
 
@@ -198,30 +204,29 @@ public class AbstractAsyncRetryTest {
 	/* ---------------- Utilities -------------- */
 
 	static final String SCHEDULER_THREAD_NAME = "scheduler";
-    static final String WORKER_THREAD_NAME = "worker";
+	static final String WORKER_THREAD_NAME = "worker";
 
 	static ScheduledExecutorService getNamedScheduledExecutor() {
-		return Executors.newScheduledThreadPool(
-				1,
-                getNamedThreadFactory(AbstractAsyncRetryTest.SCHEDULER_THREAD_NAME)
-		);
+		return Executors.newScheduledThreadPool(1, getNamedThreadFactory(AbstractAsyncRetryTest.SCHEDULER_THREAD_NAME));
 	}
 
-    static ThreadFactory getNamedThreadFactory(String threadName) {
-        return new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setName(threadName);
-                return thread;
-            }
-        };
-    }
+	static ThreadFactory getNamedThreadFactory(String threadName) {
+		return new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread thread = new Thread(r);
+				thread.setName(threadName);
+				return thread;
+			}
+		};
+	}
 
-    void assertRememberingSleeper(RetryTemplate template) {
-        // The sleeper of the backoff policy should be an instance of RememberPeriodSleeper, means not Thread.sleep()
-        BackOffPolicy backOffPolicy = getPropertyValue(template, "backOffPolicy", BackOffPolicy.class);
-        Sleeper sleeper = getPropertyValue(backOffPolicy, "sleeper", Sleeper.class);
-        assertTrue(sleeper instanceof RememberPeriodSleeper);
-    }
+	void assertRememberingSleeper(RetryTemplate template) {
+		// The sleeper of the backoff policy should be an instance of
+		// RememberPeriodSleeper, means not Thread.sleep()
+		BackOffPolicy backOffPolicy = getPropertyValue(template, "backOffPolicy", BackOffPolicy.class);
+		Sleeper sleeper = getPropertyValue(backOffPolicy, "sleeper", Sleeper.class);
+		assertTrue(sleeper instanceof RememberPeriodSleeper);
+	}
+
 }
