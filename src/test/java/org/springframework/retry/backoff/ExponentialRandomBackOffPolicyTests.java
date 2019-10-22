@@ -29,6 +29,7 @@ import org.springframework.retry.support.RetrySimulator;
 /**
  * @author Dave Syer
  * @author Jon Travis
+ * @author Chase Diem
  *
  */
 public class ExponentialRandomBackOffPolicyTests {
@@ -65,6 +66,27 @@ public class ExponentialRandomBackOffPolicyTests {
                        sleeps.get(i) < expectedMaxValue);
         }
     }
+
+	@Test
+	public void testMaxInterval() throws Exception {
+		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
+		backOffPolicy.setInitialInterval(3000);
+		long maxInterval = backOffPolicy.getMaxInterval();
+
+		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
+		RetrySimulation simulation = simulator.executeSimulation(1);
+
+		List<Long> sleeps = simulation.getLongestTotalSleepSequence().getSleeps();
+		System.out.println("Single trial of " + backOffPolicy + ": sleeps=" + sleeps);
+		assertEquals(MAX_RETRIES - 1, sleeps.size());
+		long initialInterval = backOffPolicy.getInitialInterval();
+		for (int i = 0; i < sleeps.size(); i++) {
+			long expectedMaxValue = 2 * (long) (initialInterval
+					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
+			assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max interval value of "
+					+ expectedMaxValue + " at interval " + i, sleeps.get(i) <= maxInterval);
+		}
+	}
 
 	@Test
 	public void testMultiBackOff() throws Exception {

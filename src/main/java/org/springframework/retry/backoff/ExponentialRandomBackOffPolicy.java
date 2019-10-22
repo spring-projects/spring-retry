@@ -37,9 +37,12 @@ import java.util.Random;
  * {@link ExponentialBackOffPolicy} yields: [50, 100, 200, 400, 800]
  *
  * {@link ExponentialRandomBackOffPolicy} may yield [76, 151, 304, 580, 901] or [53, 190,
- * 267, 451, 815]
+ * 267, 451, 815] (random distributed values within the ranges of [50-100, 100-200, 200-400,
+ * 400-800, 800-1600])
+ *
  * @author Jon Travis
  * @author Dave Syer
+ * @author Chase Diem
  */
 @SuppressWarnings("serial")
 public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
@@ -69,6 +72,9 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 		public synchronized long getSleepAndIncrement() {
 			long next = super.getSleepAndIncrement();
 			next = (long) (next * (1 + r.nextFloat() * (getMultiplier() - 1)));
+			if (next > super.getMaxInterval()) {
+				next = super.getMaxInterval();
+			}
 			return next;
 		}
 
