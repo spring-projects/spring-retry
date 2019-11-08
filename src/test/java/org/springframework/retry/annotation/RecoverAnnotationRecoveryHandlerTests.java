@@ -161,6 +161,22 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				handler.recover(new Object[] { new ArrayList<String>() }, new IllegalArgumentException("Planned")));
 	}
 
+	@Test
+	public void recoverByRetryableNameWithoutRecoverName() {
+		Method foo = ReflectionUtils.findMethod(RecoverByRetryableNameWithoutRecoverName.class, "foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new RecoverByRetryableNameWithoutRecoverName(), foo);
+		assertEquals(2, handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned")));
+	}
+
+	@Test
+	public void recoverByRetryableNameAndRecoverName() {
+		Method foo = ReflectionUtils.findMethod(RecoverByRetryableNameAndRecoverName.class, "foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new RecoverByRetryableNameAndRecoverName(), foo);
+		assertEquals(3, handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned")));
+	}
+
 	private static class InAccessibleRecover {
 
 		@Retryable
@@ -390,6 +406,49 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		@Recover
 		public int barRecover(Throwable t, String name) {
 			return 2;
+		}
+
+	}
+
+	protected static class RecoverByRetryableNameWithoutRecoverName {
+
+		@Retryable(recoverName = "barRecover")
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable throwable, String name) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable throwable, String name) {
+			return 2;
+		}
+
+	}
+
+	protected static class RecoverByRetryableNameAndRecoverName {
+
+		@Retryable(recoverName = "recoverFromFoo")
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable throwable, String name) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable throwable, String name) {
+			return 2;
+		}
+
+		@Recover(name = "recoverFromFoo")
+		public int recover(Throwable throwable, String name) {
+			return 3;
 		}
 
 	}

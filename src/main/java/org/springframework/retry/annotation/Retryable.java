@@ -37,6 +37,12 @@ import java.lang.annotation.Target;
 public @interface Retryable {
 
 	/**
+	 * Name of function to use for recover.
+	 * @return the name of retry function to use
+	 */
+	String recoverName() default "";
+
+	/**
 	 * Retry interceptor bean name to be applied for retryable method. Is mutually
 	 * exclusive with other attributes.
 	 * @return the retry interceptor bean name

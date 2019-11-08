@@ -53,6 +53,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 	private Object target;
 
+	private String recoverMethodName;
+
 	public RecoverAnnotationRecoveryHandler(Object target, Method method) {
 		this.target = target;
 		init(target, method);
@@ -81,24 +83,39 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	}
 
 	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
-		int min = Integer.MAX_VALUE;
 		Method result = null;
-		for (Method method : this.methods.keySet()) {
-			SimpleMetadata meta = this.methods.get(method);
-			Class<? extends Throwable> type = meta.getType();
-			if (type == null) {
-				type = Throwable.class;
-			}
-			if (type.isAssignableFrom(cause)) {
-				int distance = calculateDistance(cause, type);
-				if (distance < min) {
-					min = distance;
+
+		boolean shouldUseRecoverMethodName = !this.recoverMethodName.equals("");
+		if (shouldUseRecoverMethodName) {
+			for (Method method : this.methods.keySet()) {
+				SimpleMetadata meta = this.methods.get(method);
+				if (meta.getName().equals(this.recoverMethodName) && meta.type.isAssignableFrom(cause)
+						&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
 					result = method;
+					break;
 				}
-				else if (distance == min) {
-					boolean parametersMatch = compareParameters(args, meta.getArgCount(), method.getParameterTypes());
-					if (parametersMatch) {
+			}
+		}
+		else {
+			int min = Integer.MAX_VALUE;
+			for (Method method : this.methods.keySet()) {
+				SimpleMetadata meta = this.methods.get(method);
+				Class<? extends Throwable> type = meta.getType();
+				if (type == null) {
+					type = Throwable.class;
+				}
+				if (type.isAssignableFrom(cause)) {
+					int distance = calculateDistance(cause, type);
+					if (distance < min) {
+						min = distance;
 						result = method;
+					}
+					else if (distance == min) {
+						boolean parametersMatch = compareParameters(args, meta.getArgCount(),
+								method.getParameterTypes());
+						if (parametersMatch) {
+							result = method;
+						}
 					}
 				}
 			}
@@ -139,23 +156,26 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private void init(Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
 		final Method failingMethod = method;
+		Retryable retryable = method.getAnnotation(Retryable.class);
+		this.recoverMethodName = retryable != null ? retryable.recoverName() : "";
 		ReflectionUtils.doWithMethods(failingMethod.getDeclaringClass(), new MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
 				if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
 					Class<?>[] parameterTypes = method.getParameterTypes();
+					String functionName = !recover.name().equals("") ? recover.name() : method.getName();
 					if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
 						@SuppressWarnings("unchecked")
 						Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
 						types.put(type, method);
 						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, type));
+								new SimpleMetadata(parameterTypes.length, type, functionName));
 					}
 					else {
 						RecoverAnnotationRecoveryHandler.this.classifier.setDefaultValue(method);
 						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, null));
+								new SimpleMetadata(parameterTypes.length, null, functionName));
 					}
 				}
 			}
@@ -182,14 +202,21 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 		private Class<? extends Throwable> type;
 
-		public SimpleMetadata(int argCount, Class<? extends Throwable> type) {
+		private String name;
+
+		public SimpleMetadata(int argCount, Class<? extends Throwable> type, String name) {
 			super();
 			this.argCount = argCount;
 			this.type = type;
+			this.name = name;
 		}
 
 		public int getArgCount() {
 			return this.argCount;
+		}
+
+		public String getName() {
+			return this.name;
 		}
 
 		public Class<? extends Throwable> getType() {
