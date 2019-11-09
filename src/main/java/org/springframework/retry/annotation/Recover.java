@@ -42,11 +42,4 @@ import org.springframework.context.annotation.Import;
 @Documented
 public @interface Recover {
 
-	/**
-	 * Name of this function can be used to provide best match for recoverName in
-	 * Retryable. {@link Retryable#recoverName()}
-	 * @return name of this recover function
-	 */
-	String name() default "";
-
 }

@@ -88,11 +88,13 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		boolean shouldUseRecoverMethodName = !this.recoverMethodName.equals("");
 		if (shouldUseRecoverMethodName) {
 			for (Method method : this.methods.keySet()) {
-				SimpleMetadata meta = this.methods.get(method);
-				if (meta.getName().equals(this.recoverMethodName) && meta.type.isAssignableFrom(cause)
-						&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
-					result = method;
-					break;
+				if (method.getName().equals(this.recoverMethodName)) {
+					SimpleMetadata meta = this.methods.get(method);
+					if (meta.type.isAssignableFrom(cause)
+							&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
+						result = method;
+						break;
+					}
 				}
 			}
 		}
@@ -164,18 +166,17 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
 				if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
 					Class<?>[] parameterTypes = method.getParameterTypes();
-					String functionName = !recover.name().equals("") ? recover.name() : method.getName();
 					if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
 						@SuppressWarnings("unchecked")
 						Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
 						types.put(type, method);
 						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, type, functionName));
+								new SimpleMetadata(parameterTypes.length, type));
 					}
 					else {
 						RecoverAnnotationRecoveryHandler.this.classifier.setDefaultValue(method);
 						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, null, functionName));
+								new SimpleMetadata(parameterTypes.length, null));
 					}
 				}
 			}
@@ -202,21 +203,14 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 		private Class<? extends Throwable> type;
 
-		private String name;
-
-		public SimpleMetadata(int argCount, Class<? extends Throwable> type, String name) {
+		public SimpleMetadata(int argCount, Class<? extends Throwable> type) {
 			super();
 			this.argCount = argCount;
 			this.type = type;
-			this.name = name;
 		}
 
 		public int getArgCount() {
 			return this.argCount;
-		}
-
-		public String getName() {
-			return this.name;
 		}
 
 		public Class<? extends Throwable> getType() {
