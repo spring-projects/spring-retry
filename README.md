@@ -481,25 +481,24 @@ The following example shows how to do so:
 
 ```java
 @Service
-class Service {
-
+class Service { 
     @Retryable(recover = "service1Recover", value = RemoteAccessException.class)
-	public void service1(String str1, String str2) {
+    public void service1(String str1, String str2) {
         // ... do something
     }
 
     @Retryable(recover = "service2Recover", value = RemoteAccessException.class)
-	public void service2(String str1, String str2) {
+    public void service2(String str1, String str2) {
         // ... do something
     }
 
     @Recover
-	public void service1Recover(RemoteAccessException e, String str1, String str2) {
+    public void service1Recover(RemoteAccessException e, String str1, String str2) {
         // ... error handling making use of original args if required
     }
 
     @Recover
-	public void service2Recover(RemoteAccessException e, String str1, String str2) {
+    public void service2Recover(RemoteAccessException e, String str1, String str2) {
         // ... error handling making use of original args if required
     }
 }

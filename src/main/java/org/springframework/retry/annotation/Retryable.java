@@ -38,7 +38,8 @@ import java.lang.annotation.Target;
 public @interface Retryable {
 
 	/**
-	 * Name of method in this class to use for recover. Method had to be marked with {@link Recover} annotation.
+	 * Name of method in this class to use for recover.
+	 * Method had to be marked with {@link Recover} annotation.
 	 * @return the name of recover method
 	 */
 	String recover() default "";
