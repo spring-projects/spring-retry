@@ -26,6 +26,7 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+import org.springframework.util.StringUtils;
 
 /**
  * A recoverer for method invocations based on the <code>@Recover</code> annotation. A
@@ -43,6 +44,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Aldo Sinanaj
  * @author Randell Callahan
  * @author Nathanaël Roberts
+ * @author Maksim Kita
  * @param <T> the type of the return value from the recovery
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
@@ -52,6 +54,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
 
 	private Object target;
+
+	private String recoverMethodName;
 
 	public RecoverAnnotationRecoveryHandler(Object target, Method method) {
 		this.target = target;
@@ -81,24 +85,42 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	}
 
 	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
-		int min = Integer.MAX_VALUE;
 		Method result = null;
-		for (Method method : this.methods.keySet()) {
-			SimpleMetadata meta = this.methods.get(method);
-			Class<? extends Throwable> type = meta.getType();
-			if (type == null) {
-				type = Throwable.class;
-			}
-			if (type.isAssignableFrom(cause)) {
-				int distance = calculateDistance(cause, type);
-				if (distance < min) {
-					min = distance;
-					result = method;
+
+		if (StringUtils.isEmpty(recoverMethodName)) {
+			int min = Integer.MAX_VALUE;
+			for (Map.Entry<Method, SimpleMetadata> entry : this.methods.entrySet()) {
+				Method method = entry.getKey();
+				SimpleMetadata meta = entry.getValue();
+				Class<? extends Throwable> type = meta.getType();
+				if (type == null) {
+					type = Throwable.class;
 				}
-				else if (distance == min) {
-					boolean parametersMatch = compareParameters(args, meta.getArgCount(), method.getParameterTypes());
-					if (parametersMatch) {
+				if (type.isAssignableFrom(cause)) {
+					int distance = calculateDistance(cause, type);
+					if (distance < min) {
+						min = distance;
 						result = method;
+					}
+					else if (distance == min) {
+						boolean parametersMatch = compareParameters(args, meta.getArgCount(),
+								method.getParameterTypes());
+						if (parametersMatch) {
+							result = method;
+						}
+					}
+				}
+			}
+		}
+		else {
+			for (Map.Entry<Method, SimpleMetadata> entry : this.methods.entrySet()) {
+				Method method = entry.getKey();
+				if (method.getName().equals(this.recoverMethodName)) {
+					SimpleMetadata meta = entry.getValue();
+					if (meta.type.isAssignableFrom(cause)
+							&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
+						result = method;
+						break;
 					}
 				}
 			}
@@ -139,6 +161,10 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private void init(Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
 		final Method failingMethod = method;
+		Retryable retryable = method.getAnnotation(Retryable.class);
+		if (retryable != null) {
+			this.recoverMethodName = retryable.recover();
+		}
 		ReflectionUtils.doWithMethods(failingMethod.getDeclaringClass(), new MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {

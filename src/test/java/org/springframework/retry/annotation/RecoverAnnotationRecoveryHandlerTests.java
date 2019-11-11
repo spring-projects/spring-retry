@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
  * @author Aldo Sinanaj
  * @author Randell Callahan
  * @author Nathanaël Roberts
+ * @author Maksim Kita
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -159,6 +160,14 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				new InheritanceOnArgumentClass(), foo);
 		assertEquals(1,
 				handler.recover(new Object[] { new ArrayList<String>() }, new IllegalArgumentException("Planned")));
+	}
+
+	@Test
+	public void recoverByRetryableName() {
+		Method foo = ReflectionUtils.findMethod(RecoverByRetryableName.class, "foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new RecoverByRetryableName(), foo);
+		assertEquals(2, handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned")));
 	}
 
 	private static class InAccessibleRecover {
@@ -389,6 +398,25 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		@Recover
 		public int barRecover(Throwable t, String name) {
+			return 2;
+		}
+
+	}
+
+	protected static class RecoverByRetryableName {
+
+		@Retryable(recover = "barRecover")
+		public int foo(String name) {
+			return 0;
+		}
+
+		@Recover
+		public int fooRecover(Throwable throwable, String name) {
+			return 1;
+		}
+
+		@Recover
+		public int barRecover(Throwable throwable, String name) {
 			return 2;
 		}
 

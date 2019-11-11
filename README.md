@@ -476,6 +476,34 @@ class Service {
 }
 ```
 
+To resolve conflicts between multiple methods that can be picked for recovery. You can explicitly specify recovery method name. 
+The following example shows how to do so:
+
+```java
+@Service
+class Service { 
+    @Retryable(recover = "service1Recover", value = RemoteAccessException.class)
+    public void service1(String str1, String str2) {
+        // ... do something
+    }
+
+    @Retryable(recover = "service2Recover", value = RemoteAccessException.class)
+    public void service2(String str1, String str2) {
+        // ... do something
+    }
+
+    @Recover
+    public void service1Recover(RemoteAccessException e, String str1, String str2) {
+        // ... error handling making use of original args if required
+    }
+
+    @Recover
+    public void service2Recover(RemoteAccessException e, String str1, String str2) {
+        // ... error handling making use of original args if required
+    }
+}
+```
+
 Version 1.2 introduces the ability to use expressions for certain properties. The
 following example show how to use expressions this way:
 

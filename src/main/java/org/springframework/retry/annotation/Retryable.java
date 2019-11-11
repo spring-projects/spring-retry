@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Maksim Kita
  * @since 1.1
  *
  */
@@ -35,6 +36,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Retryable {
+
+	/**
+	 * Name of method in this class to use for recover.
+	 * Method had to be marked with {@link Recover} annotation.
+	 * @return the name of recover method
+	 */
+	String recover() default "";
 
 	/**
 	 * Retry interceptor bean name to be applied for retryable method. Is mutually
