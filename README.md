@@ -486,13 +486,11 @@ class Service {
     @Retryable(recover = "service1Recover", value = RemoteAccessException.class)
 	public void service1(String str1, String str2) {
         // ... do something
-		throw new RemoteAccessException("");
     }
 
     @Retryable(recover = "service2Recover", value = RemoteAccessException.class)
 	public void service2(String str1, String str2) {
         // ... do something
-		throw new RemoteAccessException("");
     }
 
     @Recover
