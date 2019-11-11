@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
  * @author Aldo Sinanaj
  * @author Randell Callahan
  * @author Nathanaël Roberts
+ * @author Maksim Kita
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -404,7 +405,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	protected static class RecoverByRetryableName {
 
-		@Retryable(recoverName = "barRecover")
+		@Retryable(recover = "barRecover")
 		public int foo(String name) {
 			return 0;
 		}
