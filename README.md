@@ -460,7 +460,7 @@ the retry is exhausted. Methods should be declared in the same class as the `@Re
 and marked `@Recover`. The return type must match the `@Retryable` method. The arguments
 for the recovery method can optionally include the exception that was thrown and
 (optionally) the arguments passed to the original retryable method (or a partial list of
-  them as long as none are omitted). The following example shows how to do so:
+  them as long as none are omitted up to the last one needed). The following example shows how to do so:
 
 ```java
 @Service
