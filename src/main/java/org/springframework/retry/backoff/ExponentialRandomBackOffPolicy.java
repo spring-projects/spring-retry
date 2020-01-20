@@ -37,8 +37,8 @@ import java.util.Random;
  * {@link ExponentialBackOffPolicy} yields: [50, 100, 200, 400, 800]
  *
  * {@link ExponentialRandomBackOffPolicy} may yield [76, 151, 304, 580, 901] or [53, 190,
- * 267, 451, 815] (random distributed values within the ranges of [50-100, 100-200, 200-400,
- * 400-800, 800-1600])
+ * 267, 451, 815] (random distributed values within the ranges of [50-100, 100-200,
+ * 200-400, 400-800, 800-1600])
  *
  * @author Jon Travis
  * @author Dave Syer
