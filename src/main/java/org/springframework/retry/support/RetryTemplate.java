@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2019 the original author or authors.
+ * Copyright 2006-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,14 +143,39 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	/**
-	 * Register an additional listener.
+	 * Register an additional listener at the end of the list.
 	 * @param listener the {@link RetryListener}
 	 * @see #setListeners(RetryListener[])
 	 */
 	public void registerListener(RetryListener listener) {
+		registerListener(listener, this.listeners.length);
+	}
+
+	/**
+	 * Register an additional listener at the specified index.
+	 * @param listener the {@link RetryListener}
+	 * @param index the position in the list.
+	 * @since 1.3
+	 * @see #setListeners(RetryListener[])
+	 */
+	public void registerListener(RetryListener listener, int index) {
 		List<RetryListener> list = new ArrayList<RetryListener>(Arrays.asList(this.listeners));
-		list.add(listener);
+		if (index >= list.size()) {
+			list.add(listener);
+		}
+		else {
+			list.add(index, listener);
+		}
 		this.listeners = list.toArray(new RetryListener[list.size()]);
+	}
+
+	/**
+	 * Return true if at least one listener is registered.
+	 * @return true if listeners present.
+	 * @since 1.3
+	 */
+	public boolean hasListeners() {
+		return this.listeners.length > 0;
 	}
 
 	/**
