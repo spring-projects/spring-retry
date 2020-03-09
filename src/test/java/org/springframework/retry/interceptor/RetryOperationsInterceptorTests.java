@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2019 the original author or authors.
+ * Copyright 2006-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Before;
 import org.junit.Test;
+
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.SingletonTargetSource;
@@ -43,6 +46,7 @@ import org.springframework.util.ClassUtils;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -66,13 +70,34 @@ public class RetryOperationsInterceptorTests {
 	public void setUp() throws Exception {
 		this.interceptor = new RetryOperationsInterceptor();
 		RetryTemplate retryTemplate = new RetryTemplate();
+		final AtomicBoolean calledFirst = new AtomicBoolean();
 		retryTemplate.registerListener(new RetryListenerSupport() {
+
+			@Override
+			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+
+				calledFirst.set(true);
+				return true;
+
+			}
+
 			@Override
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable throwable) {
 				RetryOperationsInterceptorTests.this.context = context;
 			}
+
 		});
+		retryTemplate.registerListener(new RetryListenerSupport() {
+
+			@Override
+			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+
+				assertFalse(calledFirst.get());
+				return true;
+			}
+
+		}, 0);
 		this.interceptor.setRetryOperations(retryTemplate);
 		this.target = new ServiceImpl();
 		this.service = ProxyFactory.getProxy(Service.class, new SingletonTargetSource(this.target));
