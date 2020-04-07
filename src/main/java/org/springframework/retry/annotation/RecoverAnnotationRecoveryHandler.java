@@ -159,7 +159,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return false;
 	}
 
-	private void init(Object target, Method method) {
+	private void init(final Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
 		final Method failingMethod = method;
 		Retryable retryable = method.getAnnotation(Retryable.class);
@@ -170,6 +170,9 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
+				if (recover == null) {
+					recover = findAnnotationOnTarget(target, method);
+				}
 				if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
 					Class<?>[] parameterTypes = method.getParameterTypes();
 					if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
