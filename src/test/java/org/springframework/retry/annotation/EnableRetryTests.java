@@ -182,6 +182,14 @@ public class EnableRetryTests {
 	}
 
 	@Test
+	public void testInterfaceWithNoRecover() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		NoRecoverInterface service = context.getBean(NoRecoverInterface.class);
+		service.service();
+		assertTrue(service.isRecovered());
+	}
+
+	@Test
 	public void testImplementation() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		NotAnnotatedInterface service = context.getBean(NotAnnotatedInterface.class);
@@ -349,6 +357,11 @@ public class EnableRetryTests {
 		@Bean
 		public TheInterface anInterface() {
 			return new TheClass();
+		}
+
+		@Bean
+		public NoRecoverInterface anInterfaceWithNoRecover() {
+			return new NoRecoverClass();
 		}
 
 		@Bean
@@ -635,6 +648,32 @@ public class EnableRetryTests {
 			return this.recovered;
 		}
 
+	}
+
+	public static interface NoRecoverInterface {
+		void service();
+		boolean isRecovered();
+	}
+
+	public static class NoRecoverClass implements NoRecoverInterface {
+
+		private boolean recovered;
+
+		@Override
+		@Retryable
+		public void service() {
+			throw new RuntimeException("Planned");
+		}
+
+		@Recover
+		public void recover(Exception e) {
+			this.recovered = true;
+		}
+
+		@Override
+		public boolean isRecovered() {
+			return this.recovered;
+		}
 	}
 
 	public static interface NotAnnotatedInterface {

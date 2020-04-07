@@ -166,7 +166,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		if (retryable != null) {
 			this.recoverMethodName = retryable.recover();
 		}
-		ReflectionUtils.doWithMethods(failingMethod.getDeclaringClass(), new MethodCallback() {
+		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
