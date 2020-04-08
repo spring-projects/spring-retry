@@ -16,9 +16,13 @@
 package org.springframework.classify;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.springframework.util.ClassUtils;
 
 /**
  * A {@link Classifier} for a parameterised object type based on a map. Classifies objects
@@ -58,7 +62,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	/**
 	 * Create a {@link SubclassClassifier} with supplied default value.
 	 * @param defaultValue the default value
-	 * @param typeMap the map of types
+	 * @param typeMap      the map of types
 	 */
 	public SubclassClassifier(Map<Class<? extends T>, C> typeMap, C defaultValue) {
 		super();
@@ -115,7 +119,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		if (value == null) {
 			for (Class<?> cls = exceptionClass; !cls.equals(Object.class)
 					&& value == null; cls = cls.getSuperclass()) {
-				for (Class<?> ifc : cls.getInterfaces()) {
+				for (Class<?> ifc : getAllInterfacesForClass(cls)) {
 					value = this.classified.get(ifc);
 					if (value != null) {
 						break;
@@ -148,4 +152,16 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 		return this.classified;
 	}
 
+	private static Set<Class<?>> getAllInterfacesForClass(Class<?> cls) {
+		Set<Class<?>> set = new HashSet<Class<?>>();
+		getAllInterfacesForClass(cls, set);
+		return set;
+	}
+
+	private static void getAllInterfacesForClass(Class<?> cls, Set<Class<?>> set) {
+		set.addAll(ClassUtils.getAllInterfacesForClassAsSet(cls));
+		for (Class<?> ifc : cls.getInterfaces()) {
+			getAllInterfacesForClass(ifc, set);
+		}
+	}
 }

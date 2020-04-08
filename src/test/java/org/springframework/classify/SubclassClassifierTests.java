@@ -16,12 +16,13 @@
 
 package org.springframework.classify;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class SubclassClassifierTests {
 
@@ -31,6 +32,14 @@ public class SubclassClassifierTests {
 		classifier.setTypeMap(
 				Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
 		assertEquals("foo", classifier.classify(new Foo()));
+	}
+
+	@Test
+	public void testClassifyMultipleInterface() {
+		SubclassClassifier<Object, String> classifier = new SubclassClassifier<Object, String>();
+		classifier.setTypeMap(
+				Collections.<Class<?>, String>singletonMap(Supplier.class, "foo"));
+		assertEquals("foo", classifier.classify(new Spam()));
 	}
 
 	@Test
@@ -51,6 +60,24 @@ public class SubclassClassifierTests {
 		public String get() {
 			return "foo";
 		}
+
+	}
+
+	public class Spam implements Mixer {
+
+		@Override
+		public String get() {
+			return "foo";
+		}
+
+		@Override
+		public String call() throws Exception {
+			return "bar";
+		}
+
+	}
+
+	public static interface Mixer extends Supplier<String>, Callable<String> {
 
 	}
 
