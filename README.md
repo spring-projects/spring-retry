@@ -3,10 +3,16 @@
 This project provides declarative retry support for Spring
 applications. It is used in Spring Batch, Spring Integration, and
 others.
-Imperative retry is also supported for explicit usage. 
+Imperative retry is also supported for explicit usage.
 
 ## Quick Start
-### Declarative example
+
+This section provides a quick introduction to getting started with Spring Retry.
+It includes a declarative example and an imperative example.
+
+### Declarative Example
+
+The following example shows how to use Spring Retry in its declarative style:
 
 ```java
 @Configuration
@@ -33,18 +39,19 @@ class Service {
 }
 ```
 
-Call the `service` method and, if it fails with a `RemoteAccessException`, it retries
-(up to three times by default), and then execute the "recover" method if unsuccessful.
+This example calls the `service` method and, if it fails with a `RemoteAccessException`, retries
+(by default, up to three times), and then tries the `recover` method if unsuccessful.
 There are various options in the `@Retryable` annotation attributes for including and
-excluding exception types, limiting the number of retries and the policy for backoff.
+excluding exception types, limiting the number of retries, and setting the policy for backoff.
 
 The declarative approach to applying retry handling by using the `@Retryable` annotation shown earlier has an additional
 runtime dependency on AOP classes. For details on how to resolve this dependency in your project, see the
-['Java Configuration for Retry Proxies'](#javaConfigForRetryProxies) section below.
+['Java Configuration for Retry Proxies'](#javaConfigForRetryProxies) section.
 
-### Imperative example
+### Imperative Example
 
-Since version 1.3:
+The following example shows how to use Spring Retry in its declarative style (available since version 1.3):
+
 ```java
 RetryTemplate template = RetryTemplate.builder()
 				.maxAttempts(3)
@@ -57,8 +64,8 @@ template.execute(ctx -> {
 });
 ```
 
-Older versions:
-see example in [RetryTemplate](#retryTemplate) section.
+For versions prior to 1.3,
+see the examples in the [RetryTemplate](#retryTemplate) section.
 
 ## Building
 
@@ -110,10 +117,10 @@ public interface RetryCallback<T> {
 }
 ```
 
-The callback is executed and, if it fails (by throwing an `Exception`), it is retried
+The callback is tried, and, if it fails (by throwing an `Exception`), it is retried
 until either it is successful or the implementation decides to abort. There are a number
 of overloaded `execute` methods in the `RetryOperations` interface, to deal with various
-use cases for recovery when all retry attempts are exhausted and with retry state, which
+use cases for recovery when all retry attempts are exhausted and to deal with retry state, which
 lets clients and implementations store information between calls (more on this later).
 
 The simplest general purpose implementation of `RetryOperations` is `RetryTemplate`.
@@ -140,7 +147,7 @@ Foo result = template.execute(new RetryCallback<Foo>() {
 In the preceding example, we execute a web service call and return the result to the user.
 If that call fails, it is retried until a timeout is reached.
 
-Since version 1.3, fluent configuration of RetryTemplate is also available:
+Since version 1.3, fluent configuration of `RetryTemplate` is also available, as follows:
 
 ```java
 RetryTemplate.builder()
@@ -149,12 +156,12 @@ RetryTemplate.builder()
       .retryOn(IOException.class)
       .traversingCauses()
       .build();
- 
+
 RetryTemplate.builder()
       .fixedBackoff(10)
       .withinMillis(3000)
       .build();
- 
+
 RetryTemplate.builder()
       .infiniteRetry()
       .retryOn(IOException.class)
@@ -162,7 +169,7 @@ RetryTemplate.builder()
       .build();
 ```
 
-### Using RetryContext
+### Using `RetryContext`
 
 The method parameter for the `RetryCallback` is a `RetryContext`. Many callbacks ignore
 the context. However, if necessary, you can use it as an attribute bag to store data for
@@ -198,7 +205,7 @@ given the chance to do some alternate processing through the recovery callback.
 In the simplest case, a retry is just a while loop: the `RetryTemplate` can keep trying
 until it either succeeds or fails. The `RetryContext` contains some state to determine
 whether to retry or abort. However, this state is on the stack, and there is no need to
-store it anywhere globally. Consequently, we call this stateless retry. The distinction
+store it anywhere globally. Consequently, we call this "stateless retry". The distinction
 between stateless and stateful retry is contained in the implementation of `RetryPolicy`
 (`RetryTemplate` can handle both). In a stateless retry, the callback is always executed
 in the same thread as when it failed on retry.
@@ -206,13 +213,13 @@ in the same thread as when it failed on retry.
 ## Stateful Retry
 
 Where the failure has caused a transactional resource to become invalid, there are some
-special considerations. This does not apply to a simple remote call, because there is no
-transactional resource (usually), but it does sometimes apply to a database update,
+special considerations. This does not apply to a simple remote call, because there is (usually) no
+transactional resource, but it does sometimes apply to a database update,
 especially when using Hibernate. In this case, it only makes sense to rethrow the
 exception that called the failure immediately so that the transaction can roll back and
 we can start a new (and valid) one.
 
-In these cases, a stateless retry is not good enough because the re-throw and roll back
+In these cases, a stateless retry is not good enough, because the re-throw and roll back
 necessarily involve leaving the `RetryOperations.execute()` method and potentially losing
 the context that was on the stack. To avoid losing the context, we have to introduce a
 storage strategy to lift it off the stack and put it (at a minimum) in heap storage. For
@@ -242,11 +249,11 @@ items. In the case of a JMS message, you can use the message ID.
 
 When the retry is exhausted, you also have the option to handle the failed item in a
 different way, instead of calling the `RetryCallback` (which is now presumed to be likely
-  to fail). As in the stateless case, this option is provided by the `RecoveryCallback`,
-  which you can provide by passing it in to the `execute` method of `RetryOperations`.
+to fail). As in the stateless case, this option is provided by the `RecoveryCallback`,
+which you can provide by passing it in to the `execute` method of `RetryOperations`.
 
 The decision to retry or not is actually delegated to a regular `RetryPolicy`, so the
-usual concerns about limits and timeouts can be injected there (see the next section).
+usual concerns about limits and timeouts can be injected there (see the [Additional Dependencies](#Additional_Dependencies) section).
 
 ## Retry Policies
 
@@ -273,7 +280,7 @@ aggressively, but it is wasteful, because, if a failure is deterministic, time i
 retrying something that you know in advance is fatal.
 
 Spring Retry provides some simple general-purpose implementations of stateless
-`RetryPolicy` (for example, a `SimpleRetryPolicy`), and the `TimeoutRetryPolicy` used in
+`RetryPolicy` (for example, a `SimpleRetryPolicy`) and the `TimeoutRetryPolicy` used in
 the preceding example.
 
 The `SimpleRetryPolicy` allows a retry on any of a named list of exception types, up to a
@@ -297,11 +304,11 @@ template.execute(new RetryCallback<Foo>() {
 A more flexible implementation called `ExceptionClassifierRetryPolicy` is also available.
 It lets you configure different retry behavior for an arbitrary set of exception types
 through the `ExceptionClassifier` abstraction. The policy works by calling on the
-classifier to convert an exception into a delegate `RetryPolicy`, so, for example, one
+classifier to convert an exception into a delegate `RetryPolicy`. For example, one
 exception type can be retried more times before failure than another, by mapping it to a
 different policy.
 
-You might need to implement your own retry policies for more customized decisions -- for
+You might need to implement your own retry policies for more customized decisions. For
 instance, if there is a well-known, solution-specific, classification of exceptions into
 retryable and not retryable.
 
@@ -325,8 +332,8 @@ public interface BackoffPolicy {
 ```
 
 A `BackoffPolicy` is free to implement the backoff in any way it chooses. The policies
-provided by Spring Retry out of the box all use `Object.wait()`. A common use case is to
-backoff with an exponentially increasing wait period, to avoid two retries getting into
+provided by Spring Retry all use `Object.wait()`. A common use case is to
+back off with an exponentially increasing wait period, to avoid two retries getting into
 lock step and both failing (a lesson learned from Ethernet). For this purpose, Spring
 Retry provides `ExponentialBackoffPolicy`. Spring Retry also provides randomized versions
 of delay policies that are quite useful to avoid resonating between related failures in a
@@ -358,12 +365,13 @@ Note that when there is more than one listener, they are in a list, so there is 
 In this case, `open` is called in the same order, while `onError` and `close` are called
 in reverse order.
 
-### Listeners for reflective method invocations
+### Listeners for Reflective Method Invocations
 
-When dealing with methods annotated with `@Retryable` or with Spring AOP intercepted methods, spring-retry provides the possibility to inspect in detail the method invocation within the `RetryListener` implementation.
+When dealing with methods that are annotated with `@Retryable` or with Spring AOP intercepted methods, Spring Retry allows a detailed inspection of the method invocation within the `RetryListener` implementation.
 
-Such a scenario could be particularly useful when there is a need to monitor how often a certain method call has been retried and expose it with detailed tagging information (e.g. : class name, method name, or even parameter values in some exotic cases).
+Such a scenario could be particularly useful when there is a need to monitor how often a certain method call has been retried and expose it with detailed tagging information (such as class name, method name, or even parameter values in some exotic cases).
 
+The following example registers such a listener:
 
 ```java
 
@@ -429,7 +437,7 @@ class Service {
 }
 ```
 
-You can use the attributes of `@Retryable` to control the `RetryPolicy` and `BackoffPolicy`, as the following example shows:
+You can use the attributes of `@Retryable` to control the `RetryPolicy` and `BackoffPolicy`, as follows:
 
 ```java
 @Service
@@ -455,12 +463,12 @@ them. This is purely a marker interface, but it might be useful for other tools 
 apply retry advice (they should usually not bother if the bean already implements
 `Retryable`).
 
-You can supply a recovery method, in case you want to take an alternative code path when
-the retry is exhausted. Methods should be declared in the same class as the `@Retryable`
-and marked `@Recover`. The return type must match the `@Retryable` method. The arguments
+If you want to take an alternative code path when
+the retry is exhausted, you can supply a recovery method. Methods should be declared in the same class as the `@Retryable`
+instance and marked `@Recover`. The return type must match the `@Retryable` method. The arguments
 for the recovery method can optionally include the exception that was thrown and
 (optionally) the arguments passed to the original retryable method (or a partial list of
-  them as long as none are omitted up to the last one needed). The following example shows how to do so:
+them as long as none are omitted up to the last one needed). The following example shows how to do so:
 
 ```java
 @Service
@@ -476,12 +484,12 @@ class Service {
 }
 ```
 
-To resolve conflicts between multiple methods that can be picked for recovery. You can explicitly specify recovery method name. 
+To resolve conflicts between multiple methods that can be picked for recovery, you can explicitly specify recovery method name.
 The following example shows how to do so:
 
 ```java
 @Service
-class Service { 
+class Service {
     @Retryable(recover = "service1Recover", value = RemoteAccessException.class)
     public void service1(String str1, String str2) {
         // ... do something
@@ -504,7 +512,7 @@ class Service {
 }
 ```
 
-Version 1.2 introduces the ability to use expressions for certain properties. The
+Version 1.2 introduced the ability to use expressions for certain properties. The
 following example show how to use expressions this way:
 
 ```java
@@ -539,19 +547,22 @@ Expressions can contain property placeholders, such as `#{${max.delay}}` or
 during initialization. There is no root object for the evaluation but they can reference
 other beans in the context.
 
-#### Additional Dependencies
+<a name="Additional_Dependencies"></a> #### Additional Dependencies
 
 The declarative approach to applying retry handling by using the `@Retryable` annotation
 shown earlier has an additional runtime dependency on AOP classes that need to be declared
 in your project. If your application is implemented by using Spring Boot, this dependency
 is best resolved by using the Spring Boot starter for AOP. For example, for Gradle, add
-the following line to your build.gradle:
+the following line to your `build.gradle` file:
+
 ```
     runtime('org.springframework.boot:spring-boot-starter-aop')
 ```
+
 For non-Boot apps, you need to declare a runtime dependency on the latest version of
 AspectJ's `aspectjweaver` module. For example, for Gradle, you should add the following
 line  to your `build.gradle` file:
+
 ```
     runtime('org.aspectj:aspectjweaver:1.8.13')
 ```
@@ -573,7 +584,7 @@ a method called `remoteCall`:
     class="org.springframework.retry.interceptor.RetryOperationsInterceptor"/>
 ```
 
-For more detail on how to configure AOP interceptors, see the Spring User Guide.
+For more detail on how to configure AOP interceptors, see the [Spring Framework Documentation](https://docs.spring.io/spring/docs/current/spring-framework-reference/index.html).
 
 The preceding example uses a default `RetryTemplate` inside the interceptor. To change the
 policies or listeners, you need only inject an instance of `RetryTemplate` into the
