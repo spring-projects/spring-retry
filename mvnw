@@ -238,7 +238,7 @@ else
     echo $MAVEN_ARGS | grep -q milestone && MAVEN_ARGS=$(echo $MAVEN_ARGS | sed -e 's/-Pmilestone//')
 fi
 
-if echo $VERSION | egrep -q 'RELEASE'; then
+if echo $VERSION | egrep -q '[0-9]*\.[0-9]*\.[0-9]*'; then
     echo Activating \"central\" profile for version=\"$VERSION\"
     echo $MAVEN_ARGS | grep -q milestone || MAVEN_ARGS="$MAVEN_ARGS -Pcentral"
 else
