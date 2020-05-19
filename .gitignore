@@ -13,3 +13,4 @@ target
 .idea
 credentials.yml
 .DS_Store
+.vscode

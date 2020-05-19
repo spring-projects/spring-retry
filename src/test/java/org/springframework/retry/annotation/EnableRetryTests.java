@@ -651,8 +651,11 @@ public class EnableRetryTests {
 	}
 
 	public static interface NoRecoverInterface {
+
 		void service();
+
 		boolean isRecovered();
+
 	}
 
 	public static class NoRecoverClass implements NoRecoverInterface {
@@ -674,6 +677,7 @@ public class EnableRetryTests {
 		public boolean isRecovered() {
 			return this.recovered;
 		}
+
 	}
 
 	public static interface NotAnnotatedInterface {
