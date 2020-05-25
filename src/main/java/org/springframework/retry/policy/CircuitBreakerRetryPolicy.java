@@ -155,8 +155,9 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 					if (!hasAttribute(CIRCUIT_OPEN) || (Boolean) getAttribute(CIRCUIT_OPEN) == false) {
 						logger.trace("Opening circuit");
 						setAttribute(CIRCUIT_OPEN, true);
+						this.start = System.currentTimeMillis();
 					}
-					this.start = System.currentTimeMillis();
+
 					return true;
 				}
 			}
