@@ -547,7 +547,7 @@ Expressions can contain property placeholders, such as `#{${max.delay}}` or
 during initialization. There is no root object for the evaluation but they can reference
 other beans in the context.
 
-<a name="Additional_Dependencies"></a> #### Additional Dependencies
+#### <a name="Additional_Dependencies"></a> Additional Dependencies
 
 The declarative approach to applying retry handling by using the `@Retryable` annotation
 shown earlier has an additional runtime dependency on AOP classes that need to be declared
