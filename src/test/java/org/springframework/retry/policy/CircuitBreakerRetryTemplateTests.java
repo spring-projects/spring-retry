@@ -147,6 +147,17 @@ public class CircuitBreakerRetryTemplateTests {
 		assertEquals(RESULT, result);
 	}
 
+	@Test
+	public void testCircuitOpensWhenRetryPolicyFirstTimeAttributeCircuitOpenNull() throws Throwable {
+		MockNeverRetryPolicy mockNeverRetryPolicy = new MockNeverRetryPolicy();
+		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(mockNeverRetryPolicy));
+		this.callback.setAttemptsBeforeSuccess(10);
+		Object result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
+		assertEquals(RECOVERED, result);
+		result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
+		assertEquals(RECOVERED, result);
+	}
+
 	protected static class MockRetryCallback implements RetryCallback<Object, Exception> {
 
 		private int attemptsBeforeSuccess;
@@ -185,4 +196,9 @@ public class CircuitBreakerRetryTemplateTests {
 
 	}
 
+	protected class MockNeverRetryPolicy extends NeverRetryPolicy {
+	    public boolean canRetry(RetryContext context) {
+	        return false;
+	    }
+	}
 }
