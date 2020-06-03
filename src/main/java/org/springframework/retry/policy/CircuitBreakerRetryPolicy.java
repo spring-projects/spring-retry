@@ -152,7 +152,8 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 					retryable = this.policy.canRetry(this.context);
 				}
 				else if (time < this.openWindow) {
-					if ((Boolean) getAttribute(CIRCUIT_OPEN) == false) {
+					Object open = getAttribute(CIRCUIT_OPEN);
+					if (open != null && !((Boolean) open)) {
 						logger.trace("Opening circuit");
 						setAttribute(CIRCUIT_OPEN, true);
 					}
