@@ -1,0 +1,8 @@
+<gradleEnterprise>
+  <server>
+    <url>https://ge.spring.io</url>
+  </server>
+  <buildScan>
+    <publish>ON_DEMAND</publish>
+  </buildScan>
+</gradleEnterprise>
