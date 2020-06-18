@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2014 the original author or authors.
+ * Copyright 2006-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.retry.backoff;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.util.ClassUtils;
 
@@ -28,9 +29,10 @@ import org.springframework.util.ClassUtils;
  * This implementation is thread-safe and suitable for concurrent access. Modifications to
  * the configuration do not affect any retry sets that are already in progress.
  *
- * The {@link #setInitialInterval(long)} property controls the initial value passed to
- * {@link Math#exp(double)} and the {@link #setMultiplier(double)} property controls by
- * how much this value is increased for each subsequent attempt.
+ * The {@link #setInitialInterval(long)} property controls the initial delay value for the
+ * first retry and the {@link #setMultiplier(double)} property controls by how much the
+ * delay is increased for each subsequent attempt. The delay interval is capped at
+ * {@link #setMaxInterval(long)}.
  *
  * @author Rob Harrop
  * @author Dave Syer
@@ -83,6 +85,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		this.sleeper = sleeper;
 	}
 
+	@Override
 	public ExponentialBackOffPolicy withSleeper(Sleeper sleeper) {
 		ExponentialBackOffPolicy res = newInstance();
 		cloneValues(res);
@@ -98,7 +101,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		target.setInitialInterval(getInitialInterval());
 		target.setMaxInterval(getMaxInterval());
 		target.setMultiplier(getMultiplier());
-		target.setSleeper(sleeper);
+		target.setSleeper(this.sleeper);
 	}
 
 	/**
@@ -135,7 +138,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the initial interval
 	 */
 	public long getInitialInterval() {
-		return initialInterval;
+		return this.initialInterval;
 	}
 
 	/**
@@ -143,7 +146,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the maximum interval.
 	 */
 	public long getMaxInterval() {
-		return maxInterval;
+		return this.maxInterval;
 	}
 
 	/**
@@ -151,13 +154,14 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the multiplier in use
 	 */
 	public double getMultiplier() {
-		return multiplier;
+		return this.multiplier;
 	}
 
 	/**
 	 * Returns a new instance of {@link BackOffContext} configured with the 'expSeed' and
 	 * 'increment' values.
 	 */
+	@Override
 	public BackOffContext start(RetryContext context) {
 		return new ExponentialBackOffContext(this.initialInterval, this.multiplier, this.maxInterval);
 	}
@@ -165,14 +169,15 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	/**
 	 * Pause for a length of time equal to ' <code>exp(backOffContext.expSeed)</code>'.
 	 */
+	@Override
 	public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
 		ExponentialBackOffContext context = (ExponentialBackOffContext) backOffContext;
 		try {
 			long sleepTime = context.getSleepAndIncrement();
-			if (logger.isDebugEnabled()) {
-				logger.debug("Sleeping for " + sleepTime);
+			if (this.logger.isDebugEnabled()) {
+				this.logger.debug("Sleeping for " + sleepTime);
 			}
-			sleeper.sleep(sleepTime);
+			this.sleeper.sleep(sleepTime);
 		}
 		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
@@ -195,8 +200,8 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 		public synchronized long getSleepAndIncrement() {
 			long sleep = this.interval;
-			if (sleep > maxInterval) {
-				sleep = maxInterval;
+			if (sleep > this.maxInterval) {
+				sleep = this.maxInterval;
 			}
 			else {
 				this.interval = getNextInterval();
@@ -209,22 +214,23 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public double getMultiplier() {
-			return multiplier;
+			return this.multiplier;
 		}
 
 		public long getInterval() {
-			return interval;
+			return this.interval;
 		}
 
 		public long getMaxInterval() {
-			return maxInterval;
+			return this.maxInterval;
 		}
 
 	}
 
+	@Override
 	public String toString() {
-		return ClassUtils.getShortName(getClass()) + "[initialInterval=" + initialInterval + ", multiplier="
-				+ multiplier + ", maxInterval=" + maxInterval + "]";
+		return ClassUtils.getShortName(getClass()) + "[initialInterval=" + this.initialInterval + ", multiplier="
+				+ this.multiplier + ", maxInterval=" + this.maxInterval + "]";
 	}
 
 }

@@ -197,8 +197,11 @@ public class CircuitBreakerRetryTemplateTests {
 	}
 
 	protected class MockNeverRetryPolicy extends NeverRetryPolicy {
-	    public boolean canRetry(RetryContext context) {
-	        return false;
-	    }
+
+		public boolean canRetry(RetryContext context) {
+			return false;
+		}
+
 	}
+
 }
