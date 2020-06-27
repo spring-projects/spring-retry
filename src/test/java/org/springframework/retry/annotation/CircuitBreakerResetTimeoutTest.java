@@ -50,7 +50,7 @@ public class CircuitBreakerResetTimeoutTest {
 		externalService.service("FAIL");
 	}
 
-	private void doCorrectUpload(TestService externalService){
+	private void doCorrectUpload(TestService externalService) {
 		externalService.service("");
 	}
 
@@ -67,7 +67,7 @@ public class CircuitBreakerResetTimeoutTest {
 
 		private RetryContext context;
 
-		@CircuitBreaker(include = { RuntimeException.class }, resetTimeout = 15000)
+		@CircuitBreaker(include = { RuntimeException.class }, openTimeout = 10000, resetTimeout = 15000)
 		String service(String payload) {
 			this.context = RetrySynchronizationManager.getContext();
 			System.out.println("real service called");
