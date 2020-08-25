@@ -24,7 +24,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * Implementation of {@link BackOffPolicy} that increases the back off period for each
- * retry attempt in a given set using the {@link Math#exp(double) exponential} function.
+ * retry attempt in a given set up to a limit.
  *
  * This implementation is thread-safe and suitable for concurrent access. Modifications to
  * the configuration do not affect any retry sets that are already in progress.
@@ -61,7 +61,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	public static final double DEFAULT_MULTIPLIER = 2;
 
 	/**
-	 * The initial sleep interval.
+	 * The initial backoff interval.
 	 */
 	private volatile long initialInterval = DEFAULT_INITIAL_INTERVAL;
 
@@ -71,7 +71,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	private volatile long maxInterval = DEFAULT_MAX_INTERVAL;
 
 	/**
-	 * The value to increment the exp seed with for each retry attempt.
+	 * The value to add to the backoff period for each retry attempt.
 	 */
 	private volatile double multiplier = DEFAULT_MULTIPLIER;
 
@@ -158,8 +158,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	}
 
 	/**
-	 * Returns a new instance of {@link BackOffContext} configured with the 'expSeed' and
-	 * 'increment' values.
+	 * Returns a new instance of {@link BackOffContext} with the configured properties.
 	 */
 	@Override
 	public BackOffContext start(RetryContext context) {
@@ -167,7 +166,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	}
 
 	/**
-	 * Pause for a length of time equal to ' <code>exp(backOffContext.expSeed)</code>'.
+	 * Pause for the current backoff interval.
 	 */
 	@Override
 	public void backOff(BackOffContext backOffContext) throws BackOffInterruptedException {
@@ -192,8 +191,8 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 		private long maxInterval;
 
-		public ExponentialBackOffContext(long expSeed, double multiplier, long maxInterval) {
-			this.interval = expSeed;
+		public ExponentialBackOffContext(long interval, double multiplier, long maxInterval) {
+			this.interval = interval;
 			this.multiplier = multiplier;
 			this.maxInterval = maxInterval;
 		}

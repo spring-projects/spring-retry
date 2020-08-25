@@ -14,6 +14,7 @@ public class CircuitBreakerResetTimeoutTest {
 
 	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 			CircuitBreakerResetTimeoutTest.TestConfiguration.class);
+
 	private TestService serviceInTest = context.getBean(TestService.class);
 
 	@Test
@@ -57,10 +58,12 @@ public class CircuitBreakerResetTimeoutTest {
 	@Configuration
 	@EnableRetry
 	protected static class TestConfiguration {
+
 		@Bean
 		public TestService externalService() {
 			return new TestService();
 		}
+
 	}
 
 	static class TestService {
@@ -71,7 +74,7 @@ public class CircuitBreakerResetTimeoutTest {
 		String service(String payload) {
 			this.context = RetrySynchronizationManager.getContext();
 			System.out.println("real service called");
-			if(payload.contentEquals("FAIL")) {
+			if (payload.contentEquals("FAIL")) {
 				throw new RuntimeException("");
 			}
 			return payload;
@@ -86,6 +89,7 @@ public class CircuitBreakerResetTimeoutTest {
 		public RetryContext getContext() {
 			return this.context;
 		}
+
 	}
 
 }
