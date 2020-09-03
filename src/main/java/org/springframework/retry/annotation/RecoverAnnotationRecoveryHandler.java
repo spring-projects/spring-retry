@@ -17,6 +17,8 @@
 package org.springframework.retry.annotation;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -173,25 +175,65 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (recover == null) {
 					recover = findAnnotationOnTarget(target, method);
 				}
-				if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
-					Class<?>[] parameterTypes = method.getParameterTypes();
-					if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
-						@SuppressWarnings("unchecked")
-						Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
-						types.put(type, method);
-						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, type));
+				if (recover != null && failingMethod.getGenericReturnType() instanceof ParameterizedType
+						&& method.getGenericReturnType() instanceof ParameterizedType) {
+					if (isParameterizedTypeAssignable((ParameterizedType) method.getGenericReturnType(),
+							(ParameterizedType) failingMethod.getGenericReturnType())) {
+						putToMethodsMap(method, types);
 					}
-					else {
-						RecoverAnnotationRecoveryHandler.this.classifier.setDefaultValue(method);
-						RecoverAnnotationRecoveryHandler.this.methods.put(method,
-								new SimpleMetadata(parameterTypes.length, null));
-					}
+				}
+				else if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
+					putToMethodsMap(method, types);
 				}
 			}
 		});
 		this.classifier.setTypeMap(types);
 		optionallyFilterMethodsBy(failingMethod.getReturnType());
+	}
+
+	/**
+	 * Returns {@code true} if the input methodReturnType is a direct match of the
+	 * failingMethodReturnType. Takes nested generics into consideration as well, while
+	 * deciding a match.
+	 * @param methodReturnType
+	 * @param failingMethodReturnType
+	 * @return
+	 */
+	private boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
+			ParameterizedType failingMethodReturnType) {
+		Type[] methodActualArgs = methodReturnType.getActualTypeArguments();
+		Type[] failingMethodActualArgs = failingMethodReturnType.getActualTypeArguments();
+		if (methodActualArgs.length != failingMethodActualArgs.length) {
+			return false;
+		}
+		int startingIndex = 0;
+		for (int i = startingIndex; i < methodActualArgs.length; i++) {
+			Type methodArgType = methodActualArgs[i];
+			Type failingMethodArgType = failingMethodActualArgs[i];
+			if (methodArgType instanceof ParameterizedType && failingMethodArgType instanceof ParameterizedType) {
+				return isParameterizedTypeAssignable((ParameterizedType) methodArgType,
+						(ParameterizedType) failingMethodArgType);
+			}
+			if (methodArgType instanceof Class && failingMethodArgType instanceof Class
+					&& !failingMethodArgType.equals(methodArgType)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void putToMethodsMap(Method method, Map<Class<? extends Throwable>, Method> types) {
+		Class<?>[] parameterTypes = method.getParameterTypes();
+		if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
+			@SuppressWarnings("unchecked")
+			Class<? extends Throwable> type = (Class<? extends Throwable>) parameterTypes[0];
+			types.put(type, method);
+			RecoverAnnotationRecoveryHandler.this.methods.put(method, new SimpleMetadata(parameterTypes.length, type));
+		}
+		else {
+			RecoverAnnotationRecoveryHandler.this.classifier.setDefaultValue(method);
+			RecoverAnnotationRecoveryHandler.this.methods.put(method, new SimpleMetadata(parameterTypes.length, null));
+		}
 	}
 
 	private Recover findAnnotationOnTarget(Object target, Method method) {
