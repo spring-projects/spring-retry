@@ -18,16 +18,19 @@ package org.springframework.retry.annotation;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.springframework.retry.ExhaustedRetryException;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Dave Syer
@@ -104,6 +107,106 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				new InheritanceReturnTypeRecover(),
 				ReflectionUtils.findMethod(InheritanceReturnTypeRecover.class, "bar", String.class));
 		assertEquals(3, barHandler.recover(new Object[] { "Aldo" }, new RuntimeException("Planned")));
+
+	}
+
+	@Test
+	public void genericReturnStringValueTypeParentThrowableRecoverMethod() {
+
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
+				new GenericReturnTypeRecover(),
+				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "foo", String.class));
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> recoverResponseMap = (Map<String, String>) handler.recover(new Object[] { "Aldo" },
+				new RuntimeException("Planned"));
+		assertFalse(CollectionUtils.isEmpty(recoverResponseMap));
+		assertEquals("fooRecoverValue1", recoverResponseMap.get("foo"));
+	}
+
+	@Test
+	public void genericReturnStringValueTypeChildThrowableRecoverMethod() {
+
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
+				new GenericReturnTypeRecover(),
+				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "foo", String.class));
+
+		@SuppressWarnings("unchecked")
+		Map<String, String> recoverResponseMap = (Map<String, String>) handler.recover(new Object[] { "Aldo" },
+				new IllegalStateException("Planned"));
+		assertFalse(CollectionUtils.isEmpty(recoverResponseMap));
+		assertEquals("fooRecoverValue2", recoverResponseMap.get("foo"));
+	}
+
+	@Test
+	public void genericReturnOneValueTypeRecoverMethod() {
+
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
+				new GenericReturnTypeRecover(),
+				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "bar", String.class));
+
+		@SuppressWarnings("unchecked")
+		Map<String, GenericReturnTypeRecover.One> recoverResponseMap = (Map<String, GenericReturnTypeRecover.One>) handler
+				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+		assertFalse(CollectionUtils.isEmpty(recoverResponseMap));
+		assertNotNull(recoverResponseMap.get("bar"));
+		assertEquals("barRecoverValue", recoverResponseMap.get("bar").name);
+	}
+
+	@Test
+	public void genericSpecifiedReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> fooHandler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new GenericInheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(GenericInheritanceReturnTypeRecover.class, "foo", String.class));
+		@SuppressWarnings("unchecked")
+		Map<String, Integer> recoverResponseMapRe = (Map<String, Integer>) fooHandler.recover(new Object[] { "Aldo" },
+				new RuntimeException("Planned"));
+		assertEquals(1, recoverResponseMapRe.get("foo").intValue());
+		@SuppressWarnings("unchecked")
+		Map<String, Integer> recoverResponseMapIse = (Map<String, Integer>) fooHandler.recover(new Object[] { "Aldo" },
+				new IllegalStateException("Planned"));
+		assertEquals(2, recoverResponseMapIse.get("foo").intValue());
+	}
+
+	/**
+	 * Even if there are @Recover methods with narrower generic return types, the one with
+	 * direct match should get called
+	 */
+	@Test
+	public void genericDirectMatchReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> barHandler = new RecoverAnnotationRecoveryHandler<Double>(
+				new GenericInheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(GenericInheritanceReturnTypeRecover.class, "bar", String.class));
+		@SuppressWarnings("unchecked")
+		Map<String, Number> recoverResponseMapRe = (Map<String, Number>) barHandler.recover(new Object[] { "Aldo" },
+				new RuntimeException("Planned"));
+		assertEquals(0.2, recoverResponseMapRe.get("bar"));
+	}
+
+	@Test
+	public void genericNestedMapIntegerStringReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> fooHandler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new NestedGenericInheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(NestedGenericInheritanceReturnTypeRecover.class, "foo", String.class));
+		@SuppressWarnings("unchecked")
+		Map<String, Map<String, Map<Integer, String>>> recoverResponseMapRe = (Map<String, Map<String, Map<Integer, String>>>) fooHandler
+				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+		assertEquals("fooRecoverReValue", recoverResponseMapRe.get("foo").get("foo").get(0));
+		@SuppressWarnings("unchecked")
+		Map<String, Map<String, Map<Integer, String>>> recoverResponseMapIe = (Map<String, Map<String, Map<Integer, String>>>) fooHandler
+				.recover(new Object[] { "Aldo" }, new IllegalStateException("Planned"));
+		assertEquals("fooRecoverIeValue", recoverResponseMapIe.get("foo").get("foo").get(0));
+	}
+
+	@Test
+	public void genericNestedMapNumberStringReturnTypeRecoverMethod() {
+		RecoverAnnotationRecoveryHandler<?> barHandler = new RecoverAnnotationRecoveryHandler<Double>(
+				new NestedGenericInheritanceReturnTypeRecover(),
+				ReflectionUtils.findMethod(NestedGenericInheritanceReturnTypeRecover.class, "bar", String.class));
+		@SuppressWarnings("unchecked")
+		Map<String, Map<String, Map<Number, String>>> recoverResponseMapRe = (Map<String, Map<String, Map<Number, String>>>) barHandler
+				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+		assertEquals("barRecoverNumberValue", recoverResponseMapRe.get("bar").get("bar").get(0.0));
 
 	}
 
@@ -289,6 +392,119 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		@Recover
 		public Number quux(RuntimeException re, String name) {
 			return 3;
+		}
+
+	}
+
+	protected static class GenericReturnTypeRecover {
+
+		private static class One {
+
+			String name;
+
+			public One(String name) {
+				this.name = name;
+			}
+
+		}
+
+		@Retryable
+		public Map<String, String> foo(String name) {
+			return Collections.singletonMap("foo", "fooValue");
+		}
+
+		@Retryable
+		public Map<String, One> bar(String name) {
+			return Collections.singletonMap("bar", new One("barValue"));
+		}
+
+		@Recover
+		public Map<String, String> fooRecoverRe(RuntimeException re, String name) {
+			return Collections.singletonMap("foo", "fooRecoverValue1");
+		}
+
+		@Recover
+		public Map<String, String> fooRecoverIe(IllegalStateException re, String name) {
+			return Collections.singletonMap("foo", "fooRecoverValue2");
+		}
+
+		@Recover
+		public Map<String, One> barRecover(RuntimeException re, String name) {
+			return Collections.singletonMap("bar", new One("barRecoverValue"));
+		}
+
+	}
+
+	protected static class GenericInheritanceReturnTypeRecover {
+
+		@Retryable
+		public Map<String, Integer> foo(String name) {
+			return Collections.singletonMap("foo", 0);
+		}
+
+		@Retryable
+		public Map<String, Number> bar(String name) {
+			return Collections.singletonMap("bar", (Number) 0.0);
+		}
+
+		@Recover
+		public Map<String, Integer> fooRecoverRe(RuntimeException re, String name) {
+			return Collections.singletonMap("foo", 1);
+		}
+
+		@Recover
+		public Map<String, Integer> fooRecoverIe(IllegalStateException re, String name) {
+			return Collections.singletonMap("foo", 2);
+		}
+
+		@Recover
+		public Map<String, Double> barRecoverDouble(RuntimeException re, String name) {
+			return Collections.singletonMap("bar", 0.1);
+		}
+
+		@Recover
+		public Map<String, Number> barRecoverNumber(RuntimeException re, String name) {
+			return Collections.singletonMap("bar", (Number) 0.2);
+		}
+
+	}
+
+	protected static class NestedGenericInheritanceReturnTypeRecover {
+
+		@Retryable
+		public Map<String, Map<String, Map<Integer, String>>> foo(String name) {
+			return Collections.singletonMap("foo",
+					Collections.singletonMap("foo", Collections.singletonMap(0, "fooValue")));
+		}
+
+		@Retryable
+		public Map<String, Map<String, Map<Number, String>>> bar(String name) {
+			return Collections.singletonMap("bar",
+					Collections.singletonMap("bar", Collections.singletonMap((Number) 0.0, "barValue")));
+		}
+
+		@Recover
+		public Map<String, Map<String, Map<Integer, String>>> fooRecoverRe(RuntimeException re, String name) {
+			return Collections.singletonMap("foo",
+					Collections.singletonMap("foo", Collections.singletonMap(0, "fooRecoverReValue")));
+		}
+
+		@Recover
+		public Map<String, Map<String, Map<Integer, String>>> fooRecoverIe(IllegalStateException re, String name) {
+			return Collections.singletonMap("foo",
+					Collections.singletonMap("foo", Collections.singletonMap(0, "fooRecoverIeValue")));
+		}
+
+		@Recover
+		public Map<String, Map<String, Map<Number, String>>> barRecoverNumber(RuntimeException re, String name) {
+			return Collections.singletonMap("bar",
+					Collections.singletonMap("bar", Collections.singletonMap((Number) 0.0, "barRecoverNumberValue")));
+		}
+
+		@Recover
+		public Map<String, Map<String, Map<Double, String>>> barRecoverDouble(RuntimeException re, String name) {
+			return Collections.singletonMap("bar",
+					Collections.singletonMap("bar", Collections.singletonMap(0.0, "barRecoverDoubleValue")));
 		}
 
 	}
