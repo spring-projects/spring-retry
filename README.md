@@ -50,7 +50,7 @@ runtime dependency on AOP classes. For details on how to resolve this dependency
 
 ### Imperative Example
 
-The following example shows how to use Spring Retry in its declarative style (available since version 1.3):
+The following example shows how to use Spring Retry in its imperative style (available since version 1.3):
 
 ```java
 RetryTemplate template = RetryTemplate.builder()
