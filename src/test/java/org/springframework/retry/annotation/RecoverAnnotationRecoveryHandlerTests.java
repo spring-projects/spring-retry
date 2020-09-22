@@ -403,23 +403,32 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	}
 
-	protected static class RecoverByRetryableName {
+	protected static class RecoverByRetryableName implements  RecoverByRetryableNameInterface{
 
-		@Retryable(recover = "barRecover")
 		public int foo(String name) {
 			return 0;
 		}
 
-		@Recover
 		public int fooRecover(Throwable throwable, String name) {
 			return 1;
 		}
 
-		@Recover
 		public int barRecover(Throwable throwable, String name) {
 			return 2;
 		}
 
 	}
 
+	protected interface RecoverByRetryableNameInterface {
+
+		@Retryable(recover = "barRecover")
+		public int foo(String name);
+
+		@Recover
+		public int fooRecover(Throwable throwable, String name);
+
+		@Recover
+		public int barRecover(Throwable throwable, String name);
+
+	}
 }

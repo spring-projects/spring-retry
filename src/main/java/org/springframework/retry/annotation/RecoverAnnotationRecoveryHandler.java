@@ -162,7 +162,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private void init(final Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
 		final Method failingMethod = method;
-		Retryable retryable = method.getAnnotation(Retryable.class);
+		Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
 		if (retryable != null) {
 			this.recoverMethodName = retryable.recover();
 		}
