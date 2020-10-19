@@ -18,12 +18,11 @@ package org.springframework.retry.annotation;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.PostConstruct;
 
 import org.aopalliance.aop.Advice;
 import org.springframework.aop.ClassFilter;
@@ -37,17 +36,21 @@ import org.springframework.aop.support.annotation.AnnotationClassFilter;
 import org.springframework.aop.support.annotation.AnnotationMethodMatcher;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.NewMethodArgumentsIdentifier;
 import org.springframework.retry.policy.RetryContextCache;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+import org.springframework.util.comparator.ComparableComparator;
 
 /**
  * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
@@ -61,32 +64,33 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  *
  */
 @SuppressWarnings("serial")
-@Configuration
-public class RetryConfiguration extends AbstractPointcutAdvisor implements IntroductionAdvisor, BeanFactoryAware {
+@Component
+public class RetryConfiguration extends AbstractPointcutAdvisor
+		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean {
 
 	private Advice advice;
 
 	private Pointcut pointcut;
 
-	@Autowired(required = false)
 	private RetryContextCache retryContextCache;
 
-	@Autowired(required = false)
 	private List<RetryListener> retryListeners;
 
-	@Autowired(required = false)
 	private MethodArgumentsKeyGenerator methodArgumentsKeyGenerator;
 
-	@Autowired(required = false)
 	private NewMethodArgumentsIdentifier newMethodArgumentsIdentifier;
 
-	@Autowired(required = false)
 	private Sleeper sleeper;
 
 	private BeanFactory beanFactory;
 
-	@PostConstruct
-	public void init() {
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		retryContextCache = findBean(RetryContextCache.class);
+		methodArgumentsKeyGenerator = findBean(MethodArgumentsKeyGenerator.class);
+		newMethodArgumentsIdentifier = findBean(NewMethodArgumentsIdentifier.class);
+		retryListeners = findBeans(RetryListener.class);
+		sleeper = findBean(Sleeper.class);
 		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
@@ -94,6 +98,28 @@ public class RetryConfiguration extends AbstractPointcutAdvisor implements Intro
 		if (this.advice instanceof BeanFactoryAware) {
 			((BeanFactoryAware) this.advice).setBeanFactory(beanFactory);
 		}
+	}
+
+	private <T> List<T> findBeans(Class<? extends T> type) {
+		if (beanFactory instanceof ListableBeanFactory) {
+			ListableBeanFactory listable = (ListableBeanFactory) beanFactory;
+			if (listable.getBeanNamesForType(type).length == 1) {
+				ArrayList<T> list = new ArrayList<T>(listable.getBeansOfType(type).values());
+				OrderComparator.sort(list);
+				return list;
+			}
+		}
+		return null;
+	}
+
+	private <T> T findBean(Class<? extends T> type) {
+		if (beanFactory instanceof ListableBeanFactory) {
+			ListableBeanFactory listable = (ListableBeanFactory) beanFactory;
+			if (listable.getBeanNamesForType(type).length == 1) {
+				return listable.getBean(type);
+			}
+		}
+		return null;
 	}
 
 	/**
