@@ -88,7 +88,7 @@ jobs:
         - |
           rm -rf ~/.m2
           ln -s $(pwd)/.m2 ~/.m2
-          ./mvnw install -s .mvn/settings.xml -Dspring.framework.version=5.0.0.RC2
+          ./mvnw install -s .mvn/settings.xml -Dspring.framework.version=5.3.2
     params:
       TERM: dumb
       passphrase: {{passphrase}}

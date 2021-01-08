@@ -262,6 +262,8 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
+			<!-- Not really optional, but since it works with 4 and 5 this is safe -->
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
