@@ -403,7 +403,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	}
 
-	protected static class RecoverByRetryableName implements  RecoverByRetryableNameInterface{
+	protected static class RecoverByRetryableName implements RecoverByRetryableNameInterface {
 
 		public int foo(String name) {
 			return 0;
@@ -431,4 +431,5 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		public int barRecover(Throwable throwable, String name);
 
 	}
+
 }
