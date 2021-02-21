@@ -21,7 +21,6 @@
 	</licenses>
 	<packaging>jar</packaging>
 	<properties>
-		<maven.test.failure.ignore>true</maven.test.failure.ignore>
 		<spring.framework.version>4.3.22.RELEASE</spring.framework.version>
 		<disable.checks>false</disable.checks>
 	</properties>
@@ -72,12 +71,6 @@
 					</snapshots>
 				</pluginRepository>
 			</pluginRepositories>
-		</profile>
-		<profile>
-			<id>strict</id>
-			<properties>
-				<maven.test.failure.ignore>false</maven.test.failure.ignore>
-			</properties>
 		</profile>
 		<profile>
 			<id>fast</id>

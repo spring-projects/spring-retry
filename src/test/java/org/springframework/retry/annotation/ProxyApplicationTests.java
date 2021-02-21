@@ -1,6 +1,5 @@
 package org.springframework.retry.annotation;
 
-import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,7 +52,7 @@ public class ProxyApplicationTests {
 	}
 
 	private int count() {
-		URLClassLoader classLoader = (URLClassLoader) getClass().getClassLoader();
+		ClassLoader classLoader = getClass().getClassLoader();
 		@SuppressWarnings("unchecked")
 		Vector<Class<?>> classes = (Vector<Class<?>>) ReflectionTestUtils.getField(classLoader, "classes");
 		Set<Class<?>> news = new HashSet<Class<?>>();
