@@ -512,7 +512,7 @@ class Service {
 }
 ```
 
-Version 1.3.2 and later supports matching a paramterized (generic) return type to detect the correct recovery method:
+Version 1.3.2 and later supports matching a parameterized (generic) return type to detect the correct recovery method:
 
 ```java
 @Service
