@@ -512,6 +512,35 @@ class Service {
 }
 ```
 
+Version 1.3.2 and later supports matching a paramterized (generic) return type to detect the correct recovery method:
+
+```java
+@Service
+class Service {
+
+    @Retryable(RemoteAccessException.class)
+    public List<Thing1> service1(String str1, String str2) {
+        // ... do something
+    }
+
+    @Retryable(RemoteAccessException.class)
+    public List<Thing2> service2(String str1, String str2) {
+        // ... do something
+    }
+
+    @Recover
+    public List<Thing1> recover1(RemoteAccessException e, String str1, String str2) {
+       // ... error handling for service1
+    }
+
+    @Recover
+    public List<Thing2> recover2(RemoteAccessException e, String str1, String str2) {
+       // ... error handling for service2
+    }
+
+}
+```
+
 Version 1.2 introduced the ability to use expressions for certain properties. The
 following example show how to use expressions this way:
 

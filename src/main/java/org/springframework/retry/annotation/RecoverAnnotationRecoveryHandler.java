@@ -197,10 +197,12 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	 * deciding a match.
 	 * @param methodReturnType
 	 * @param failingMethodReturnType
-	 * @return
+	 * @return true if the parameterized return types match.
+	 * @since 1.3.1
 	 */
 	private boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
 			ParameterizedType failingMethodReturnType) {
+
 		Type[] methodActualArgs = methodReturnType.getActualTypeArguments();
 		Type[] failingMethodActualArgs = failingMethodReturnType.getActualTypeArguments();
 		if (methodActualArgs.length != failingMethodActualArgs.length) {

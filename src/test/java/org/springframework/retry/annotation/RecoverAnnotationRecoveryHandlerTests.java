@@ -30,7 +30,9 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Dave Syer
@@ -499,12 +501,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		public Map<String, Map<String, Map<Number, String>>> barRecoverNumber(RuntimeException re, String name) {
 			return Collections.singletonMap("bar",
 					Collections.singletonMap("bar", Collections.singletonMap((Number) 0.0, "barRecoverNumberValue")));
-		}
-
-		@Recover
-		public Map<String, Map<String, Map<Double, String>>> barRecoverDouble(RuntimeException re, String name) {
-			return Collections.singletonMap("bar",
-					Collections.singletonMap("bar", Collections.singletonMap(0.0, "barRecoverDoubleValue")));
 		}
 
 	}
