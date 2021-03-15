@@ -53,6 +53,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 	public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
 		UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
 		res.setMinBackOffPeriod(minBackOffPeriod);
+		res.setMaxBackOffPeriod(maxBackOffPeriod);
 		res.setSleeper(sleeper);
 		return res;
 	}
