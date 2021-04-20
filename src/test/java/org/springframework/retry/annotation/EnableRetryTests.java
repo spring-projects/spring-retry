@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,14 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.Ordered;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
+import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
@@ -60,6 +65,10 @@ public class EnableRetryTests {
 		assertTrue(AopUtils.isAopProxy(service));
 		service.service();
 		assertEquals(3, service.getCount());
+		TestConfiguration config = context.getBean(TestConfiguration.class);
+		assertTrue(config.listener1);
+		assertTrue(config.listener2);
+		assertTrue(config.twoFirst);
 		context.close();
 	}
 
@@ -279,6 +288,12 @@ public class EnableRetryTests {
 			return pspc;
 		}
 
+		boolean listener1;
+
+		boolean listener2;
+
+		protected boolean twoFirst;
+
 		@SuppressWarnings("serial")
 		@Bean
 		public Sleeper sleeper() {
@@ -292,6 +307,48 @@ public class EnableRetryTests {
 		@Bean
 		public Service service() {
 			return new Service();
+		}
+
+		@Bean
+		public RetryListener listener1() {
+			return new OrderedListener() {
+
+				@Override
+				public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+
+					TestConfiguration.this.listener1 = true;
+					TestConfiguration.this.twoFirst = true;
+					return super.open(context, callback);
+				}
+
+				@Override
+				public int getOrder() {
+					return Integer.MAX_VALUE;
+				}
+
+			};
+		}
+
+		@Bean
+		public RetryListener listener2() {
+			return new OrderedListener() {
+
+				private boolean listener1;
+
+				@Override
+				public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+
+					TestConfiguration.this.listener2 = true;
+					TestConfiguration.this.twoFirst = false;
+					return super.open(context, callback);
+				}
+
+				@Override
+				public int getOrder() {
+					return Integer.MIN_VALUE;
+				}
+
+			};
 		}
 
 		@Bean
@@ -377,13 +434,13 @@ public class EnableRetryTests {
 
 		@Retryable(RuntimeException.class)
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -394,20 +451,20 @@ public class EnableRetryTests {
 
 		@Retryable(RuntimeException.class)
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		@Retryable(RuntimeException.class)
 		public void other() {
-			if (count++ < 3) {
+			if (this.count++ < 3) {
 				throw new RuntimeException("Other");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -420,7 +477,7 @@ public class EnableRetryTests {
 
 		@Retryable(RuntimeException.class)
 		public void service() {
-			count++;
+			this.count++;
 			throw new RuntimeException("Planned");
 		}
 
@@ -430,11 +487,11 @@ public class EnableRetryTests {
 		}
 
 		public Throwable getCause() {
-			return cause;
+			return this.cause;
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -445,13 +502,13 @@ public class EnableRetryTests {
 		private int count = 0;
 
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -462,13 +519,13 @@ public class EnableRetryTests {
 
 		@Retryable(include = RuntimeException.class, exclude = IllegalStateException.class)
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new IllegalStateException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -481,13 +538,13 @@ public class EnableRetryTests {
 
 		@Retryable(exclude = IllegalStateException.class)
 		public void service() {
-			if (count++ < 2) {
-				throw exceptionToThrow;
+			if (this.count++ < 2) {
+				throw this.exceptionToThrow;
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 		public void setExceptionToThrow(RuntimeException exceptionToThrow) {
@@ -502,13 +559,13 @@ public class EnableRetryTests {
 
 		@Retryable(stateful = true)
 		public void service(int value) {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -519,13 +576,13 @@ public class EnableRetryTests {
 
 		@Retryable(interceptor = "retryInterceptor")
 		public void service() {
-			if (count++ < 4) {
+			if (this.count++ < 4) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -536,14 +593,14 @@ public class EnableRetryTests {
 
 		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
 		public void service1() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
 		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
 		public void service2() {
-			count++;
+			this.count++;
 			throw new RuntimeException("this cannot be retried");
 		}
 
@@ -551,27 +608,27 @@ public class EnableRetryTests {
 				maxAttemptsExpression = "#{@integerFiveBean}", backoff = @Backoff(delayExpression = "#{${one}}",
 						maxDelayExpression = "#{${five}}", multiplierExpression = "#{${onePointOne}}"))
 		public void service3() {
-			if (count++ < 8) {
+			if (this.count++ < 8) {
 				throw new RuntimeException();
 			}
 		}
 
 		@Retryable(exceptionExpression = "message.contains('this can be retried')")
 		public void service4() {
-			if (count++ < 10) {
+			if (this.count++ < 10) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
 		@Retryable(exceptionExpression = "message.contains('this can be retried')", include = RuntimeException.class)
 		public void service5() {
-			if (count++ < 11) {
+			if (this.count++ < 11) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -614,21 +671,21 @@ public class EnableRetryTests {
 		@Override
 		@Retryable
 		public void service1() {
-			if (count++ < 1) {
+			if (this.count++ < 1) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		@Override
 		public void service2() {
-			if (count++ < 3) {
+			if (this.count++ < 3) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		@Override
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 		@Override
@@ -697,22 +754,26 @@ public class EnableRetryTests {
 
 		@Override
 		public void service1() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		@Override
 		public void service2() {
-			if (count++ < 4) {
+			if (this.count++ < 4) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		@Override
 		public int getCount() {
-			return count;
+			return this.count;
 		}
+
+	}
+
+	public abstract static class OrderedListener extends RetryListenerSupport implements Ordered {
 
 	}
 

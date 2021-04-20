@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.aop.Advice;
+
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.MethodMatcher;
@@ -38,7 +39,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryListener;
@@ -50,7 +50,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
-import org.springframework.util.comparator.ComparableComparator;
 
 /**
  * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
@@ -86,24 +85,24 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		retryContextCache = findBean(RetryContextCache.class);
-		methodArgumentsKeyGenerator = findBean(MethodArgumentsKeyGenerator.class);
-		newMethodArgumentsIdentifier = findBean(NewMethodArgumentsIdentifier.class);
-		retryListeners = findBeans(RetryListener.class);
-		sleeper = findBean(Sleeper.class);
+		this.retryContextCache = findBean(RetryContextCache.class);
+		this.methodArgumentsKeyGenerator = findBean(MethodArgumentsKeyGenerator.class);
+		this.newMethodArgumentsIdentifier = findBean(NewMethodArgumentsIdentifier.class);
+		this.retryListeners = findBeans(RetryListener.class);
+		this.sleeper = findBean(Sleeper.class);
 		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
 		if (this.advice instanceof BeanFactoryAware) {
-			((BeanFactoryAware) this.advice).setBeanFactory(beanFactory);
+			((BeanFactoryAware) this.advice).setBeanFactory(this.beanFactory);
 		}
 	}
 
 	private <T> List<T> findBeans(Class<? extends T> type) {
-		if (beanFactory instanceof ListableBeanFactory) {
-			ListableBeanFactory listable = (ListableBeanFactory) beanFactory;
-			if (listable.getBeanNamesForType(type).length == 1) {
+		if (this.beanFactory instanceof ListableBeanFactory) {
+			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
+			if (listable.getBeanNamesForType(type).length > 0) {
 				ArrayList<T> list = new ArrayList<T>(listable.getBeansOfType(type).values());
 				OrderComparator.sort(list);
 				return list;
@@ -113,9 +112,9 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	}
 
 	private <T> T findBean(Class<? extends T> type) {
-		if (beanFactory instanceof ListableBeanFactory) {
-			ListableBeanFactory listable = (ListableBeanFactory) beanFactory;
-			if (listable.getBeanNamesForType(type).length == 1) {
+		if (this.beanFactory instanceof ListableBeanFactory) {
+			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
+			if (listable.getBeanNamesForType(type, false, false).length == 1) {
 				return listable.getBean(type);
 			}
 		}
@@ -132,7 +131,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 	@Override
 	public ClassFilter getClassFilter() {
-		return pointcut.getClassFilter();
+		return this.pointcut.getClassFilter();
 	}
 
 	@Override
@@ -156,20 +155,20 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 	protected Advice buildAdvice() {
 		AnnotationAwareRetryOperationsInterceptor interceptor = new AnnotationAwareRetryOperationsInterceptor();
-		if (retryContextCache != null) {
-			interceptor.setRetryContextCache(retryContextCache);
+		if (this.retryContextCache != null) {
+			interceptor.setRetryContextCache(this.retryContextCache);
 		}
-		if (retryListeners != null) {
-			interceptor.setListeners(retryListeners);
+		if (this.retryListeners != null) {
+			interceptor.setListeners(this.retryListeners);
 		}
-		if (methodArgumentsKeyGenerator != null) {
-			interceptor.setKeyGenerator(methodArgumentsKeyGenerator);
+		if (this.methodArgumentsKeyGenerator != null) {
+			interceptor.setKeyGenerator(this.methodArgumentsKeyGenerator);
 		}
-		if (newMethodArgumentsIdentifier != null) {
-			interceptor.setNewItemIdentifier(newMethodArgumentsIdentifier);
+		if (this.newMethodArgumentsIdentifier != null) {
+			interceptor.setNewItemIdentifier(this.newMethodArgumentsIdentifier);
 		}
-		if (sleeper != null) {
-			interceptor.setSleeper(sleeper);
+		if (this.sleeper != null) {
+			interceptor.setSleeper(this.sleeper);
 		}
 		return interceptor;
 	}
@@ -253,7 +252,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 					if (found.get()) {
 						return;
 					}
-					Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
+					Annotation annotation = AnnotationUtils.findAnnotation(method,
+							AnnotationMethodsResolver.this.annotationType);
 					if (annotation != null) {
 						found.set(true);
 					}
