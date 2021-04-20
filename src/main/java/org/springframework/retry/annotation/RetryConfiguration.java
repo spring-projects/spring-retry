@@ -103,7 +103,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		if (this.beanFactory instanceof ListableBeanFactory) {
 			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
 			if (listable.getBeanNamesForType(type).length > 0) {
-				ArrayList<T> list = new ArrayList<T>(listable.getBeansOfType(type).values());
+				ArrayList<T> list = new ArrayList<T>(listable.getBeansOfType(type, false, false).values());
 				OrderComparator.sort(list);
 				return list;
 			}
