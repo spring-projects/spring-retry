@@ -623,7 +623,7 @@ interceptor.
 
 Spring Retry is released under the non-restrictive Apache 2.0 license
 and follows a very standard Github development process, using Github
-tracker for issues and merging pull requests into the master branch. If you want
+tracker for issues and merging pull requests into the main branch. If you want
 to contribute even something trivial, please do not hesitate, but do please
 follow the guidelines in the next paragraph.
 
@@ -637,6 +637,6 @@ ability to merge pull requests.
 
 ## Code of Conduct
 
-This project adheres to the [Contributor Covenant](https://github.com/spring-projects/spring-retry/blob/master/CODE_OF_CONDUCT.adoc).
+This project adheres to the [Contributor Covenant](https://github.com/spring-projects/spring-retry/blob/main/CODE_OF_CONDUCT.adoc).
 By participating, you  are expected to uphold this code. Please report unacceptable behavior to
 spring-code-of-conduct@pivotal.io.
