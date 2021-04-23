@@ -102,7 +102,7 @@ public @interface Retryable {
 
 	/**
 	 * Specify the backoff properties for retrying this operation. The default is a simple
-	 * {@link Backoff} specification with no properties - see it's documentation for
+	 * {@link Backoff} specification with no properties - see its documentation for
 	 * defaults.
 	 * @return a backoff specification
 	 */
