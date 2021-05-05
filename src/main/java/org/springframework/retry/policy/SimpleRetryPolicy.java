@@ -94,8 +94,8 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the specified number of retry attempts. If
-	 * traverseCauses is true, the exception causes will be traversed until a match is
-	 * found.
+	 * traverseCauses is true, the exception causes will be traversed until a match or the
+	 * root cause is found.
 	 * @param maxAttempts the maximum number of attempts
 	 * @param retryableExceptions the map of exceptions that are retryable based on the
 	 * map value (true/false).
@@ -109,9 +109,9 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Create a {@link SimpleRetryPolicy} with the specified number of retry attempts. If
-	 * traverseCauses is true, the exception causes will be traversed until a match is
-	 * found. The default value indicates whether to retry or not for exceptions (or super
-	 * classes) are not found in the map.
+	 * traverseCauses is true, the exception causes will be traversed until a match or the
+	 * root cause is found. The default value indicates whether to retry or not for
+	 * exceptions (or super classes thereof) that are not found in the map.
 	 * @param maxAttempts the maximum number of attempts
 	 * @param retryableExceptions the map of exceptions that are retryable based on the
 	 * map value (true/false).
