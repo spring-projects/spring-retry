@@ -118,12 +118,16 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		if (this.recoverer != null) {
 			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(),
 					this.recoverer);
-			Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback);
-			RetryContext context = RetrySynchronizationManager.getContext();
-			if (context != null) {
-				context.removeAttribute("__proxy__");
+			try {
+				Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback);
+				return recovered;
 			}
-			return recovered;
+			finally {
+				RetryContext context = RetrySynchronizationManager.getContext();
+				if (context != null) {
+					context.removeAttribute("__proxy__");
+				}
+			}
 		}
 
 		return this.retryOperations.execute(retryCallback);
