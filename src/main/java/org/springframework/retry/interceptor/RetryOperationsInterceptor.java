@@ -23,6 +23,7 @@ import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -64,11 +65,12 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		this.recoverer = recoverer;
 	}
 
+	@Override
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
 
 		String name;
-		if (StringUtils.hasText(label)) {
-			name = label;
+		if (StringUtils.hasText(this.label)) {
+			name = this.label;
 		}
 		else {
 			name = invocation.getMethod().toGenericString();
@@ -78,9 +80,10 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		RetryCallback<Object, Throwable> retryCallback = new MethodInvocationRetryCallback<Object, Throwable>(
 				invocation, label) {
 
+			@Override
 			public Object doWithRetry(RetryContext context) throws Exception {
 
-				context.setAttribute(RetryContext.NAME, label);
+				context.setAttribute(RetryContext.NAME, this.label);
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to
@@ -88,9 +91,10 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 				 * specialise to ReflectiveMethodInvocation (but how often would another
 				 * implementation come along?).
 				 */
-				if (invocation instanceof ProxyMethodInvocation) {
+				if (this.invocation instanceof ProxyMethodInvocation) {
+					context.setAttribute("___proxy___", ((ProxyMethodInvocation) this.invocation).getProxy());
 					try {
-						return ((ProxyMethodInvocation) invocation).invocableClone().proceed();
+						return ((ProxyMethodInvocation) this.invocation).invocableClone().proceed();
 					}
 					catch (Exception e) {
 						throw e;
@@ -111,9 +115,15 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 		};
 
-		if (recoverer != null) {
-			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(), recoverer);
-			return this.retryOperations.execute(retryCallback, recoveryCallback);
+		if (this.recoverer != null) {
+			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(),
+					this.recoverer);
+			Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback);
+			RetryContext context = RetrySynchronizationManager.getContext();
+			if (context != null) {
+				context.removeAttribute("__proxy__");
+			}
+			return recovered;
 		}
 
 		return this.retryOperations.execute(retryCallback);
@@ -138,8 +148,9 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			this.recoverer = recoverer;
 		}
 
+		@Override
 		public Object recover(RetryContext context) {
-			return recoverer.recover(args, context.getLastThrowable());
+			return this.recoverer.recover(this.args, context.getLastThrowable());
 		}
 
 	}
