@@ -21,11 +21,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.DirectFieldAccessor;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -89,6 +92,9 @@ public class EnableRetryTests {
 				TestProxyConfiguration.class);
 		Service service = context.getBean(Service.class);
 		assertTrue(AopUtils.isCglibProxy(service));
+		RecoverableService recoverable = context.getBean(RecoverableService.class);
+		recoverable.service();
+		assertTrue(recoverable.isOtherAdviceCalled());
 		context.close();
 	}
 
@@ -268,6 +274,53 @@ public class EnableRetryTests {
 		@Bean
 		public Service service() {
 			return new Service();
+		}
+
+		@Bean
+		public RecoverableService recoverable() {
+			return new RecoverableService();
+		}
+
+		@Bean
+		public static AdviceBPP bpp() {
+			return new AdviceBPP();
+		}
+
+		static class AdviceBPP implements BeanPostProcessor, Ordered {
+
+			@Override
+			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+
+				return bean;
+			}
+
+			@Override
+			public Object postProcessAfterInitialization(final Object bean, String beanName) throws BeansException {
+
+				if (bean instanceof RecoverableService) {
+					Advised advised = (Advised) bean;
+					advised.addAdvice(new MethodInterceptor() {
+
+						@Override
+						public Object invoke(MethodInvocation invocation) throws Throwable {
+
+							if (invocation.getMethod().getName().equals("recover")) {
+								((RecoverableService) bean).setOtherAdviceCalled();
+							}
+							return invocation.proceed();
+						}
+
+					});
+					return bean;
+				}
+				return bean;
+			}
+
+			@Override
+			public int getOrder() {
+				return Integer.MAX_VALUE;
+			}
+
 		}
 
 	}
@@ -475,6 +528,8 @@ public class EnableRetryTests {
 
 		private Throwable cause;
 
+		boolean otherAdviceCalled;
+
 		@Retryable(RuntimeException.class)
 		public void service() {
 			this.count++;
@@ -492,6 +547,14 @@ public class EnableRetryTests {
 
 		public int getCount() {
 			return this.count;
+		}
+
+		public void setOtherAdviceCalled() {
+			this.otherAdviceCalled = true;
+		}
+
+		public boolean isOtherAdviceCalled() {
+			return this.otherAdviceCalled;
 		}
 
 	}

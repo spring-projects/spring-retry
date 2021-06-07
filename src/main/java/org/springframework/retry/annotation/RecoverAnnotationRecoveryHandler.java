@@ -25,7 +25,9 @@ import java.util.Map;
 import org.springframework.classify.SubclassClassifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.ExhaustedRetryException;
+import org.springframework.retry.RetryContext;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
@@ -76,14 +78,43 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		boolean methodAccessible = method.isAccessible();
 		try {
 			ReflectionUtils.makeAccessible(method);
+			RetryContext context = RetrySynchronizationManager.getContext();
+			Object proxy = null;
+			if (context != null) {
+				proxy = context.getAttribute("___proxy___");
+				if (proxy != null) {
+					Method proxyMethod = findMethodOnProxy(method, proxy);
+					if (proxyMethod == null) {
+						proxy = null;
+					}
+					else {
+						method = proxyMethod;
+					}
+				}
+			}
+			if (proxy == null) {
+				proxy = this.target;
+			}
 			@SuppressWarnings("unchecked")
-			T result = (T) ReflectionUtils.invokeMethod(method, this.target, argsToUse);
+			T result = (T) ReflectionUtils.invokeMethod(method, proxy, argsToUse);
 			return result;
 		}
 		finally {
 			if (methodAccessible != method.isAccessible()) {
 				method.setAccessible(methodAccessible);
 			}
+		}
+	}
+
+	private Method findMethodOnProxy(Method method, Object proxy) {
+		try {
+			return proxy.getClass().getMethod(method.getName(), method.getParameterTypes());
+		}
+		catch (NoSuchMethodException e) {
+			return null;
+		}
+		catch (SecurityException e) {
+			return null;
 		}
 	}
 
