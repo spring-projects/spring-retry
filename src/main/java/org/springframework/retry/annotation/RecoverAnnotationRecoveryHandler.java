@@ -22,7 +22,6 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.aop.support.AopUtils;
 import org.springframework.classify.SubclassClassifier;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.ExhaustedRetryException;
@@ -83,8 +82,14 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			Object proxy = null;
 			if (context != null) {
 				proxy = context.getAttribute("___proxy___");
-				if (AopUtils.isJdkDynamicProxy(proxy)) {
-					proxy = null;
+				if (proxy != null) {
+					Method proxyMethod = findMethodOnProxy(method, proxy);
+					if (proxyMethod == null) {
+						proxy = null;
+					}
+					else {
+						method = proxyMethod;
+					}
 				}
 			}
 			if (proxy == null) {
@@ -98,6 +103,18 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			if (methodAccessible != method.isAccessible()) {
 				method.setAccessible(methodAccessible);
 			}
+		}
+	}
+
+	private Method findMethodOnProxy(Method method, Object proxy) {
+		try {
+			return proxy.getClass().getMethod(method.getName(), method.getParameterTypes());
+		}
+		catch (NoSuchMethodException e) {
+			return null;
+		}
+		catch (SecurityException e) {
+			return null;
 		}
 	}
 
