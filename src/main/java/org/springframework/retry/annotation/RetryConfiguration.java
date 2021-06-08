@@ -231,7 +231,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 		@Override
 		public boolean matches(Class<?> clazz) {
-			return super.matches(clazz) || this.methodResolver.hasAnnotatedMethods(clazz);
+			return "org.springframework.data.jpa.repository.support.SimpleJpaRepository".equals(clazz.getName())
+					|| super.matches(clazz) || this.methodResolver.hasAnnotatedMethods(clazz);
 		}
 
 	}

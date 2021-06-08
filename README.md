@@ -596,6 +596,13 @@ line  to your `build.gradle` file:
     runtime('org.aspectj:aspectjweaver:1.8.13')
 ```
 
+### Using Declarative Retry on Spring JPA Repository Interfaces
+
+When using Spring Spring Boot, to enable support for adding `@Retryable` to JPA Repository Interface methods, you can add
+a `JPARepositoryRetryBeanPostProcessor` to the application context, or set the [spring.aop.proxy-target-class](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.core.spring.aop.proxy-target-class) property to `false`.
+When this property is true, it prevents the auto-proxy mechanism from copying the repository interfaces to the retry proxy.
+Adding the bean post processor causes a new proxy to be created, merging the interfaces and advisors on the JPA and retry proxies.
+
 ### XML Configuration
 
 The following example of declarative iteration uses Spring AOP to repeat a service call to

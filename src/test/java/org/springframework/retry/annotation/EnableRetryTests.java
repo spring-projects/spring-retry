@@ -25,6 +25,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
 
 import org.springframework.aop.framework.Advised;
+import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.DirectFieldAccessor;
@@ -255,6 +256,14 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void wrappedproxy() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				WrappedProxyConfiguration.class);
+		context.getBean(TheInterface.class).service2();
+		assertTrue(context.getBean(WrappedProxyConfiguration.class).innerAdviceCalled);
+	}
+
 	private Object target(Object target) {
 		if (!AopUtils.isAopProxy(target)) {
 			return target;
@@ -477,6 +486,35 @@ public class EnableRetryTests {
 		@Bean
 		public NotAnnotatedInterface notAnnotatedInterface() {
 			return new RetryableImplementation();
+		}
+
+	}
+
+	@Configuration
+	@EnableRetry(proxyTargetClass = true)
+	public static class WrappedProxyConfiguration {
+
+		boolean innerAdviceCalled;
+
+		@Bean
+		TheInterface service() {
+			ProxyFactory pf = new ProxyFactory(new TheClass());
+			pf.addInterface(TheInterface.class);
+			pf.addAdvice(new MethodInterceptor() {
+
+				@Override
+				public Object invoke(MethodInvocation invocation) throws Throwable {
+					WrappedProxyConfiguration.this.innerAdviceCalled = true;
+					return invocation.proceed();
+				}
+
+			});
+			return (TheInterface) pf.getProxy();
+		}
+
+		@Bean
+		static JPARepositoryRetryBeanPostProcessor bpp() {
+			return new JPARepositoryRetryBeanPostProcessor();
 		}
 
 	}

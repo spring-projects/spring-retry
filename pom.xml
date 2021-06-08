@@ -276,6 +276,12 @@
 			<version>1.2.17</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>2.5.1</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<reporting>
