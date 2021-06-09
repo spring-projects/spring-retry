@@ -5,7 +5,7 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: nebhale/slack-notification-resource
+    repository: harbor-repo.vmware.com/dockerhub-proxy-cache/nebhale/slack-notification-resource
 
 resources:
 - name: source
@@ -48,7 +48,7 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: springio/spring-ci-base
+          repository: harbor-repo.vmware.com/dockerhub-proxy-cache/springio/spring-ci-base
       inputs:
         - name: source
       caches:
@@ -75,7 +75,7 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: springio/spring-ci-base
+          repository: harbor-repo.vmware.com/dockerhub-proxy-cache/springio/spring-ci-base
       inputs:
         - name: source
       caches:
@@ -103,7 +103,7 @@ jobs:
       image_resource:
         type: docker-image
         source: 
-          repository: springio/spring-ci-base
+          repository: harbor-repo.vmware.com/dockerhub-proxy-cache/springio/spring-ci-base
       inputs:
         - name: source
       caches:
