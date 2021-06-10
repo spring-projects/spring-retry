@@ -53,6 +53,7 @@ jobs:
         - name: source
       caches:
         - path: source/.m2
+      container_limits: {}
       run:
         dir: source
         path: sh
@@ -80,6 +81,7 @@ jobs:
         - name: source
       caches:
         - path: source/.m2
+      container_limits: {}
       run:
         dir: source
         path: sh
@@ -108,6 +110,7 @@ jobs:
         - name: source
       caches:
         - path: source/.m2
+      container_limits: {}
       run:
         dir: source
         path: sh
