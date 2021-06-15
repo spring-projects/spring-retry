@@ -28,6 +28,7 @@ import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.support.RetrySynchronizationManager;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
@@ -43,6 +44,7 @@ import org.springframework.util.StringUtils;
  * handled and there is a method whose first argument is RuntimeException, then it will be
  * preferred over a method whose first argument is Throwable.
  *
+ * @param <T> the type of the return value from the recovery
  * @author Dave Syer
  * @author Josh Long
  * @author Aldo Sinanaj
@@ -50,15 +52,15 @@ import org.springframework.util.StringUtils;
  * @author Nathanaël Roberts
  * @author Maksim Kita
  * @author Gary Russell
- * @param <T> the type of the return value from the recovery
+ * @author Artem Bilan
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
-	private SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<Throwable, Method>();
+	private final SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<Throwable, Method>();
 
-	private Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
+	private final Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
 
-	private Object target;
+	private final Object target;
 
 	private String recoverMethodName;
 
@@ -190,7 +192,9 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (argument == null) {
 					continue;
 				}
-				if (!parameterTypes[i].isAssignableFrom(argument.getClass())) {
+				Class<?> parameterType = parameterTypes[i];
+				parameterType = ClassUtils.resolvePrimitiveIfNecessary(parameterType);
+				if (!parameterType.isAssignableFrom(argument.getClass())) {
 					return false;
 				}
 			}
@@ -208,7 +212,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
 			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+			public void doWith(Method method) throws IllegalArgumentException {
 				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
 				if (recover == null) {
 					recover = findAnnotationOnTarget(target, method);
@@ -294,15 +298,17 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			}
 		}
 		if (filteredMethods.size() > 0) {
-			this.methods = filteredMethods;
+			this.methods.clear();
+			;
+			this.methods.putAll(filteredMethods);
 		}
 	}
 
 	private static class SimpleMetadata {
 
-		private int argCount;
+		private final int argCount;
 
-		private Class<? extends Throwable> type;
+		private final Class<? extends Throwable> type;
 
 		public SimpleMetadata(int argCount, Class<? extends Throwable> type) {
 			super();
@@ -325,7 +331,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				result[0] = t;
 				startArgs = 1;
 			}
-			int length = result.length - startArgs > args.length ? args.length : result.length - startArgs;
+			int length = Math.min(result.length - startArgs, args.length);
 			if (length == 0) {
 				return result;
 			}
