@@ -275,6 +275,14 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		assertEquals(2, handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned")));
 	}
 
+    @Test
+    public void recoverByRetryableNameWithPrimitiveArgs() {
+        Method foo = ReflectionUtils.findMethod(RecoverByRetryableNameWithPrimitiveArgs.class, "foo", int.class);
+        RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+            new RecoverByRetryableNameWithPrimitiveArgs(), foo);
+        assertEquals(2, handler.recover(new Object[] { 2 }, new RuntimeException("Planned")));
+    }
+
 	private static class InAccessibleRecover {
 
 		@Retryable
@@ -644,4 +652,32 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	}
 
+    protected static class RecoverByRetryableNameWithPrimitiveArgs implements RecoverByRetryableNameWithPrimitiveArgsInterface {
+
+        public int foo(int number) {
+            return 0;
+        }
+
+        public int fooRecover(Throwable throwable, int number) {
+            return 0;
+        }
+
+        public int barRecover(Throwable throwable, int number) {
+            return number;
+        }
+
+    }
+
+    protected interface RecoverByRetryableNameWithPrimitiveArgsInterface {
+
+        @Retryable(recover = "barRecover")
+        public int foo(int number);
+
+        @Recover
+        public int fooRecover(Throwable throwable, int number);
+
+        @Recover
+        public int barRecover(Throwable throwable, int number);
+
+    }
 }

@@ -52,6 +52,19 @@ import org.springframework.util.StringUtils;
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
+	private final static Map<Class<?>, Class<?>> wrappers = new HashMap<>();
+
+	static {
+		wrappers.put(boolean.class, Boolean.class);
+		wrappers.put(byte.class, Byte.class);
+		wrappers.put(short.class, Short.class);
+		wrappers.put(char.class, Character.class);
+		wrappers.put(int.class, Integer.class);
+		wrappers.put(long.class, Long.class);
+		wrappers.put(float.class, Float.class);
+		wrappers.put(double.class, Double.class);
+	}
+
 	private SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<Throwable, Method>();
 
 	private Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
@@ -152,7 +165,9 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				if (argument == null) {
 					continue;
 				}
-				if (!parameterTypes[i].isAssignableFrom(argument.getClass())) {
+				Class<?> parameterType = parameterTypes[i];
+				parameterType = parameterType.isPrimitive() ? wrappers.get(parameterType) : parameterType;
+				if (!parameterType.isAssignableFrom(argument.getClass())) {
 					return false;
 				}
 			}
