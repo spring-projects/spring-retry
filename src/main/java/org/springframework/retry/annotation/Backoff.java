@@ -58,14 +58,14 @@ public @interface Backoff {
 	/**
 	 * A canonical backoff period. Used as an initial value in the exponential case, and
 	 * as a minimum value in the uniform case. When the value of this element is 0, value
-	 * of element {@link #value()} istaken, otherwise value of this element is taken and
+	 * of element {@link #value()} is taken, otherwise value of this element is taken and
 	 * {@link #value()} is ignored.
 	 * @return the initial or canonical backoff period in milliseconds (default 0)
 	 */
 	long delay() default 0;
 
 	/**
-	 * The maximimum wait (in milliseconds) between retries. If less than the
+	 * The maximum wait (in milliseconds) between retries. If less than the
 	 * {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied.
@@ -90,7 +90,7 @@ public @interface Backoff {
 	String delayExpression() default "";
 
 	/**
-	 * An expression evaluating to the maximimum wait (in milliseconds) between retries.
+	 * An expression evaluating to the maximum wait (in milliseconds) between retries.
 	 * If less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied. Overrides {@link #maxDelay()}
