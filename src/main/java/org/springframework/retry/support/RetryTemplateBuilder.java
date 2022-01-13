@@ -82,6 +82,7 @@ import org.springframework.util.Assert;
  *
  * @author Aleksandr Shamukov
  * @author Artem Bilan
+ * @author Kim In Hoi
  * @since 1.3
  */
 public class RetryTemplateBuilder {
@@ -276,7 +277,7 @@ public class RetryTemplateBuilder {
 	 * <p>
 	 * You should select the way you want to configure exception classifier: white list or
 	 * black list. If you choose white list - use this method, if black - use
-	 * {@link #notRetryOn(Class)}
+	 * {@link #notRetryOn(Class)} or {@link #notRetryOn(List)}
 	 * @param throwable to be retryable (with it's subclasses)
 	 * @return this
 	 * @see BinaryExceptionClassifierBuilder#retryOn
@@ -295,7 +296,7 @@ public class RetryTemplateBuilder {
 	 * <p>
 	 * You should select the way you want to configure exception classifier: white list or
 	 * black list. If you choose black list - use this method, if white - use
-	 * {@link #retryOn(Class)}
+	 * {@link #retryOn(Class)} or {@link #retryOn(List)}
 	 * @param throwable to be not retryable (with it's subclasses)
 	 * @return this
 	 * @see BinaryExceptionClassifierBuilder#notRetryOn
@@ -303,6 +304,50 @@ public class RetryTemplateBuilder {
 	 */
 	public RetryTemplateBuilder notRetryOn(Class<? extends Throwable> throwable) {
 		classifierBuilder().notRetryOn(throwable);
+		return this;
+	}
+
+	/**
+	 * Add all throwables to the while list of retryable exceptions.
+	 * <p>
+	 * Warn: touching this method drops default {@code retryOn(Exception.class)}  and you
+	 * should configure whole classifier from scratch.
+	 * <p>
+	 * You should select the way you want to configure exception classifier: white list or
+	 * black list. If you choose white list - use this method, if black - use
+	 * {@link #notRetryOn(Class)} or {@link #notRetryOn(List)}
+	 * @param throwables to be retryable (with it's subclasses)
+	 * @return this
+	 * @since 1.3.2
+	 * @see BinaryExceptionClassifierBuilder#retryOn
+	 * @see BinaryExceptionClassifier
+	 */
+	public RetryTemplateBuilder retryOn(List<Class<? extends Throwable>> throwables) {
+		for (final Class<? extends Throwable> throwable : throwables) {
+			classifierBuilder().retryOn(throwable);
+		}
+		return this;
+	}
+
+	/**
+	 * Add all throwables to the black list of retryable exceptions.
+	 * <p>
+	 * Warn: touching this method drops default {@code retryOn(Exception.class)} and you
+	 * should configure whole classifier from scratch.
+	 * <p>
+	 * You should select the way you want to configure exception classifier: white list or
+	 * black list. If you choose black list - use this method, if white - use
+	 * {@link #retryOn(Class)} or {@link #retryOn(List)}
+	 * @param throwables to be not retryable (with it's subclasses)
+	 * @return this
+	 * @since 1.3.2
+	 * @see BinaryExceptionClassifierBuilder#notRetryOn
+	 * @see BinaryExceptionClassifier
+	 */
+	public RetryTemplateBuilder notRetryOn(List<Class<? extends Throwable>> throwables) {
+		for (final Class<? extends Throwable> throwable : throwables) {
+			classifierBuilder().notRetryOn(throwable);
+		}
 		return this;
 	}
 

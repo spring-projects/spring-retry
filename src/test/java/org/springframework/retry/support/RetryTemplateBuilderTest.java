@@ -50,6 +50,7 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
  * follow project's style.
  *
  * @author Aleksandr Shamukov
+ * @author Kim In Hoi
  */
 public class RetryTemplateBuilderTest {
 
@@ -77,13 +78,15 @@ public class RetryTemplateBuilderTest {
 		RetryListener listener2 = mock(RetryListener.class);
 
 		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).exponentialBackoff(99, 1.5, 1717)
-				.retryOn(IOException.class).traversingCauses().withListener(listener1)
+				.retryOn(IOException.class).retryOn(Collections.<Class<? extends Throwable>>singletonList(IllegalArgumentException.class))
+											  .traversingCauses().withListener(listener1)
 				.withListeners(Collections.singletonList(listener2)).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 
 		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
 		Assert.assertTrue(classifier.classify(new FileNotFoundException()));
+		Assert.assertTrue(classifier.classify(new IllegalArgumentException()));
 		Assert.assertFalse(classifier.classify(new RuntimeException()));
 		Assert.assertFalse(classifier.classify(new OutOfMemoryError()));
 
@@ -156,6 +159,13 @@ public class RetryTemplateBuilderTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testFailOnNotationMix() {
 		RetryTemplate.builder().retryOn(IOException.class).notRetryOn(OutOfMemoryError.class);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testFailOnNotationsMix() {
+		RetryTemplate.builder()
+					 .retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
+					 .notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class));
 	}
 
 	/* ---------------- BackOff -------------- */
