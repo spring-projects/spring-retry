@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.Role;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryListener;
@@ -59,10 +61,12 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Markus Heiden
  * @since 1.1
  *
  */
 @SuppressWarnings("serial")
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
 		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean {
