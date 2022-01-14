@@ -39,6 +39,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.annotation.Role;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.retry.RetryListener;
@@ -50,6 +51,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+
+import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
 
 /**
  * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
@@ -63,6 +66,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  *
  */
 @SuppressWarnings("serial")
+@Role(ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
 		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean {
