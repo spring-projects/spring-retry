@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.OrderComparator;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -52,8 +53,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
-import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRASTRUCTURE;
-
 /**
  * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
  * there is a unique bean elsewhere in the context of type {@link RetryContextCache},
@@ -62,11 +61,12 @@ import static org.springframework.beans.factory.config.BeanDefinition.ROLE_INFRA
  *
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Markus Heiden
  * @since 1.1
  *
  */
 @SuppressWarnings("serial")
-@Role(ROLE_INFRASTRUCTURE)
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
 		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean {
