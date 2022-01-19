@@ -163,9 +163,8 @@ public class RetryTemplateBuilderTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testFailOnNotationsMix() {
-		RetryTemplate.builder()
-					 .retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
-					 .notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class));
+		RetryTemplate.builder().retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
+				.notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class));
 	}
 
 	/* ---------------- BackOff -------------- */
