@@ -90,8 +90,8 @@ public @interface Backoff {
 	String delayExpression() default "";
 
 	/**
-	 * An expression evaluating to the maximum wait (in milliseconds) between retries.
-	 * If less than the {@link #delay()} then the default of
+	 * An expression evaluating to the maximum wait (in milliseconds) between retries. If
+	 * less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
 	 * is applied. Overrides {@link #maxDelay()}
 	 * @return the maximum delay between retries (default 0 = ignored)

@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -139,7 +140,7 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 * @param expression the expression string
 	 * @return true if the expression string is a template
 	 */
-	private static boolean isTemplate(String expression) {
+	public static boolean isTemplate(String expression) {
 		return expression.contains(PARSER_CONTEXT.getExpressionPrefix())
 				&& expression.contains(PARSER_CONTEXT.getExpressionSuffix());
 	}
