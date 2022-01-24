@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="off">
+	<Appenders>
+		<Console name="STDOUT" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d %5p %c [%t] : %m%n" />
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.springframework.context" level="warn"/>
+		<Logger name="org.springframework.retry" level="info"/>
+		<Logger name="org.springframework.transaction" level="info"/>
+		<Root level="info">
+			<AppenderRef ref="STDOUT" />
+		</Root>
+	</Loggers>
+</Configuration>
