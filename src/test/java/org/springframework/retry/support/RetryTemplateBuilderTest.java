@@ -78,9 +78,9 @@ public class RetryTemplateBuilderTest {
 		RetryListener listener2 = mock(RetryListener.class);
 
 		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).exponentialBackoff(99, 1.5, 1717)
-				.retryOn(IOException.class).retryOn(Collections.<Class<? extends Throwable>>singletonList(IllegalArgumentException.class))
-											  .traversingCauses().withListener(listener1)
-				.withListeners(Collections.singletonList(listener2)).build();
+				.retryOn(IOException.class)
+				.retryOn(Collections.<Class<? extends Throwable>>singletonList(IllegalArgumentException.class))
+				.traversingCauses().withListener(listener1).withListeners(Collections.singletonList(listener2)).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 

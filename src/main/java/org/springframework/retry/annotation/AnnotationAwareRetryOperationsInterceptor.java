@@ -332,8 +332,14 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
 		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
 		if (StringUtils.hasText(maxAttemptsExpression)) {
-			maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Integer.class);
+			if (ExpressionRetryPolicy.isTemplate(maxAttemptsExpression)) {
+				maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression), PARSER_CONTEXT)
+						.getValue(this.evaluationContext, Integer.class);
+			}
+			else {
+				maxAttempts = PARSER.parseExpression(resolve(maxAttemptsExpression)).getValue(this.evaluationContext,
+						Integer.class);
+			}
 		}
 		if (includes.length == 0 && excludes.length == 0) {
 			SimpleRetryPolicy simple = hasExpression
@@ -360,20 +366,40 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
+		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(backoff);
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
-		if (StringUtils.hasText(backoff.delayExpression())) {
-			min = PARSER.parseExpression(resolve(backoff.delayExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Long.class);
+		String delayExpression = (String) attrs.get("delayExpression");
+		if (StringUtils.hasText(delayExpression)) {
+			if (ExpressionRetryPolicy.isTemplate(delayExpression)) {
+				min = PARSER.parseExpression(resolve(delayExpression), PARSER_CONTEXT).getValue(this.evaluationContext,
+						Long.class);
+			}
+			else {
+				min = PARSER.parseExpression(resolve(delayExpression)).getValue(this.evaluationContext, Long.class);
+			}
 		}
 		long max = backoff.maxDelay();
-		if (StringUtils.hasText(backoff.maxDelayExpression())) {
-			max = PARSER.parseExpression(resolve(backoff.maxDelayExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Long.class);
+		String maxDelayExpression = (String) attrs.get("maxDelayExpression");
+		if (StringUtils.hasText(maxDelayExpression)) {
+			if (ExpressionRetryPolicy.isTemplate(delayExpression)) {
+				max = PARSER.parseExpression(resolve(maxDelayExpression), PARSER_CONTEXT)
+						.getValue(this.evaluationContext, Long.class);
+			}
+			else {
+				max = PARSER.parseExpression(resolve(maxDelayExpression)).getValue(this.evaluationContext, Long.class);
+			}
 		}
 		double multiplier = backoff.multiplier();
-		if (StringUtils.hasText(backoff.multiplierExpression())) {
-			multiplier = PARSER.parseExpression(resolve(backoff.multiplierExpression()), PARSER_CONTEXT)
-					.getValue(this.evaluationContext, Double.class);
+		String multiplierExpression = (String) attrs.get("multiplierExpression");
+		if (StringUtils.hasText(multiplierExpression)) {
+			if (ExpressionRetryPolicy.isTemplate(delayExpression)) {
+				multiplier = PARSER.parseExpression(resolve(multiplierExpression), PARSER_CONTEXT)
+						.getValue(this.evaluationContext, Double.class);
+			}
+			else {
+				multiplier = PARSER.parseExpression(resolve(multiplierExpression)).getValue(this.evaluationContext,
+						Double.class);
+			}
 		}
 		if (multiplier > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();

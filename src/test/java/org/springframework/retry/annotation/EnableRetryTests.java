@@ -654,22 +654,22 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
+		@Retryable(exceptionExpression = "message.contains('this can be retried')")
 		public void service1() {
 			if (this.count++ < 2) {
 				throw new RuntimeException("this can be retried");
 			}
 		}
 
-		@Retryable(exceptionExpression = "#{message.contains('this can be retried')}")
+		@Retryable(exceptionExpression = "message.contains('this can be retried')")
 		public void service2() {
 			this.count++;
 			throw new RuntimeException("this cannot be retried");
 		}
 
-		@Retryable(exceptionExpression = "#{@exceptionChecker.${retryMethod}(#root)}",
-				maxAttemptsExpression = "#{@integerFiveBean}", backoff = @Backoff(delayExpression = "#{${one}}",
-						maxDelayExpression = "#{${five}}", multiplierExpression = "#{${onePointOne}}"))
+		@Retryable(exceptionExpression = "@exceptionChecker.${retryMethod}(#root)",
+				maxAttemptsExpression = "@integerFiveBean", backoff = @Backoff(delayExpression = "${one}",
+						maxDelayExpression = "@integerFiveBean", multiplierExpression = "${onePointOne}"))
 		public void service3() {
 			if (this.count++ < 8) {
 				throw new RuntimeException();

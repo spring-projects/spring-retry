@@ -310,7 +310,7 @@ public class RetryTemplateBuilder {
 	/**
 	 * Add all throwables to the while list of retryable exceptions.
 	 * <p>
-	 * Warn: touching this method drops default {@code retryOn(Exception.class)}  and you
+	 * Warn: touching this method drops default {@code retryOn(Exception.class)} and you
 	 * should configure whole classifier from scratch.
 	 * <p>
 	 * You should select the way you want to configure exception classifier: white list or
