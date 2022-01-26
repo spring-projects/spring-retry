@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,6 +135,26 @@ public class SimpleRetryPolicyTests {
 		RetryContext child = policy.open(context);
 		assertNotSame(child, context);
 		assertSame(context, child.getParent());
+	}
+
+	@Test
+	public void testRetryForException() {
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		map.put(RuntimeException.class, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		assertTrue(policy.retryForException(new RuntimeException()));
+	}
+
+	@Test
+	public void testNoRetryForException() {
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		map.put(IllegalArgumentException.class, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		assertFalse(policy.retryForException(new RuntimeException()));
 	}
 
 }

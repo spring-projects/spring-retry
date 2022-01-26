@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,16 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new SpecificException(), ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
 		this.expected.expect(ExhaustedRetryException.class);
-		handler.recover(new Object[] { "Dave" }, new Error("Planned"));
+		handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned"));
+	}
+
+	@Test
+	public void noMatchWithRethrow() {
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new SpecificException(), ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
+		handler.setThrowLastExceptionWhenNoRecoverMethod(true);
+		this.expected.expect(IllegalArgumentException.class);
+		handler.recover(new Object[] { "Dave" }, new IllegalArgumentException("Planned"));
 	}
 
 	@Test
@@ -90,7 +99,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new InAccessibleRecover(), foo);
 		assertEquals(1, handler.recover(new Object[] { "Dave" }, new RuntimeException("Planned")));
-
 	}
 
 	@Test
@@ -114,7 +122,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	@Test
 	public void genericReturnStringValueTypeParentThrowableRecoverMethod() {
-
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
 				new GenericReturnTypeRecover(),
 				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "foo", String.class));
@@ -128,7 +135,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	@Test
 	public void genericReturnStringValueTypeChildThrowableRecoverMethod() {
-
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
 				new GenericReturnTypeRecover(),
 				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "foo", String.class));
@@ -142,7 +148,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	@Test
 	public void genericReturnOneValueTypeRecoverMethod() {
-
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<List<String>>(
 				new GenericReturnTypeRecover(),
 				ReflectionUtils.findMethod(GenericReturnTypeRecover.class, "bar", String.class));
@@ -209,7 +214,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		Map<String, Map<String, Map<Number, String>>> recoverResponseMapRe = (Map<String, Map<String, Map<Number, String>>>) barHandler
 				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
 		assertEquals("barRecoverNumberValue", recoverResponseMapRe.get("bar").get("bar").get(0.0));
-
 	}
 
 	@Test
@@ -218,7 +222,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecovers(), foo);
 		assertEquals(1, handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
-
 	}
 
 	@Test
@@ -227,7 +230,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecovers(), foo);
 		assertEquals(1, handler.recover(new Object[] { null }, new RuntimeException("Planned")));
-
 	}
 
 	@Test
@@ -236,7 +238,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecoversNoThrowable(), foo);
 		assertEquals(1, handler.recover(new Object[] { null }, new RuntimeException("Planned")));
-
 	}
 
 	@Test
@@ -245,7 +246,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new MultipleQualifyingRecoversReOrdered(), foo);
 		assertEquals(3, handler.recover(new Object[] { "Randell" }, new RuntimeException("Planned")));
-
 	}
 
 	@Test
@@ -255,7 +255,6 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				new MultipleQualifyingRecoversExtendsThrowable(), foo);
 		assertEquals(2, handler.recover(new Object[] { "Kevin" }, new IllegalArgumentException("Planned")));
 		assertEquals(3, handler.recover(new Object[] { "Kevin" }, new UnsupportedOperationException("Planned")));
-
 	}
 
 	@Test
@@ -363,7 +362,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		}
 
 		@Recover
-		public int bar(RuntimeException e, String name) {
+		public int bar(IllegalStateException e, String name) {
 			return 1;
 		}
 

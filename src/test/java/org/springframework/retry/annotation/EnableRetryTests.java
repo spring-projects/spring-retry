@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +255,22 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void rethrow() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		RethrowService service = context.getBean(RethrowService.class);
+		for (int i = 0; i < 3; i++) {
+			try {
+				service.service();
+			}
+			catch (RuntimeException e) {
+				assertEquals("Planned", e.getMessage());
+			}
+		}
+		assertEquals(3, service.getCount());
+		context.close();
+	}
+
 	private Object target(Object target) {
 		if (!AopUtils.isAopProxy(target)) {
 			return target;
@@ -432,6 +448,11 @@ public class EnableRetryTests {
 		@Bean
 		public ExcludesOnlyService excludesOnly() {
 			return new ExcludesOnlyService();
+		}
+
+		@Bean
+		public RethrowService rethrowService() {
+			return new RethrowService();
 		}
 
 		@Bean
@@ -687,6 +708,23 @@ public class EnableRetryTests {
 		public void service5() {
 			if (this.count++ < 11) {
 				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		public int getCount() {
+			return this.count;
+		}
+
+	}
+
+	private static class RethrowService {
+
+		private int count = 0;
+
+		@Retryable(include = IllegalArgumentException.class, rethrow = true)
+		public void service() {
+			if (this.count++ < 2) {
+				throw new RuntimeException("Planned");
 			}
 		}
 

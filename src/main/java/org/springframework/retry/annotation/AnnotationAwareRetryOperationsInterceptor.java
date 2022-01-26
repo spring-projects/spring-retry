@@ -217,13 +217,16 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
+		template.setNoRecoveryForNotRetryable(retryable.rethrow());
 		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
-				.recoverer(getRecoverer(target, method)).build();
+				.recoverer(getRecoverer(target, method, retryable.rethrow())).build();
 	}
 
 	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
+		boolean rethrow = retryable.rethrow();
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryContextCache(this.retryContextCache);
+		template.setNoRecoveryForNotRetryable(rethrow);
 
 		CircuitBreaker circuit = AnnotatedElementUtils.findMergedAnnotation(method, CircuitBreaker.class);
 		if (circuit == null) {
@@ -241,7 +244,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				label = method.toGenericString();
 			}
 			return RetryInterceptorBuilder.circuitBreaker().keyGenerator(new FixedKeyGenerator("circuit"))
-					.retryOperations(template).recoverer(getRecoverer(target, method)).label(label).build();
+					.retryOperations(template).recoverer(getRecoverer(target, method, rethrow)).label(label).build();
 		}
 		RetryPolicy policy = getRetryPolicy(retryable);
 		template.setRetryPolicy(policy);
@@ -249,7 +252,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		String label = retryable.label();
 		return RetryInterceptorBuilder.stateful().keyGenerator(this.methodArgumentsKeyGenerator)
 				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier).retryOperations(template).label(label)
-				.recoverer(getRecoverer(target, method)).build();
+				.recoverer(getRecoverer(target, method, rethrow)).build();
 	}
 
 	private long getOpenTimeout(CircuitBreaker circuit) {
@@ -293,7 +296,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		return listeners;
 	}
 
-	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method) {
+	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method, boolean rethrow) {
 		if (target instanceof MethodInvocationRecoverer) {
 			return (MethodInvocationRecoverer<?>) target;
 		}
@@ -310,7 +313,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (!foundRecoverable.get()) {
 			return null;
 		}
-		return new RecoverAnnotationRecoveryHandler<Object>(target, method);
+		RecoverAnnotationRecoveryHandler recoveryHandler = new RecoverAnnotationRecoveryHandler<Object>(target, method);
+		recoveryHandler.setThrowLastExceptionWhenNoRecoverMethod(rethrow);
+		return recoveryHandler;
 	}
 
 	private RetryPolicy getRetryPolicy(Annotation retryable) {
