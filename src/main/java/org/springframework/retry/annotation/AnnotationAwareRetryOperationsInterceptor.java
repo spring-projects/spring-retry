@@ -220,6 +220,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
+		template.setRethrowNonRetryable(retryable.rethrowNonRetryable());
 		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
 				.recoverer(getRecoverer(target, method)).build();
 	}

@@ -130,4 +130,11 @@ public @interface Retryable {
 	 */
 	String[] listeners() default {};
 
+	/**
+	 * Flag to say whether non-retryable exceptions shall be rethrown when retry is
+	 * exhausted. Ignored when {@link #stateful()} is true.
+	 * @return true if to rethrow non-retryable exceptions, default false
+	 */
+	boolean rethrowNonRetryable() default false;
+
 }

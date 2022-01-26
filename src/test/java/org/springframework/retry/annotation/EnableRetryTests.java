@@ -255,6 +255,22 @@ public class EnableRetryTests {
 		context.close();
 	}
 
+	@Test
+	public void rethrowNonRetryable() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		RethrowNonRetryableService service = context.getBean(RethrowNonRetryableService.class);
+		for (int i = 0; i < 3; i++) {
+			try {
+				service.service();
+			}
+			catch (RuntimeException e) {
+				assertEquals("Planned", e.getMessage());
+			}
+		}
+		assertEquals(3, service.getCount());
+		context.close();
+	}
+
 	private Object target(Object target) {
 		if (!AopUtils.isAopProxy(target)) {
 			return target;
@@ -432,6 +448,11 @@ public class EnableRetryTests {
 		@Bean
 		public ExcludesOnlyService excludesOnly() {
 			return new ExcludesOnlyService();
+		}
+
+		@Bean
+		public RethrowNonRetryableService rethrowNonRetryableService() {
+			return new RethrowNonRetryableService();
 		}
 
 		@Bean
@@ -687,6 +708,23 @@ public class EnableRetryTests {
 		public void service5() {
 			if (this.count++ < 11) {
 				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		public int getCount() {
+			return this.count;
+		}
+
+	}
+
+	private static class RethrowNonRetryableService {
+
+		private int count = 0;
+
+		@Retryable(include = IllegalArgumentException.class, rethrowNonRetryable = true)
+		public void service() {
+			if (this.count++ < 2) {
+				throw new RuntimeException("Planned");
 			}
 		}
 

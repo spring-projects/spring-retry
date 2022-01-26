@@ -346,7 +346,6 @@ public class RetryTemplateTests {
 	 */
 	@Test
 	public void testNoBackOffForRethrownException() throws Throwable {
-
 		RetryTemplate tested = new RetryTemplate();
 		tested.setRetryPolicy(new SimpleRetryPolicy(1));
 
@@ -382,6 +381,54 @@ public class RetryTemplateTests {
 		}
 
 		verify(bop);
+	}
+
+	@Test
+	public void testRethrowNonRetryable() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalArgumentException.class, true));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setRethrowNonRetryable(true);
+		try {
+			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
+				public Object doWithRetry(RetryContext context) throws Exception {
+					throw new RuntimeException("Realllly bad!");
+				}
+			}, new RecoveryCallback<Object>() {
+				@Override
+				public Object recover(RetryContext context) throws Exception {
+					return new Object();
+				}
+			});
+			fail("Expected RuntimeException");
+		}
+		catch (RuntimeException e) {
+			assertEquals("Realllly bad!", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testRethrowRetryable() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(RuntimeException.class, true));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setRethrowNonRetryable(true);
+		final Object value = new Object();
+		Object result = retryTemplate.execute(new RetryCallback<Object, Exception>() {
+			@Override
+			public Object doWithRetry(RetryContext context) throws Exception {
+				throw new RuntimeException("Will be recovered");
+			}
+		}, new RecoveryCallback<Object>() {
+			@Override
+			public Object recover(RetryContext context) throws Exception {
+				return value;
+			}
+		});
+		assertEquals(value, result);
 	}
 
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {

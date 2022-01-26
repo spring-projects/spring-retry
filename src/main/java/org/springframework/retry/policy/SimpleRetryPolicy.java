@@ -199,21 +199,21 @@ public class SimpleRetryPolicy implements RetryPolicy {
 		return new SimpleRetryContext(parent);
 	}
 
+	/**
+	 * Delegates to an exception classifier.
+	 * @param ex
+	 * @return true if this exception or its ancestors have been registered as retryable.
+	 */
+	public boolean retryForException(Throwable ex) {
+		return this.retryableClassifier.classify(ex);
+	}
+
 	private static class SimpleRetryContext extends RetryContextSupport {
 
 		public SimpleRetryContext(RetryContext parent) {
 			super(parent);
 		}
 
-	}
-
-	/**
-	 * Delegates to an exception classifier.
-	 * @param ex
-	 * @return true if this exception or its ancestors have been registered as retryable.
-	 */
-	private boolean retryForException(Throwable ex) {
-		return this.retryableClassifier.classify(ex);
 	}
 
 	@Override

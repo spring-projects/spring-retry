@@ -137,4 +137,24 @@ public class SimpleRetryPolicyTests {
 		assertSame(context, child.getParent());
 	}
 
+	@Test
+	public void testRetryForException() {
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		map.put(RuntimeException.class, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		assertTrue(policy.retryForException(new RuntimeException()));
+	}
+
+	@Test
+	public void testNoRetryForException() {
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		map.put(IllegalArgumentException.class, true);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
+		RetryContext context = policy.open(null);
+		assertNotNull(context);
+		assertFalse(policy.retryForException(new RuntimeException()));
+	}
+
 }

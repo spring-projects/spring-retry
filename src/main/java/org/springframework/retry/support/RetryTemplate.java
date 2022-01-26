@@ -96,6 +96,8 @@ public class RetryTemplate implements RetryOperations {
 
 	private boolean throwLastExceptionOnExhausted;
 
+	private boolean rethrowNonRetryable;
+
 	/**
 	 * Main entry point to configure RetryTemplate using fluent API. See
 	 * {@link RetryTemplateBuilder} for usage examples and details.
@@ -122,6 +124,13 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	public void setThrowLastExceptionOnExhausted(boolean throwLastExceptionOnExhausted) {
 		this.throwLastExceptionOnExhausted = throwLastExceptionOnExhausted;
+	}
+
+	/**
+	 * @param rethrowNonRetryable the rethrowUnregistered to set
+	 */
+	public void setRethrowNonRetryable(boolean rethrowNonRetryable) {
+		this.rethrowNonRetryable = rethrowNonRetryable;
 	}
 
 	/**
@@ -366,7 +375,6 @@ public class RetryTemplate implements RetryOperations {
 						}
 						throw RetryTemplate.<E>wrapIfNecessary(e);
 					}
-
 				}
 
 				/*
@@ -384,7 +392,7 @@ public class RetryTemplate implements RetryOperations {
 			}
 
 			exhausted = true;
-			return handleRetryExhausted(recoveryCallback, context, state);
+			return handleRetryExhausted(recoveryCallback, context, state, retryPolicy);
 
 		}
 		catch (Throwable e) {
@@ -462,7 +470,6 @@ public class RetryTemplate implements RetryOperations {
 	 * was encountered
 	 */
 	protected RetryContext open(RetryPolicy retryPolicy, RetryState state) {
-
 		if (state == null) {
 			return doOpenInternal(retryPolicy);
 		}
@@ -496,7 +503,6 @@ public class RetryTemplate implements RetryOperations {
 		context.removeAttribute(RetryContext.EXHAUSTED);
 		context.removeAttribute(RetryContext.RECOVERED);
 		return context;
-
 	}
 
 	private RetryContext doOpenInternal(RetryPolicy retryPolicy, RetryState state) {
@@ -529,11 +535,15 @@ public class RetryTemplate implements RetryOperations {
 	 * @return T the payload to return
 	 * @throws Throwable if there is an error
 	 */
-	protected <T> T handleRetryExhausted(RecoveryCallback<T> recoveryCallback, RetryContext context, RetryState state)
-			throws Throwable {
+	protected <T> T handleRetryExhausted(RecoveryCallback<T> recoveryCallback, RetryContext context, RetryState state,
+			RetryPolicy retryPolicy) throws Throwable {
 		context.setAttribute(RetryContext.EXHAUSTED, true);
 		if (state != null && !context.hasAttribute(GLOBAL_STATE)) {
 			this.retryContextCache.remove(state.getKey());
+		}
+		if (this.rethrowNonRetryable && retryPolicy instanceof SimpleRetryPolicy
+				&& !((SimpleRetryPolicy) retryPolicy).retryForException(context.getLastThrowable())) {
+			throw context.getLastThrowable();
 		}
 		if (recoveryCallback != null) {
 			T recovered = recoveryCallback.recover(context);
@@ -572,7 +582,6 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	private <T, E extends Throwable> boolean doOpenInterceptors(RetryCallback<T, E> callback, RetryContext context) {
-
 		boolean result = true;
 
 		for (RetryListener listener : this.listeners) {
@@ -580,7 +589,6 @@ public class RetryTemplate implements RetryOperations {
 		}
 
 		return result;
-
 	}
 
 	private <T, E extends Throwable> void doCloseInterceptors(RetryCallback<T, E> callback, RetryContext context,
