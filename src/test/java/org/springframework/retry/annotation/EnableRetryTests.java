@@ -256,9 +256,9 @@ public class EnableRetryTests {
 	}
 
 	@Test
-	public void rethrowNonRetryable() {
+	public void rethrow() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
-		RethrowNonRetryableService service = context.getBean(RethrowNonRetryableService.class);
+		RethrowService service = context.getBean(RethrowService.class);
 		for (int i = 0; i < 3; i++) {
 			try {
 				service.service();
@@ -451,8 +451,8 @@ public class EnableRetryTests {
 		}
 
 		@Bean
-		public RethrowNonRetryableService rethrowNonRetryableService() {
-			return new RethrowNonRetryableService();
+		public RethrowService rethrowService() {
+			return new RethrowService();
 		}
 
 		@Bean
@@ -717,11 +717,11 @@ public class EnableRetryTests {
 
 	}
 
-	private static class RethrowNonRetryableService {
+	private static class RethrowService {
 
 		private int count = 0;
 
-		@Retryable(include = IllegalArgumentException.class, rethrowNonRetryable = true)
+		@Retryable(include = IllegalArgumentException.class, rethrow = true)
 		public void service() {
 			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");

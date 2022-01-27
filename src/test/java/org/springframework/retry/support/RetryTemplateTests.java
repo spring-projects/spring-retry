@@ -384,12 +384,12 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testRethrowNonRetryable() throws Throwable {
+	public void testRethrowNotRetryable() throws Throwable {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
 				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalArgumentException.class, true));
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(policy);
-		retryTemplate.setRethrowNonRetryable(true);
+		retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
 				@Override
@@ -415,7 +415,7 @@ public class RetryTemplateTests {
 				Collections.<Class<? extends Throwable>, Boolean>singletonMap(RuntimeException.class, true));
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(policy);
-		retryTemplate.setRethrowNonRetryable(true);
+		retryTemplate.setThrowLastExceptionOnExhausted(true);
 		final Object value = new Object();
 		Object result = retryTemplate.execute(new RetryCallback<Object, Exception>() {
 			@Override

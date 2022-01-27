@@ -96,8 +96,6 @@ public class RetryTemplate implements RetryOperations {
 
 	private boolean throwLastExceptionOnExhausted;
 
-	private boolean rethrowNonRetryable;
-
 	/**
 	 * Main entry point to configure RetryTemplate using fluent API. See
 	 * {@link RetryTemplateBuilder} for usage examples and details.
@@ -124,13 +122,6 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	public void setThrowLastExceptionOnExhausted(boolean throwLastExceptionOnExhausted) {
 		this.throwLastExceptionOnExhausted = throwLastExceptionOnExhausted;
-	}
-
-	/**
-	 * @param rethrowNonRetryable the rethrowUnregistered to set
-	 */
-	public void setRethrowNonRetryable(boolean rethrowNonRetryable) {
-		this.rethrowNonRetryable = rethrowNonRetryable;
 	}
 
 	/**
@@ -541,7 +532,7 @@ public class RetryTemplate implements RetryOperations {
 		if (state != null && !context.hasAttribute(GLOBAL_STATE)) {
 			this.retryContextCache.remove(state.getKey());
 		}
-		if (this.rethrowNonRetryable && retryPolicy instanceof SimpleRetryPolicy
+		if (this.throwLastExceptionOnExhausted && retryPolicy instanceof SimpleRetryPolicy
 				&& !((SimpleRetryPolicy) retryPolicy).retryForException(context.getLastThrowable())) {
 			throw context.getLastThrowable();
 		}
