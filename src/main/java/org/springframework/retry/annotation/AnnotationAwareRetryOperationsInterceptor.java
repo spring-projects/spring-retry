@@ -403,7 +403,19 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 		if (multiplier > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
-			if (backoff.random()) {
+			boolean isRandom = backoff.random();
+			String randomExpression = (String) attrs.get("randomExpression");
+			if (StringUtils.hasText(randomExpression)) {
+				if (ExpressionRetryPolicy.isTemplate(randomExpression)) {
+					isRandom = PARSER.parseExpression(resolve(randomExpression), PARSER_CONTEXT)
+							.getValue(this.evaluationContext, Boolean.class);
+				}
+				else {
+					isRandom = PARSER.parseExpression(resolve(randomExpression)).getValue(this.evaluationContext,
+							Boolean.class);
+				}
+			}
+			if (isRandom) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
 			policy.setInitialInterval(min);

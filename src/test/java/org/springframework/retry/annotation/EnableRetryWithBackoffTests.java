@@ -80,6 +80,19 @@ public class EnableRetryWithBackoffTests {
 		context.close();
 	}
 
+	@Test
+	public void randomExponentialExpression() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		ExponentialRandomExpressionService service = context.getBean(ExponentialRandomExpressionService.class);
+		service.service(1);
+		assertEquals(3, service.getCount());
+		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
+		assertNotEquals("[1000, 1100]", context.getBean(PeriodSleeper.class).getPeriods().toString());
+		assertTrue("Wrong periods: " + periods, periods.get(0) > 1000);
+		assertTrue("Wrong periods: " + periods, periods.get(1) > 1100 && periods.get(1) < 1210);
+		context.close();
+	}
+
 	@Configuration
 	@EnableRetry
 	@EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -108,6 +121,11 @@ public class EnableRetryWithBackoffTests {
 		@Bean
 		public ExponentialService excludes() {
 			return new ExponentialService();
+		}
+
+		@Bean
+		public ExponentialRandomExpressionService statefulExpression() {
+			return new ExponentialRandomExpressionService();
 		}
 
 	}
@@ -184,6 +202,23 @@ public class EnableRetryWithBackoffTests {
 		private int count = 0;
 
 		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, random = true))
+		public void service(int value) {
+			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	protected static class ExponentialRandomExpressionService {
+
+		private int count = 0;
+
+		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, randomExpression = "#{true}"))
 		public void service(int value) {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");
