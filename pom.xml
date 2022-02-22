@@ -21,9 +21,12 @@
 	</licenses>
 	<packaging>jar</packaging>
 	<properties>
-		<maven.test.failure.ignore>true</maven.test.failure.ignore>
-		<spring.framework.version>4.3.29.RELEASE</spring.framework.version>
 		<disable.checks>false</disable.checks>
+		<maven.test.failure.ignore>true</maven.test.failure.ignore>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<spring.framework.version>4.3.29.RELEASE</spring.framework.version>
 	</properties>
 	<profiles>
 		<profile>
