@@ -1,0 +1,18 @@
+== Concourse pipeline
+
+Ensure that you've setup the target and can login
+
+[source]
+----
+$ fly -t spring-retry login -n spring-retry -c https://ci.spring.io
+----
+
+The pipeline can be deployed using the following command:
+
+[source]
+----
+$ fly -t spring-retry set-pipeline -p spring-retry-1.3.x -c ci/pipeline.yml -l ci/parameters.yml
+----
+
+NOTE: This assumes that you have credhub integration configured with the appropriate
+secrets.

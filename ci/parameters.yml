@@ -1,0 +1,12 @@
+github-repo: "https://github.com/spring-projects/spring-retry.git"
+github-repo-name: "spring-projects/spring-retry"
+docker-hub-organization: "springci"
+artifactory-server: "https://repo.spring.io"
+branch: "main"
+milestone: "1.3.x"
+build-name: "spring-retry"
+concourse-url: "https://ci.spring.io"
+task-timeout: 30m
+registry-mirror-host: docker.repo.spring.io
+registry-mirror-username: ((artifactory-username))
+registry-mirror-password: ((artifactory-password))
