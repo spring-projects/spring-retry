@@ -9,5 +9,5 @@ else
    echo "Maven cache found."
 fi
 pushd git-repo > /dev/null
-./mvnw clean deploy -U -Pfull -DaltDeploymentRepository=distribution::default::file://${repository}
+./mvnw clean deploy -U -Pspring -DaltDeploymentRepository=distribution::default::file://${repository}
 popd > /dev/null
