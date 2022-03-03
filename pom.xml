@@ -26,7 +26,7 @@
 		</license>
 	</licenses>
 	<properties>
-		<revision>1.3.2-SNAPSHOT</revision>
+		<revision>1.3.3-SNAPSHOT</revision>
 		<disable.checks>false</disable.checks>
 		<java.version>1.6</java.version>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
