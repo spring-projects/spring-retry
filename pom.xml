@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
 	<version>1.3.2-SNAPSHOT</version>
 	<name>Spring Retry</name>
-	<description><![CDATA[Spring Retry provides an abstraction around retrying failed operations, with an emphasis on declarative control of the process and policy-based bahaviour that is easy to extend and customize.  For instance, you can configure a plain POJO operation to retry if it fails, based on the type of exception, and with a fixed or exponential backoff.
-    ]]></description>
+	<description><![CDATA[
+		Spring Retry provides an abstraction around retrying failed operations, with an
+		emphasis on declarative control of the process and policy-based behaviour that is
+		easy to extend and customize. For instance, you can configure a plain POJO
+		operation to retry if it fails, based on the type of exception, and with a fixed
+		or exponential backoff.]]>
+	</description>
 	<url>https://www.springsource.org</url>
 	<organization>
 		<name>SpringSource</name>
@@ -19,15 +25,16 @@
 			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-	<packaging>jar</packaging>
 	<properties>
 		<disable.checks>false</disable.checks>
+		<java.version>1.6</java.version>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<spring.framework.version>4.3.29.RELEASE</spring.framework.version>
 	</properties>
+
 	<profiles>
 		<profile>
 			<id>spring</id>
@@ -151,9 +158,39 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<!-- Not really optional, but since it works with 4 and 5 this is safe -->
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.17.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-jcl</artifactId>
+			<version>2.17.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.8.9</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -169,54 +206,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
-			<version>1.8.9</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<!-- Not really optional, but since it works with 4 and 5 this is safe -->
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>2.17.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-jcl</artifactId>
-			<version>2.17.1</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
-	<reporting>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</reporting>
 
 	<build>
 		<pluginManagement>
@@ -265,24 +264,26 @@
 		</pluginManagement>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
+				<groupId>io.spring.javaformat</groupId>
+				<artifactId>spring-javaformat-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<configuration>
+							<skip>${disable.checks}</skip>
+						</configuration>
+						<goals>
+							<goal>validate</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
+				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<!--forkMode>pertest</forkMode -->
-					<includes>
-						<include>**/*Tests.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -311,21 +312,28 @@
 					</execution>
 				</executions>
 			</plugin>
-				<plugin>
-					<groupId>io.spring.javaformat</groupId>
-					<artifactId>spring-javaformat-maven-plugin</artifactId>
-					<executions>
-						<execution>
-							<phase>validate</phase>
-							<configuration>
-								<skip>${disable.checks}</skip>
-							</configuration>
-							<goals>
-								<goal>validate</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<includes>
+						<include>**/*Tests.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/Abstract*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+
 </project>
