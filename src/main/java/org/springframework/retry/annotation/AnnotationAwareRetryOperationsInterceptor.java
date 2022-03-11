@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2018 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,12 +46,9 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
-import org.springframework.retry.backoff.ExponentialBackOffPolicy;
-import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
+import org.springframework.retry.backoff.BackOffPolicyBuilder;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
-import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.interceptor.FixedKeyGenerator;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
@@ -401,9 +398,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 						Double.class);
 			}
 		}
+		boolean isRandom = false;
 		if (multiplier > 0) {
-			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
-			boolean isRandom = backoff.random();
+			isRandom = backoff.random();
 			String randomExpression = (String) attrs.get("randomExpression");
 			if (StringUtils.hasText(randomExpression)) {
 				if (ExpressionRetryPolicy.isTemplate(randomExpression)) {
@@ -415,32 +412,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 							Boolean.class);
 				}
 			}
-			if (isRandom) {
-				policy = new ExponentialRandomBackOffPolicy();
-			}
-			policy.setInitialInterval(min);
-			policy.setMultiplier(multiplier);
-			policy.setMaxInterval(max > min ? max : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
-			if (this.sleeper != null) {
-				policy.setSleeper(this.sleeper);
-			}
-			return policy;
 		}
-		if (max > min) {
-			UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
-			policy.setMinBackOffPeriod(min);
-			policy.setMaxBackOffPeriod(max);
-			if (this.sleeper != null) {
-				policy.setSleeper(this.sleeper);
-			}
-			return policy;
-		}
-		FixedBackOffPolicy policy = new FixedBackOffPolicy();
-		policy.setBackOffPeriod(min);
-		if (this.sleeper != null) {
-			policy.setSleeper(this.sleeper);
-		}
-		return policy;
+		return BackOffPolicyBuilder.newBuilder().delay(min).maxDelay(max).multiplier(multiplier).isRandom(isRandom)
+				.withSleeper(this.sleeper).build();
 	}
 
 	/**
