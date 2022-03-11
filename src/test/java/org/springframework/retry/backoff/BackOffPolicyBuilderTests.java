@@ -32,8 +32,16 @@ public class BackOffPolicyBuilderTests {
 
 	@Test
 	public void shouldCreateDefaultBackOffPolicy() {
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newDefaultPolicy();
+		assertTrue(FixedBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
+		FixedBackOffPolicy policy = (FixedBackOffPolicy) backOffPolicy;
+		assertEquals(1000, policy.getBackOffPeriod());
+	}
+
+	@Test
+	public void shouldCreateDefaultBackOffPolicyViaNewBuilder() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().withSleeper(mockSleeper).build();
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().sleeper(mockSleeper).build();
 		assertTrue(FixedBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
 		FixedBackOffPolicy policy = (FixedBackOffPolicy) backOffPolicy;
 		assertEquals(1000, policy.getBackOffPeriod());
@@ -43,7 +51,7 @@ public class BackOffPolicyBuilderTests {
 	@Test
 	public void shouldCreateFixedBackOffPolicy() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(3500).withSleeper(mockSleeper).build();
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(3500).sleeper(mockSleeper).build();
 		assertTrue(FixedBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
 		FixedBackOffPolicy policy = (FixedBackOffPolicy) backOffPolicy;
 		assertEquals(3500, policy.getBackOffPeriod());
@@ -53,7 +61,7 @@ public class BackOffPolicyBuilderTests {
 	@Test
 	public void shouldCreateUniformRandomBackOffPolicy() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(1).maxDelay(5000).withSleeper(mockSleeper)
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(1).maxDelay(5000).sleeper(mockSleeper)
 				.build();
 		assertTrue(UniformRandomBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
 		UniformRandomBackOffPolicy policy = (UniformRandomBackOffPolicy) backOffPolicy;
@@ -66,7 +74,7 @@ public class BackOffPolicyBuilderTests {
 	public void shouldCreateExponentialBackOff() {
 		Sleeper mockSleeper = mock(Sleeper.class);
 		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(100).maxDelay(1000).multiplier(2)
-				.isRandom(false).withSleeper(mockSleeper).build();
+				.random(false).sleeper(mockSleeper).build();
 		assertTrue(ExponentialBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
 		ExponentialBackOffPolicy policy = (ExponentialBackOffPolicy) backOffPolicy;
 		assertEquals(100, policy.getInitialInterval());
@@ -79,7 +87,7 @@ public class BackOffPolicyBuilderTests {
 	public void shouldCreateExponentialRandomBackOff() {
 		Sleeper mockSleeper = mock(Sleeper.class);
 		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(10000).maxDelay(100000).multiplier(10)
-				.isRandom(true).withSleeper(mockSleeper).build();
+				.random(true).sleeper(mockSleeper).build();
 		assertTrue(ExponentialRandomBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass()));
 		ExponentialRandomBackOffPolicy policy = (ExponentialRandomBackOffPolicy) backOffPolicy;
 		assertEquals(10000, policy.getInitialInterval());

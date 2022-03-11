@@ -413,8 +413,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 		}
-		return BackOffPolicyBuilder.newBuilder().delay(min).maxDelay(max).multiplier(multiplier).isRandom(isRandom)
-				.withSleeper(this.sleeper).build();
+		return BackOffPolicyBuilder.newBuilder().delay(min).maxDelay(max).multiplier(multiplier).random(isRandom)
+				.sleeper(this.sleeper).build();
 	}
 
 	/**

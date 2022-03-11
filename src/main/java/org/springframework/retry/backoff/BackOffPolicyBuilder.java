@@ -25,6 +25,10 @@ package org.springframework.retry.backoff;
  * <p>
  * Examples: <pre>
  *
+ * // Default {@link FixedBackOffPolicy} with 1000ms delay
+ * BackOffPolicyBuilder
+ * 		.newDefaultPolicy();
+ *
  * // {@link FixedBackOffPolicy}
  * BackOffPolicyBuilder
  * 		.newBuilder()
@@ -52,8 +56,8 @@ package org.springframework.retry.backoff;
  * 		.delay(3000)
  * 		.maxDelay(5000)
  * 		.multiplier(1.5)
- * 		.isRandom(true)
- * 		.withSleeper(mySleeper)
+ * 		.random(true)
+ * 		.sleeper(mySleeper)
  * 		.build();
  * </pre>
  * <p>
@@ -74,7 +78,7 @@ public class BackOffPolicyBuilder {
 
 	private double multiplier;
 
-	private boolean isRandom;
+	private boolean random;
 
 	private Sleeper sleeper;
 
@@ -87,6 +91,14 @@ public class BackOffPolicyBuilder {
 	 */
 	public static BackOffPolicyBuilder newBuilder() {
 		return new BackOffPolicyBuilder();
+	}
+
+	/**
+	 * Creates a new {@link FixedBackOffPolicy} instance with a delay of 1000ms.
+	 * @return the back off policy instance
+	 */
+	public static BackOffPolicy newDefaultPolicy() {
+		return new BackOffPolicyBuilder().build();
 	}
 
 	/**
@@ -125,11 +137,11 @@ public class BackOffPolicyBuilder {
 	 * In the exponential case ({@link #multiplier} &gt; 0) set this to true to have the
 	 * backoff delays randomized, so that the maximum delay is multiplier times the
 	 * previous delay and the distribution is uniform between the two values.
-	 * @param isRandom the flag to signal randomization is required
+	 * @param random the flag to signal randomization is required
 	 * @return this
 	 */
-	public BackOffPolicyBuilder isRandom(boolean isRandom) {
-		this.isRandom = isRandom;
+	public BackOffPolicyBuilder random(boolean random) {
+		this.random = random;
 		return this;
 	}
 
@@ -139,7 +151,7 @@ public class BackOffPolicyBuilder {
 	 * @param sleeper the {@link Sleeper} instance
 	 * @return this
 	 */
-	public BackOffPolicyBuilder withSleeper(Sleeper sleeper) {
+	public BackOffPolicyBuilder sleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;
 		return this;
 	}
@@ -151,7 +163,7 @@ public class BackOffPolicyBuilder {
 	public BackOffPolicy build() {
 		if (this.multiplier > 0) {
 			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
-			if (this.isRandom) {
+			if (this.random) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
 			policy.setInitialInterval(this.delay);
