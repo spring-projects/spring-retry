@@ -77,9 +77,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	public T recover(Object[] args, Throwable cause) {
 		Method method = findClosestMatch(args, cause.getClass());
 		if (method == null) {
-			throw throwLastExceptionWhenNoRecoverMethod && cause instanceof RuntimeException
-				? (RuntimeException) cause
-				: new ExhaustedRetryException("Cannot locate recovery method", cause);
+			throw throwLastExceptionWhenNoRecoverMethod && cause instanceof RuntimeException ? (RuntimeException) cause
+					: new ExhaustedRetryException("Cannot locate recovery method", cause);
 		}
 		SimpleMetadata meta = this.methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);
