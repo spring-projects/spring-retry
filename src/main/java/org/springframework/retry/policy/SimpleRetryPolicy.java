@@ -203,6 +203,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * Delegates to an exception classifier.
 	 * @param ex
 	 * @return true if this exception or its ancestors have been registered as retryable.
+	 * @since 1.3.3
 	 */
 	public boolean retryForException(Throwable ex) {
 		return this.retryableClassifier.classify(ex);
