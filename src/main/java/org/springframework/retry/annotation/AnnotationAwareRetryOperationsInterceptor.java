@@ -378,7 +378,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		long max = backoff.maxDelay();
 		String maxDelayExpression = (String) attrs.get("maxDelayExpression");
 		if (StringUtils.hasText(maxDelayExpression)) {
-			if (ExpressionRetryPolicy.isTemplate(delayExpression)) {
+			if (ExpressionRetryPolicy.isTemplate(maxDelayExpression)) {
 				max = PARSER.parseExpression(resolve(maxDelayExpression), PARSER_CONTEXT)
 						.getValue(this.evaluationContext, Long.class);
 			}
@@ -389,7 +389,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		double multiplier = backoff.multiplier();
 		String multiplierExpression = (String) attrs.get("multiplierExpression");
 		if (StringUtils.hasText(multiplierExpression)) {
-			if (ExpressionRetryPolicy.isTemplate(delayExpression)) {
+			if (ExpressionRetryPolicy.isTemplate(multiplierExpression)) {
 				multiplier = PARSER.parseExpression(resolve(multiplierExpression), PARSER_CONTEXT)
 						.getValue(this.evaluationContext, Double.class);
 			}
