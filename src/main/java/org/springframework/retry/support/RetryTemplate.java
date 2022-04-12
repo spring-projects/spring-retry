@@ -96,6 +96,8 @@ public class RetryTemplate implements RetryOperations {
 
 	private boolean throwLastExceptionOnExhausted;
 
+	private boolean noRecoveryForNotRetryable;
+
 	/**
 	 * Main entry point to configure RetryTemplate using fluent API. See
 	 * {@link RetryTemplateBuilder} for usage examples and details.
@@ -119,10 +121,17 @@ public class RetryTemplate implements RetryOperations {
 
 	/**
 	 * @param throwLastExceptionOnExhausted the throwLastExceptionOnExhausted to set
-	 * @since 1.3.3
 	 */
 	public void setThrowLastExceptionOnExhausted(boolean throwLastExceptionOnExhausted) {
 		this.throwLastExceptionOnExhausted = throwLastExceptionOnExhausted;
+	}
+
+	/**
+	 * @param noRecoveryForNotRetryable the noRecoveryForNotRetryable to set
+	 * @since 1.3.3
+	 */
+	public void setNoRecoveryForNotRetryable(boolean noRecoveryForNotRetryable) {
+		this.noRecoveryForNotRetryable = noRecoveryForNotRetryable;
 	}
 
 	/**
@@ -533,7 +542,7 @@ public class RetryTemplate implements RetryOperations {
 		if (state != null && !context.hasAttribute(GLOBAL_STATE)) {
 			this.retryContextCache.remove(state.getKey());
 		}
-		if (this.throwLastExceptionOnExhausted && retryPolicy instanceof SimpleRetryPolicy
+		if (this.noRecoveryForNotRetryable && retryPolicy instanceof SimpleRetryPolicy
 				&& !((SimpleRetryPolicy) retryPolicy).retryForException(context.getLastThrowable())) {
 			throw context.getLastThrowable();
 		}
@@ -550,7 +559,7 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	protected <E extends Throwable> void rethrow(RetryContext context, String message) throws E {
-		if (this.throwLastExceptionOnExhausted) {
+		if (this.throwLastExceptionOnExhausted || this.noRecoveryForNotRetryable) {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) context.getLastThrowable();
 			throw rethrow;
