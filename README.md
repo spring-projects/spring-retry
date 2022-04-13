@@ -200,9 +200,8 @@ Foo foo = template.execute(new RetryCallback<Foo>() {
 If the business logic does not succeed before the template decides to abort, the client is
 given the chance to do some alternate processing through the recovery callback.
 
-Version 1.3.3 added the `noRecoveryForNotRetryable` and `noRecoveryForNotRetryableExceptions` properties to the template.
-When `noRecoveryForNotRetryable` is `true`, the recovery callback is not invoked if the retry policy is configured with a not-retryable exception and one is thrown.
-The same behavior for exceptions set by `noRecoveryForNotRetryableExceptions`.
+Version 1.3.3 added the `noRecoveryForNotRetryable` property to the template.
+When `true`, the recovery callback is not invoked if the retry policy is configured with a not-retryable exception and one is thrown.
 By default, the recovery callback is always called, regardless of whether the exception is retryable or not.
 
 ## Stateless Retry
