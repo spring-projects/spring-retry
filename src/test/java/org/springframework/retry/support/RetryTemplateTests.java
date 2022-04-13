@@ -434,7 +434,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testRethrowExceptionsForNotRetryable() throws Throwable {
+	public void testRethrowForAnotherNotRetryable() throws Throwable {
 		Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<Class<? extends Throwable>, Boolean>();
 		retryableExceptions.put(IllegalArgumentException.class, true);
 		retryableExceptions.put(IllegalStateException.class, false);
@@ -446,7 +446,7 @@ public class RetryTemplateTests {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
 				@Override
 				public Object doWithRetry(RetryContext context) throws Exception {
-					throw new IllegalStateException("Realllly bad!");
+					throw new UnsupportedOperationException("Realllly bad!");
 				}
 			}, new RecoveryCallback<Object>() {
 				@Override
@@ -454,26 +454,25 @@ public class RetryTemplateTests {
 					return new Object();
 				}
 			});
-			fail("Expected RuntimeException");
+			fail("Expected UnsupportedOperationException");
 		}
-		catch (IllegalStateException e) {
+		catch (RuntimeException e) {
 			assertEquals("Realllly bad!", e.getMessage());
 		}
 	}
 
 	@Test
-	public void testRethrowExceptionsForRetryable() throws Throwable {
-		Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<Class<? extends Throwable>, Boolean>();
-		retryableExceptions.put(IllegalArgumentException.class, true);
-		retryableExceptions.put(IllegalStateException.class, false);
-		SimpleRetryPolicy policy = new SimpleRetryPolicy(1, retryableExceptions);
+	public void testRethrowExceptionsForAnotherNotRetryable() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalArgumentException.class, true));
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalStateException.class);
 		final Object value = new Object();
 		Object result = retryTemplate.execute(new RetryCallback<Object, Exception>() {
 			@Override
 			public Object doWithRetry(RetryContext context) throws Exception {
-				throw new IllegalStateException("Will be recovered");
+				throw new UnsupportedOperationException("Will be recovered");
 			}
 		}, new RecoveryCallback<Object>() {
 			@Override
