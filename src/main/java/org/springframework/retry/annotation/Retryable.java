@@ -138,4 +138,12 @@ public @interface Retryable {
 	 */
 	boolean rethrow() default false;
 
+	/**
+	 * For these exception types raw exceptions are thrown without being wrapped and no
+	 * recovery is performed not-retryable exceptions.
+	 * @return exception types not to recover
+	 * @since 1.3.3
+	 */
+	Class<? extends Throwable>[] rethrowExceptions() default {};
+
 }

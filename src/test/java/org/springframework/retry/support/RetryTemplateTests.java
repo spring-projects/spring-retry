@@ -431,6 +431,54 @@ public class RetryTemplateTests {
 		assertEquals(value, result);
 	}
 
+	@Test
+	public void testRethrowExceptionsForNotRetryable() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalArgumentException.class, true));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalStateException.class);
+		try {
+			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
+				public Object doWithRetry(RetryContext context) throws Exception {
+					throw new IllegalStateException("Realllly bad!");
+				}
+			}, new RecoveryCallback<Object>() {
+				@Override
+				public Object recover(RetryContext context) throws Exception {
+					return new Object();
+				}
+			});
+			fail("Expected RuntimeException");
+		}
+		catch (IllegalStateException e) {
+			assertEquals("Realllly bad!", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testRethrowExceptionsForRetryable() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalStateException.class, true));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalStateException.class);
+		final Object value = new Object();
+		Object result = retryTemplate.execute(new RetryCallback<Object, Exception>() {
+			@Override
+			public Object doWithRetry(RetryContext context) throws Exception {
+				throw new IllegalStateException("Will be recovered");
+			}
+		}, new RecoveryCallback<Object>() {
+			@Override
+			public Object recover(RetryContext context) throws Exception {
+				return value;
+			}
+		});
+		assertEquals(value, result);
+	}
+
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {
 
 		private int attempts;

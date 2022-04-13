@@ -218,6 +218,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
 		template.setNoRecoveryForNotRetryable(retryable.rethrow());
+		template.setNoRecoveryForNotRetryableExceptions(retryable.rethrowExceptions());
 		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
 				.recoverer(getRecoverer(target, method, retryable.rethrow())).build();
 	}
@@ -227,6 +228,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryContextCache(this.retryContextCache);
 		template.setNoRecoveryForNotRetryable(rethrow);
+		template.setNoRecoveryForNotRetryableExceptions(retryable.rethrowExceptions());
 
 		CircuitBreaker circuit = AnnotatedElementUtils.findMergedAnnotation(method, CircuitBreaker.class);
 		if (circuit == null) {

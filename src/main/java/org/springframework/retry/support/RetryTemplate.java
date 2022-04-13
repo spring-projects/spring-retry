@@ -98,6 +98,8 @@ public class RetryTemplate implements RetryOperations {
 
 	private boolean noRecoveryForNotRetryable;
 
+	private Class<? extends Throwable>[] noRecoveryForNotRetryableExceptions;
+
 	/**
 	 * Main entry point to configure RetryTemplate using fluent API. See
 	 * {@link RetryTemplateBuilder} for usage examples and details.
@@ -136,6 +138,20 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	public void setNoRecoveryForNotRetryable(boolean noRecoveryForNotRetryable) {
 		this.noRecoveryForNotRetryable = noRecoveryForNotRetryable;
+	}
+
+	/**
+	 * Set exception types to not call the recovery callback (if any) when a not-retryable
+	 * exception is thrown by the target code in
+	 * {@link #execute(RetryCallback, RecoveryCallback)}. By default, the callback is
+	 * invoked when retries are exhausted, or immediately for not-retryable exceptions.
+	 * @param noRecoveryForNotRetryableExceptions the noRecoveryForNotRetryableExceptions
+	 * to set
+	 * @since 1.3.3
+	 */
+	public void setNoRecoveryForNotRetryableExceptions(
+			Class<? extends Throwable>... noRecoveryForNotRetryableExceptions) {
+		this.noRecoveryForNotRetryableExceptions = noRecoveryForNotRetryableExceptions;
 	}
 
 	/**
@@ -547,8 +563,7 @@ public class RetryTemplate implements RetryOperations {
 			this.retryContextCache.remove(state.getKey());
 		}
 		// TODO: In 2.0 add retryForException() to the interface.
-		if (this.noRecoveryForNotRetryable && retryPolicy instanceof SimpleRetryPolicy
-				&& !((SimpleRetryPolicy) retryPolicy).retryForException(context.getLastThrowable())) {
+		if (shouldRethrowWithoutRecovery(context.getLastThrowable())) {
 			throw context.getLastThrowable();
 		}
 		if (recoveryCallback != null) {
@@ -564,7 +579,8 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	protected <E extends Throwable> void rethrow(RetryContext context, String message) throws E {
-		if (this.throwLastExceptionOnExhausted || this.noRecoveryForNotRetryable) {
+		if (this.throwLastExceptionOnExhausted || this.noRecoveryForNotRetryable
+				|| isNoRecoveryException(context.getLastThrowable())) {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) context.getLastThrowable();
 			throw rethrow;
@@ -585,6 +601,17 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	protected boolean shouldRethrow(RetryPolicy retryPolicy, RetryContext context, RetryState state) {
 		return state != null && state.rollbackFor(context.getLastThrowable());
+	}
+
+	private boolean shouldRethrowWithoutRecovery(Throwable throwable) {
+		return (this.noRecoveryForNotRetryable || isNoRecoveryException(throwable))
+				&& retryPolicy instanceof SimpleRetryPolicy
+				&& !((SimpleRetryPolicy) retryPolicy).retryForException(throwable);
+	}
+
+	private boolean isNoRecoveryException(Throwable throwable) {
+		return this.noRecoveryForNotRetryableExceptions != null
+				&& Arrays.asList(this.noRecoveryForNotRetryableExceptions).contains(throwable.getClass());
 	}
 
 	private <T, E extends Throwable> boolean doOpenInterceptors(RetryCallback<T, E> callback, RetryContext context) {

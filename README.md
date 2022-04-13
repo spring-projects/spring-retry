@@ -200,8 +200,9 @@ Foo foo = template.execute(new RetryCallback<Foo>() {
 If the business logic does not succeed before the template decides to abort, the client is
 given the chance to do some alternate processing through the recovery callback.
 
-Version 1.3.3 added the `noRecoveryForNotRetryable` property to the template.
-When `true`, the recovery callback is not invoked if the retry policy is configured with a not-retryable exception and one is thrown.
+Version 1.3.3 added the `noRecoveryForNotRetryable` and `noRecoveryForNotRetryableExceptions` properties to the template.
+When `noRecoveryForNotRetryable` is `true`, the recovery callback is not invoked if the retry policy is configured with a not-retryable exception and one is thrown.
+The same behavior for exceptions set by `noRecoveryForNotRetryableExceptions`.
 By default, the recovery callback is always called, regardless of whether the exception is retryable or not.
 
 ## Stateless Retry
@@ -580,7 +581,7 @@ Expressions can contain property placeholders, such as `#{${max.delay}}` or
 during initialization. There is no root object for the evaluation but they can reference
 other beans in the context.
 
-Version 1.3.3 added the `rethrow` attribute to `@Retryable`; when `true` any exceptions that are not retryable are thrown unchanged to the caller and the `@Recover` method is not called.
+Version 1.3.3 added the `rethrow` and `rethrowExceptions` attributes to `@Retryable`; when `rethrow` is `true` any exceptions that are not retryable are thrown unchanged to the caller and the `@Recover` method is not called. The same behavior for exceptions listed in `rethrowExceptions`.
 
 #### <a name="Additional_Dependencies"></a> Additional Dependencies
 
