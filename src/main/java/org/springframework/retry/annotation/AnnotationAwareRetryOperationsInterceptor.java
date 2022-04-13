@@ -217,8 +217,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryPolicy(getRetryPolicy(retryable));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
-		template.setNoRecoveryForNotRetryable(retryable.rethrow());
-		template.setNoRecoveryForNotRetryableExceptions(retryable.rethrowExceptions());
+		template.setNoRecoveryForNotRetryable(retryable.rethrow() || retryable.rethrowExceptions().length > 0);
 		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
 				.recoverer(getRecoverer(target, method, retryable.rethrow())).build();
 	}
@@ -227,8 +226,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		boolean rethrow = retryable.rethrow();
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryContextCache(this.retryContextCache);
-		template.setNoRecoveryForNotRetryable(rethrow);
-		template.setNoRecoveryForNotRetryableExceptions(retryable.rethrowExceptions());
+		template.setNoRecoveryForNotRetryable(rethrow || retryable.rethrowExceptions().length > 0);
 
 		CircuitBreaker circuit = AnnotatedElementUtils.findMergedAnnotation(method, CircuitBreaker.class);
 		if (circuit == null) {
@@ -345,7 +343,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 						Integer.class);
 			}
 		}
-		if (includes.length == 0 && excludes.length == 0) {
+		Class<? extends Throwable>[] rethrowExceptions = (Class<? extends Throwable>[]) attrs.get("rethrowExceptions");
+		if (rethrowExceptions == null) {
+			rethrowExceptions = new Class[0];
+		}
+		if (includes.length == 0 && excludes.length == 0 && rethrowExceptions.length == 0) {
 			SimpleRetryPolicy simple = hasExpression
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
@@ -357,6 +359,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			policyMap.put(type, true);
 		}
 		for (Class<? extends Throwable> type : excludes) {
+			policyMap.put(type, false);
+		}
+		for (Class<? extends Throwable> type : rethrowExceptions) {
 			policyMap.put(type, false);
 		}
 		boolean retryNotExcluded = includes.length == 0;

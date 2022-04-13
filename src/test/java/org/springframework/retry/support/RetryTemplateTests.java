@@ -17,6 +17,8 @@
 package org.springframework.retry.support;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -433,11 +435,13 @@ public class RetryTemplateTests {
 
 	@Test
 	public void testRethrowExceptionsForNotRetryable() throws Throwable {
-		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalArgumentException.class, true));
+		Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<Class<? extends Throwable>, Boolean>();
+		retryableExceptions.put(IllegalArgumentException.class, true);
+		retryableExceptions.put(IllegalStateException.class, false);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1, retryableExceptions);
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(policy);
-		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalStateException.class);
+		retryTemplate.setNoRecoveryForNotRetryable(true);
 		try {
 			retryTemplate.execute(new RetryCallback<Object, Exception>() {
 				@Override
@@ -459,11 +463,12 @@ public class RetryTemplateTests {
 
 	@Test
 	public void testRethrowExceptionsForRetryable() throws Throwable {
-		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
-				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalStateException.class, true));
+		Map<Class<? extends Throwable>, Boolean> retryableExceptions = new HashMap<Class<? extends Throwable>, Boolean>();
+		retryableExceptions.put(IllegalArgumentException.class, true);
+		retryableExceptions.put(IllegalStateException.class, false);
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1, retryableExceptions);
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(policy);
-		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalStateException.class);
 		final Object value = new Object();
 		Object result = retryTemplate.execute(new RetryCallback<Object, Exception>() {
 			@Override
