@@ -610,8 +610,15 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	private boolean isNoRecoveryException(Throwable throwable) {
-		return this.noRecoveryForNotRetryableExceptions != null
-				&& Arrays.asList(this.noRecoveryForNotRetryableExceptions).contains(throwable.getClass());
+		if (this.noRecoveryForNotRetryableExceptions == null) {
+			return false;
+		}
+		for (Class<? extends Throwable> t : noRecoveryForNotRetryableExceptions) {
+			if (t.isAssignableFrom(throwable.getClass())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private <T, E extends Throwable> boolean doOpenInterceptors(RetryCallback<T, E> callback, RetryContext context) {
