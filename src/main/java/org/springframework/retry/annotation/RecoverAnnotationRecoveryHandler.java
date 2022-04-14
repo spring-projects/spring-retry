@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,23 +64,16 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 	private String recoverMethodName;
 
-	private boolean throwLastExceptionWhenNoRecoverMethod;
-
 	public RecoverAnnotationRecoveryHandler(Object target, Method method) {
 		this.target = target;
 		init(target, method);
-	}
-
-	public void setThrowLastExceptionWhenNoRecoverMethod(boolean throwLastExceptionWhenNoRecoverMethod) {
-		this.throwLastExceptionWhenNoRecoverMethod = throwLastExceptionWhenNoRecoverMethod;
 	}
 
 	@Override
 	public T recover(Object[] args, Throwable cause) {
 		Method method = findClosestMatch(args, cause.getClass());
 		if (method == null) {
-			throw throwLastExceptionWhenNoRecoverMethod && cause instanceof RuntimeException ? (RuntimeException) cause
-					: new ExhaustedRetryException("Cannot locate recovery method", cause);
+			throw new ExhaustedRetryException("Cannot locate recovery method", cause);
 		}
 		SimpleMetadata meta = this.methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,22 +199,21 @@ public class SimpleRetryPolicy implements RetryPolicy {
 		return new SimpleRetryContext(parent);
 	}
 
-	/**
-	 * Delegates to an exception classifier.
-	 * @param ex
-	 * @return true if this exception or its ancestors have been registered as retryable.
-	 * @since 1.3.3
-	 */
-	public boolean retryForException(Throwable ex) {
-		return this.retryableClassifier.classify(ex);
-	}
-
 	private static class SimpleRetryContext extends RetryContextSupport {
 
 		public SimpleRetryContext(RetryContext parent) {
 			super(parent);
 		}
 
+	}
+
+	/**
+	 * Delegates to an exception classifier.
+	 * @param ex
+	 * @return true if this exception or its ancestors have been registered as retryable.
+	 */
+	private boolean retryForException(Throwable ex) {
+		return this.retryableClassifier.classify(ex);
 	}
 
 	@Override
