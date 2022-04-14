@@ -127,10 +127,6 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	/**
-	 * Set to true to not call the recovery callback (if any) when a not-retryable
-	 * exception is thrown by the target code in
-	 * {@link #execute(RetryCallback, RecoveryCallback)}. By default, the callback is
-	 * invoked when retries are exhausted, or immediately for not-retryable exceptions.
 	 * @param noRecoveryForNotRetryable the noRecoveryForNotRetryable to set
 	 * @since 1.3.3
 	 */
@@ -546,7 +542,6 @@ public class RetryTemplate implements RetryOperations {
 		if (state != null && !context.hasAttribute(GLOBAL_STATE)) {
 			this.retryContextCache.remove(state.getKey());
 		}
-		// TODO: In 2.0 add retryForException() to the interface.
 		if (this.noRecoveryForNotRetryable && retryPolicy instanceof SimpleRetryPolicy
 				&& !((SimpleRetryPolicy) retryPolicy).retryForException(context.getLastThrowable())) {
 			throw context.getLastThrowable();
