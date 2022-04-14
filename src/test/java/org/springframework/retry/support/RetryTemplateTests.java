@@ -537,6 +537,33 @@ public class RetryTemplateTests {
 		assertEquals(value, result);
 	}
 
+	@Test
+	public void testRethrowExceptionsForSubType() throws Throwable {
+		SimpleRetryPolicy policy = new SimpleRetryPolicy(1,
+				Collections.<Class<? extends Throwable>, Boolean>singletonMap(IllegalStateException.class, true));
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setRetryPolicy(policy);
+		retryTemplate.setNoRecoveryForNotRetryableExceptions(IllegalArgumentException.class);
+		try {
+			retryTemplate.execute(new RetryCallback<Object, Exception>() {
+				@Override
+				public Object doWithRetry(RetryContext context) throws Exception {
+					// IllegalThreadStateException extends IllegalArgumentException
+					throw new IllegalThreadStateException("Realllly bad!");
+				}
+			}, new RecoveryCallback<Object>() {
+				@Override
+				public Object recover(RetryContext context) throws Exception {
+					return new Object();
+				}
+			});
+			fail("Expected IllegalThreadStateException");
+		}
+		catch (RuntimeException e) {
+			assertEquals("Realllly bad!", e.getMessage());
+		}
+	}
+
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {
 
 		private int attempts;
