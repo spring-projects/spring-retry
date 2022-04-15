@@ -112,10 +112,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		try {
 			return proxy.getClass().getMethod(method.getName(), method.getParameterTypes());
 		}
-		catch (NoSuchMethodException e) {
-			return null;
-		}
-		catch (SecurityException e) {
+		catch (NoSuchMethodException | SecurityException e) {
 			return null;
 		}
 	}

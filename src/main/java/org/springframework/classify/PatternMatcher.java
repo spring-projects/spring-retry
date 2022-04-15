@@ -44,7 +44,7 @@ public class PatternMatcher<S> {
 		this.map = map;
 		// Sort keys to start with the most specific
 		this.sorted = new ArrayList<>(map.keySet());
-		Collections.sort(this.sorted, (o1, o2) -> {
+		this.sorted.sort((o1, o2) -> {
 			String s1 = o1; // .replace('?', '{');
 			String s2 = o2; // .replace('*', '}');
 			return s2.compareTo(s1);

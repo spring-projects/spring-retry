@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2019 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package org.springframework.retry.listener;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
+
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.interceptor.MethodInvocationRetryCallback;
@@ -51,8 +53,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
-		support.close(context, callback, null);
+		support.close(context, mockMethodInvocationRetryCallback(), null);
 
 		assertEquals(1, callsOnDoCloseMethod.get());
 	}
@@ -68,7 +69,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		RetryCallback callback = mock(RetryCallback.class);
+		RetryCallback<?, ?> callback = mock(RetryCallback.class);
 		support.close(context, callback, null);
 
 		assertEquals(0, callsOnDoCloseMethod.get());
@@ -96,8 +97,7 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
-		support.onError(context, callback, null);
+		support.onError(context, mockMethodInvocationRetryCallback(), null);
 
 		assertEquals(1, callsOnDoOnErrorMethod.get());
 	}
@@ -120,10 +120,13 @@ public class MethodInvocationRetryListenerSupportTests {
 			}
 		};
 		RetryContext context = mock(RetryContext.class);
-		MethodInvocationRetryCallback callback = mock(MethodInvocationRetryCallback.class);
-		assertTrue(support.open(context, callback));
 
+		assertTrue(support.open(context, mockMethodInvocationRetryCallback()));
 		assertEquals(1, callsOnDoOpenMethod.get());
+	}
+
+	private MethodInvocationRetryCallback<?, ?> mockMethodInvocationRetryCallback() {
+		return mock(MethodInvocationRetryCallback.class);
 	}
 
 }

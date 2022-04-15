@@ -247,7 +247,7 @@ public class RetryOperationsInterceptorTests {
 		}
 		catch (IllegalStateException e) {
 			assertTrue("Exception message should contain MethodInvocation: " + e.getMessage(),
-					e.getMessage().indexOf("MethodInvocation") >= 0);
+					e.getMessage().contains("MethodInvocation"));
 		}
 	}
 

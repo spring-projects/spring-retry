@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2019 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,10 +208,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 			try {
 				return this.invocation.proceed();
 			}
-			catch (Exception e) {
-				throw e;
-			}
-			catch (Error e) {
+			catch (Exception | Error e) {
 				throw e;
 			}
 			catch (Throwable e) {

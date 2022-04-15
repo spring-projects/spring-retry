@@ -41,8 +41,7 @@ public class DummySleeper implements Sleeper {
 	public long[] getBackOffs() {
 		long[] result = new long[backOffs.size()];
 		int i = 0;
-		for (Iterator<Long> iterator = backOffs.iterator(); iterator.hasNext();) {
-			Long value = iterator.next();
+		for (Long value : backOffs) {
 			result[i++] = value;
 		}
 		return result;

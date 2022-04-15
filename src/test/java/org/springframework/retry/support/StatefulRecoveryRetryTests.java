@@ -234,7 +234,7 @@ public class StatefulRecoveryRetryTests {
 		}
 		catch (RetryException e) {
 			String message = e.getMessage();
-			assertTrue("Message does not contain 'capacity': " + message, message.indexOf("capacity") >= 0);
+			assertTrue("Message does not contain 'capacity': " + message, message.contains("capacity"));
 		}
 	}
 
