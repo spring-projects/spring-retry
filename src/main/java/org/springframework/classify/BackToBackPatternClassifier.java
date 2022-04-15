@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 	 * @param map maps pattern keys with wildcards to output values
 	 */
 	public void setMatcherMap(Map<String, T> map) {
-		this.matcher = new PatternMatchingClassifier<T>(map);
+		this.matcher = new PatternMatchingClassifier<>(map);
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class BackToBackPatternClassifier<C, T> implements Classifier<C, T> {
 	 * @param delegate the delegate object used to create a router classifier
 	 */
 	public void setRouterDelegate(Object delegate) {
-		this.router = new ClassifierAdapter<C, String>(delegate);
+		this.router = new ClassifierAdapter<>(delegate);
 	}
 
 	/**

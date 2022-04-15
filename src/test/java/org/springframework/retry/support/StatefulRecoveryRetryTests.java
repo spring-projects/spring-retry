@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class StatefulRecoveryRetryTests {
 
 	private int count = 0;
 
-	private List<String> list = new ArrayList<String>();
+	private List<String> list = new ArrayList<>();
 
 	@Test
 	public void testOpenSunnyDay() throws Exception {

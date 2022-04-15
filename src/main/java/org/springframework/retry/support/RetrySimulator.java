@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public class RetrySimulator {
 	@SuppressWarnings("serial")
 	static class StealingSleeper implements Sleeper {
 
-		private final List<Long> sleeps = new ArrayList<Long>();
+		private final List<Long> sleeps = new ArrayList<>();
 
 		public void sleep(long backOffPeriod) throws InterruptedException {
 			sleeps.add(backOffPeriod);

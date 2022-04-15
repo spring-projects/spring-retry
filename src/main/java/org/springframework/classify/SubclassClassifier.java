@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2013 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings("serial")
 public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
-	private ConcurrentMap<Class<? extends T>, C> classified = new ConcurrentHashMap<Class<? extends T>, C>();
+	private ConcurrentMap<Class<? extends T>, C> classified = new ConcurrentHashMap<>();
 
 	private C defaultValue = null;
 
@@ -52,7 +52,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @param defaultValue the default value
 	 */
 	public SubclassClassifier(C defaultValue) {
-		this(new HashMap<Class<? extends T>, C>(), defaultValue);
+		this(new HashMap<>(), defaultValue);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 */
 	public SubclassClassifier(Map<Class<? extends T>, C> typeMap, C defaultValue) {
 		super();
-		this.classified = new ConcurrentHashMap<Class<? extends T>, C>(typeMap);
+		this.classified = new ConcurrentHashMap<>(typeMap);
 		this.defaultValue = defaultValue;
 	}
 
@@ -82,7 +82,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 * @param map a map from type to class
 	 */
 	public void setTypeMap(Map<Class<? extends T>, C> map) {
-		this.classified = new ConcurrentHashMap<Class<? extends T>, C>(map);
+		this.classified = new ConcurrentHashMap<>(map);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class CompositeRetryPolicy implements RetryPolicy {
 	 */
 	@Override
 	public RetryContext open(RetryContext parent) {
-		List<RetryContext> list = new ArrayList<RetryContext>();
+		List<RetryContext> list = new ArrayList<>();
 		for (RetryPolicy policy : this.policies) {
 			list.add(policy.open(parent));
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ import org.springframework.util.Assert;
 @SuppressWarnings("serial")
 public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 
-	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<Throwable, RetryPolicy>(
-			new NeverRetryPolicy());
+	private Classifier<Throwable, RetryPolicy> exceptionClassifier = new ClassifierSupport<>(new NeverRetryPolicy());
 
 	/**
 	 * Setter for policy map used to create a classifier. Either this property or the
@@ -47,7 +46,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 	 * to create a {@link Classifier} to locate a policy.
 	 */
 	public void setPolicyMap(Map<Class<? extends Throwable>, RetryPolicy> policyMap) {
-		this.exceptionClassifier = new SubclassClassifier<Throwable, RetryPolicy>(policyMap, new NeverRetryPolicy());
+		this.exceptionClassifier = new SubclassClassifier<>(policyMap, new NeverRetryPolicy());
 	}
 
 	/**
@@ -112,7 +111,7 @@ public class ExceptionClassifierRetryPolicy implements RetryPolicy {
 		// Dynamic: depends on the policy:
 		private RetryContext context;
 
-		final private Map<RetryPolicy, RetryContext> contexts = new HashMap<RetryPolicy, RetryContext>();
+		final private Map<RetryPolicy, RetryContext> contexts = new HashMap<>();
 
 		public ExceptionClassifierRetryContext(RetryContext parent,
 				Classifier<Throwable, RetryPolicy> exceptionClassifier) {

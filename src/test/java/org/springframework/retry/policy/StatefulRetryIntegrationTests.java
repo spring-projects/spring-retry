@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +158,7 @@ public class StatefulRetryIntegrationTests {
 		policy.setMultiplier(1.5);
 		RetryTemplate template = new RetryTemplate();
 		template.setBackOffPolicy(policy);
-		final List<Long> times = new ArrayList<Long>();
+		final List<Long> times = new ArrayList<>();
 		RetryState retryState = new DefaultRetryState("bar");
 		for (int i = 0; i < 3; i++) {
 			try {

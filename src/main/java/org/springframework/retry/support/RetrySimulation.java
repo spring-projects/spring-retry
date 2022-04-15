@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import java.util.List;
  */
 public class RetrySimulation {
 
-	private final List<SleepSequence> sleepSequences = new ArrayList<SleepSequence>();
+	private final List<SleepSequence> sleepSequences = new ArrayList<>();
 
-	private final List<Long> sleepHistogram = new ArrayList<Long>();
+	private final List<Long> sleepHistogram = new ArrayList<>();
 
 	public RetrySimulation() {
 	}
@@ -46,7 +46,7 @@ public class RetrySimulation {
 	 * all simulations.
 	 */
 	public List<Double> getPercentiles() {
-		List<Double> res = new ArrayList<Double>();
+		List<Double> res = new ArrayList<>();
 		for (double percentile : new double[] { 10, 20, 30, 40, 50, 60, 70, 80, 90 }) {
 			res.add(getPercentile(percentile / 100));
 		}

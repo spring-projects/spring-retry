@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,13 @@ import org.springframework.classify.annotation.Classifier;
  */
 public class BackToBackPatternClassifierTests {
 
-	private BackToBackPatternClassifier<String, String> classifier = new BackToBackPatternClassifier<String, String>();
+	private BackToBackPatternClassifier<String, String> classifier = new BackToBackPatternClassifier<>();
 
 	private Map<String, String> map;
 
 	@Before
 	public void createMap() {
-		map = new HashMap<String, String>();
+		map = new HashMap<>();
 		map.put("foo", "bar");
 		map.put("*", "spam");
 	}
@@ -49,9 +49,9 @@ public class BackToBackPatternClassifierTests {
 
 	@Test
 	public void testCreateFromConstructor() {
-		classifier = new BackToBackPatternClassifier<String, String>(
-				new PatternMatchingClassifier<String>(Collections.singletonMap("oof", "bucket")),
-				new PatternMatchingClassifier<String>(map));
+		classifier = new BackToBackPatternClassifier<>(
+				new PatternMatchingClassifier<>(Collections.singletonMap("oof", "bucket")),
+				new PatternMatchingClassifier<>(map));
 		assertEquals("spam", classifier.classify("oof"));
 	}
 
@@ -69,7 +69,7 @@ public class BackToBackPatternClassifierTests {
 
 	@Test
 	public void testSingleMethodWithNoAnnotation() {
-		classifier = new BackToBackPatternClassifier<String, String>();
+		classifier = new BackToBackPatternClassifier<>();
 		classifier.setRouterDelegate(new RouterDelegate());
 		classifier.setMatcherMap(map);
 		assertEquals("spam", classifier.classify("oof"));

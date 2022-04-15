@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import org.springframework.util.Assert;
  */
 public class PatternMatcher<S> {
 
-	private Map<String, S> map = new HashMap<String, S>();
+	private Map<String, S> map = new HashMap<>();
 
-	private List<String> sorted = new ArrayList<String>();
+	private List<String> sorted = new ArrayList<>();
 
 	/**
 	 * Initialize a new {@link PatternMatcher} with a map of patterns to values
@@ -43,7 +43,7 @@ public class PatternMatcher<S> {
 		super();
 		this.map = map;
 		// Sort keys to start with the most specific
-		this.sorted = new ArrayList<String>(map.keySet());
+		this.sorted = new ArrayList<>(map.keySet());
 		Collections.sort(this.sorted, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {

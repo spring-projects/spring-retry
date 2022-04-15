@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		this.newMethodArgumentsIdentifier = findBean(NewMethodArgumentsIdentifier.class);
 		this.retryListeners = findBeans(RetryListener.class);
 		this.sleeper = findBean(Sleeper.class);
-		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<Class<? extends Annotation>>(1);
+		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<>(1);
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
@@ -107,7 +107,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		if (this.beanFactory instanceof ListableBeanFactory) {
 			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
 			if (listable.getBeanNamesForType(type).length > 0) {
-				ArrayList<T> list = new ArrayList<T>(listable.getBeansOfType(type, false, false).values());
+				ArrayList<T> list = new ArrayList<>(listable.getBeansOfType(type, false, false).values());
 				OrderComparator.sort(list);
 				return list;
 			}

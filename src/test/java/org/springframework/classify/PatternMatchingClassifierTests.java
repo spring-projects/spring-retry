@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,13 @@ import org.springframework.classify.PatternMatchingClassifier;
  */
 public class PatternMatchingClassifierTests {
 
-	private PatternMatchingClassifier<String> classifier = new PatternMatchingClassifier<String>();
+	private PatternMatchingClassifier<String> classifier = new PatternMatchingClassifier<>();
 
 	private Map<String, String> map;
 
 	@Before
 	public void createMap() {
-		map = new HashMap<String, String>();
+		map = new HashMap<>();
 		map.put("foo", "bar");
 		map.put("*", "spam");
 	}
@@ -50,7 +50,7 @@ public class PatternMatchingClassifierTests {
 
 	@Test
 	public void testCreateFromMap() {
-		classifier = new PatternMatchingClassifier<String>(map);
+		classifier = new PatternMatchingClassifier<>(map);
 		assertEquals("bar", classifier.classify("foo"));
 		assertEquals("spam", classifier.classify("bucket"));
 	}

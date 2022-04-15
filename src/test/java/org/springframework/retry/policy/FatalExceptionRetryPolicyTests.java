@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public class FatalExceptionRetryPolicyTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 
 		// Make sure certain exceptions are fatal...
-		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<>();
 		map.put(IllegalArgumentException.class, false);
 		map.put(IllegalStateException.class, false);
 
@@ -72,7 +72,7 @@ public class FatalExceptionRetryPolicyTests {
 
 		RetryTemplate retryTemplate = new RetryTemplate();
 
-		Map<Class<? extends Throwable>, Boolean> map = new HashMap<Class<? extends Throwable>, Boolean>();
+		Map<Class<? extends Throwable>, Boolean> map = new HashMap<>();
 		map.put(IllegalArgumentException.class, false);
 		map.put(IllegalStateException.class, false);
 

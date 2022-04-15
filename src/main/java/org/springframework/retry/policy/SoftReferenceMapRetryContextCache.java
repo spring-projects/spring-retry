@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ public class SoftReferenceMapRetryContextCache implements RetryContextCache {
 	 */
 	public static final int DEFAULT_CAPACITY = 4096;
 
-	private Map<Object, SoftReference<RetryContext>> map = Collections
-			.synchronizedMap(new HashMap<Object, SoftReference<RetryContext>>());
+	private Map<Object, SoftReference<RetryContext>> map = Collections.synchronizedMap(new HashMap<>());
 
 	private int capacity;
 
@@ -91,7 +90,7 @@ public class SoftReferenceMapRetryContextCache implements RetryContextCache {
 					+ "Do you need to re-consider the implementation of the key generator, "
 					+ "or the equals and hashCode of the items that failed?");
 		}
-		map.put(key, new SoftReference<RetryContext>(context));
+		map.put(key, new SoftReference<>(context));
 	}
 
 	public void remove(Object key) {

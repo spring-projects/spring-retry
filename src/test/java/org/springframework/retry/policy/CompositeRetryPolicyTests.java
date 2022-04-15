@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class CompositeRetryPolicyTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testNonTrivialPoliciesClose() throws Exception {
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {
 			public void close(RetryContext context) {
@@ -109,7 +109,7 @@ public class CompositeRetryPolicyTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testExceptionOnPoliciesClose() throws Exception {
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {
 			public void close(RetryContext context) {

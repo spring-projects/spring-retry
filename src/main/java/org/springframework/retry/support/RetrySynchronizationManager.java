@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public final class RetrySynchronizationManager {
 	private RetrySynchronizationManager() {
 	}
 
-	private static final ThreadLocal<RetryContext> context = new ThreadLocal<RetryContext>();
+	private static final ThreadLocal<RetryContext> context = new ThreadLocal<>();
 
 	/**
 	 * Public accessor for the locally enclosing {@link RetryContext}.

@@ -149,7 +149,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	@Test
 	public void testInterceptorChainWithRetry() throws Exception {
 		((Advised) service).addAdvice(interceptor);
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		((Advised) service).addAdvice(new MethodInterceptor() {
 			@Override
 			public Object invoke(MethodInvocation invocation) throws Throwable {

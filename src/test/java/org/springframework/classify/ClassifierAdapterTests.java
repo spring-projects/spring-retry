@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class ClassifierAdapterTests {
 
-	private ClassifierAdapter<String, Integer> adapter = new ClassifierAdapter<String, Integer>();
+	private ClassifierAdapter<String, Integer> adapter = new ClassifierAdapter<>();
 
 	@Test
 	public void testClassifierAdapterObject() {
-		adapter = new ClassifierAdapter<String, Integer>(new Object() {
+		adapter = new ClassifierAdapter<>(new Object() {
 			@Classifier
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -47,7 +47,7 @@ public class ClassifierAdapterTests {
 
 	@Test(expected = IllegalStateException.class)
 	public void testClassifierAdapterObjectWithNoAnnotation() {
-		adapter = new ClassifierAdapter<String, Integer>(new Object() {
+		adapter = new ClassifierAdapter<>(new Object() {
 			@SuppressWarnings("unused")
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -63,7 +63,7 @@ public class ClassifierAdapterTests {
 
 	@Test
 	public void testClassifierAdapterObjectSingleMethodWithNoAnnotation() {
-		adapter = new ClassifierAdapter<String, Integer>(new Object() {
+		adapter = new ClassifierAdapter<>(new Object() {
 			@SuppressWarnings("unused")
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -84,12 +84,11 @@ public class ClassifierAdapterTests {
 	@SuppressWarnings({ "serial" })
 	@Test
 	public void testClassifierAdapterClassifier() {
-		adapter = new ClassifierAdapter<String, Integer>(
-				new org.springframework.classify.Classifier<String, Integer>() {
-					public Integer classify(String classifiable) {
-						return Integer.valueOf(classifiable);
-					}
-				});
+		adapter = new ClassifierAdapter<>(new org.springframework.classify.Classifier<String, Integer>() {
+			public Integer classify(String classifiable) {
+				return Integer.valueOf(classifiable);
+			}
+		});
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 

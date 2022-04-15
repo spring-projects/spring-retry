@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	 * classifier, otherwise all inputs will cause an exception.
 	 */
 	public PatternMatchingClassifier() {
-		this(new HashMap<String, T>());
+		this(new HashMap<>());
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	 */
 	public PatternMatchingClassifier(Map<String, T> values) {
 		super();
-		this.values = new PatternMatcher<T>(values);
+		this.values = new PatternMatcher<>(values);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class PatternMatchingClassifier<T> implements Classifier<String, T> {
 	 * @param values the pattern map to set
 	 */
 	public void setPatternMap(Map<String, T> values) {
-		this.values = new PatternMatcher<T>(values);
+		this.values = new PatternMatcher<>(values);
 	}
 
 	/**

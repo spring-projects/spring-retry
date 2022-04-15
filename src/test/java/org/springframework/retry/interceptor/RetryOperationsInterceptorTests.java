@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2020 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,7 +128,7 @@ public class RetryOperationsInterceptorTests {
 		final String classTagName = "class";
 		final String methodTagName = "method";
 		final String labelTagName = "label";
-		final Map<String, String> monitoringTags = new HashMap<String, String>();
+		final Map<String, String> monitoringTags = new HashMap<>();
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(2));
 		template.registerListener(new MethodInvocationRetryListenerSupport() {
@@ -174,7 +174,7 @@ public class RetryOperationsInterceptorTests {
 	@Test
 	public void testInterceptorChainWithRetry() throws Exception {
 		((Advised) this.service).addAdvice(this.interceptor);
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 		((Advised) this.service).addAdvice(new MethodInterceptor() {
 			@Override
 			public Object invoke(MethodInvocation invocation) throws Throwable {

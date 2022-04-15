@@ -74,7 +74,7 @@ public class ProxyApplicationTests {
 
 	private static class CountClassesClassLoader extends URLClassLoader {
 
-		private final Set<Class<?>> classes = new HashSet<Class<?>>();
+		private final Set<Class<?>> classes = new HashSet<>();
 
 		public CountClassesClassLoader() {
 			super(new URL[0], ProxyApplicationTests.class.getClassLoader());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.springframework.retry.RetryStatistics;
  */
 public class DefaultStatisticsRepository implements StatisticsRepository {
 
-	private ConcurrentMap<String, MutableRetryStatistics> map = new ConcurrentHashMap<String, MutableRetryStatistics>();
+	private ConcurrentMap<String, MutableRetryStatistics> map = new ConcurrentHashMap<>();
 
 	private RetryStatisticsFactory factory = new DefaultRetryStatisticsFactory();
 
@@ -43,7 +43,7 @@ public class DefaultStatisticsRepository implements StatisticsRepository {
 
 	@Override
 	public Iterable<RetryStatistics> findAll() {
-		return new ArrayList<RetryStatistics>(map.values());
+		return new ArrayList<>(map.values());
 	}
 
 	@Override

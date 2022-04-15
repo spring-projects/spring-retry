@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2019 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,9 +56,9 @@ import org.springframework.util.StringUtils;
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
-	private final SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<Throwable, Method>();
+	private final SubclassClassifier<Throwable, Method> classifier = new SubclassClassifier<>();
 
-	private final Map<Method, SimpleMetadata> methods = new HashMap<Method, SimpleMetadata>();
+	private final Map<Method, SimpleMetadata> methods = new HashMap<>();
 
 	private final Object target;
 
@@ -197,7 +197,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	}
 
 	private void init(final Object target, Method method) {
-		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
+		final Map<Class<? extends Throwable>, Method> types = new HashMap<>();
 		final Method failingMethod = method;
 		Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
 		if (retryable != null) {
@@ -284,7 +284,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	}
 
 	private void optionallyFilterMethodsBy(Class<?> returnClass) {
-		Map<Method, SimpleMetadata> filteredMethods = new HashMap<Method, SimpleMetadata>();
+		Map<Method, SimpleMetadata> filteredMethods = new HashMap<>();
 		for (Method method : this.methods.keySet()) {
 			if (method.getReturnType() == returnClass) {
 				filteredMethods.put(method, this.methods.get(method));

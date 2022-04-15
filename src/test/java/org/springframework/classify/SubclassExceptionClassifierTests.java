@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNull;
 
 public class SubclassExceptionClassifierTests {
 
-	SubclassClassifier<Throwable, String> classifier = new SubclassClassifier<Throwable, String>();
+	SubclassClassifier<Throwable, String> classifier = new SubclassClassifier<>();
 
 	@Test
 	public void testClassifyNullIsDefault() {
@@ -44,7 +44,7 @@ public class SubclassExceptionClassifierTests {
 
 	@Test
 	public void testClassifyNullNonDefault() {
-		this.classifier = new SubclassClassifier<Throwable, String>("foo");
+		this.classifier = new SubclassClassifier<>("foo");
 		assertEquals("foo", this.classifier.classify(null));
 	}
 
@@ -90,7 +90,7 @@ public class SubclassExceptionClassifierTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyAncestorMatch2() {
-		this.classifier = new SubclassClassifier<Throwable, String>();
+		this.classifier = new SubclassClassifier<>();
 		this.classifier.setTypeMap(new HashMap<Class<? extends Throwable>, String>() {
 			{
 				put(SocketException.class, "1");

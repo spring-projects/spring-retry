@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ExceptionClassifierRetryPolicyTests {
 
 	@Test
 	public void testNullPolicies() throws Exception {
-		policy.setPolicyMap(new HashMap<Class<? extends Throwable>, RetryPolicy>());
+		policy.setPolicyMap(new HashMap<>());
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 	}

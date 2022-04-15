@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,13 @@ public class ClassifierSupportTests {
 
 	@Test
 	public void testClassifyNullIsDefault() {
-		ClassifierSupport<String, String> classifier = new ClassifierSupport<String, String>("foo");
+		ClassifierSupport<String, String> classifier = new ClassifierSupport<>("foo");
 		assertEquals(classifier.classify(null), "foo");
 	}
 
 	@Test
 	public void testClassifyRandomException() {
-		ClassifierSupport<Throwable, String> classifier = new ClassifierSupport<Throwable, String>("foo");
+		ClassifierSupport<Throwable, String> classifier = new ClassifierSupport<>("foo");
 		assertEquals(classifier.classify(new IllegalStateException("Foo")), classifier.classify(null));
 	}
 

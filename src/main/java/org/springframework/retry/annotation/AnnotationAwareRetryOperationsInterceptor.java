@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
 
-	private final ConcurrentReferenceHashMap<Object, ConcurrentMap<Method, MethodInterceptor>> delegates = new ConcurrentReferenceHashMap<Object, ConcurrentMap<Method, MethodInterceptor>>();
+	private final ConcurrentReferenceHashMap<Object, ConcurrentMap<Method, MethodInterceptor>> delegates = new ConcurrentReferenceHashMap<>();
 
 	private RetryContextCache retryContextCache = new MapRetryContextCache();
 
@@ -137,7 +137,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	 * @param globalListeners the default listeners
 	 */
 	public void setListeners(Collection<RetryListener> globalListeners) {
-		ArrayList<RetryListener> retryListeners = new ArrayList<RetryListener>(globalListeners);
+		ArrayList<RetryListener> retryListeners = new ArrayList<>(globalListeners);
 		AnnotationAwareOrderComparator.sort(retryListeners);
 		this.globalListeners = retryListeners.toArray(new RetryListener[0]);
 	}
@@ -167,7 +167,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private MethodInterceptor getDelegate(Object target, Method method) {
 		ConcurrentMap<Method, MethodInterceptor> cachedMethods = this.delegates.get(target);
 		if (cachedMethods == null) {
-			cachedMethods = new ConcurrentHashMap<Method, MethodInterceptor>();
+			cachedMethods = new ConcurrentHashMap<>();
 		}
 		MethodInterceptor delegate = cachedMethods.get(method);
 		if (delegate == null) {
@@ -310,7 +310,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (!foundRecoverable.get()) {
 			return null;
 		}
-		return new RecoverAnnotationRecoveryHandler<Object>(target, method);
+		return new RecoverAnnotationRecoveryHandler<>(target, method);
 	}
 
 	private RetryPolicy getRetryPolicy(Annotation retryable) {
@@ -345,7 +345,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			simple.setMaxAttempts(maxAttempts);
 			return simple;
 		}
-		Map<Class<? extends Throwable>, Boolean> policyMap = new HashMap<Class<? extends Throwable>, Boolean>();
+		Map<Class<? extends Throwable>, Boolean> policyMap = new HashMap<>();
 		for (Class<? extends Throwable> type : includes) {
 			policyMap.put(type, true);
 		}
