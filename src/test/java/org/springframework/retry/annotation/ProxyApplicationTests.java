@@ -1,10 +1,25 @@
+/*
+ * Copyright 2006-2022 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.retry.annotation;
 
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 import org.junit.Test;
 
@@ -13,13 +28,12 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.Assert.assertEquals;
 
 public class ProxyApplicationTests {
 
-	private Set<Class<?>> classes = new HashSet<Class<?>>();
+	private final CountClassesClassLoader classLoader = new CountClassesClassLoader();
 
 	@Test
 	// See gh-53
@@ -44,27 +58,42 @@ public class ProxyApplicationTests {
 
 	@SuppressWarnings("resource")
 	private void runAndClose() {
-		ConfigurableApplicationContext run = new AnnotationConfigApplicationContext(Empty.class);
+		AnnotationConfigApplicationContext run = new AnnotationConfigApplicationContext();
+		run.setClassLoader(this.classLoader);
+		run.register(Empty.class);
 		run.close();
 		while (run.getParent() != null) {
 			((ConfigurableApplicationContext) run.getParent()).close();
-			run = (ConfigurableApplicationContext) run.getParent();
+			run = (AnnotationConfigApplicationContext) run.getParent();
 		}
 	}
 
 	private int count() {
-		URLClassLoader classLoader = (URLClassLoader) getClass().getClassLoader();
-		@SuppressWarnings("unchecked")
-		Vector<Class<?>> classes = (Vector<Class<?>>) ReflectionTestUtils.getField(classLoader, "classes");
-		Set<Class<?>> news = new HashSet<Class<?>>();
-		for (Iterator<Class<?>> iterator = classes.iterator(); iterator.hasNext();) {
-			Class<?> cls = iterator.next();
-			if (!this.classes.contains(cls)) {
-				news.add(cls);
-			}
+		return this.classLoader.classes.size();
+	}
+
+	private static class CountClassesClassLoader extends URLClassLoader {
+
+		private final Set<Class<?>> classes = new HashSet<Class<?>>();
+
+		public CountClassesClassLoader() {
+			super(new URL[0], ProxyApplicationTests.class.getClassLoader());
 		}
-		this.classes.addAll(classes);
-		return classes.size();
+
+		@Override
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			Class<?> type = super.loadClass(name);
+			classes.add(type);
+			return type;
+		}
+
+		@Override
+		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+			Class<?> type = super.loadClass(name, resolve);
+			classes.add(type);
+			return type;
+		}
+
 	}
 
 	@Configuration
