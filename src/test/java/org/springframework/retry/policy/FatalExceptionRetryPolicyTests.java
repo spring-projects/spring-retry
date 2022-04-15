@@ -46,11 +46,7 @@ public class FatalExceptionRetryPolicyTests {
 		// ... and allow multiple attempts
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map);
 		retryTemplate.setRetryPolicy(policy);
-		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
-			public String recover(RetryContext context) throws Exception {
-				return "bar";
-			}
-		};
+		RecoveryCallback<String> recoveryCallback = context -> "bar";
 
 		Object result = null;
 		try {
@@ -79,11 +75,7 @@ public class FatalExceptionRetryPolicyTests {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map);
 		retryTemplate.setRetryPolicy(policy);
 
-		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
-			public String recover(RetryContext context) throws Exception {
-				return "bar";
-			}
-		};
+		RecoveryCallback<String> recoveryCallback = context -> "bar";
 
 		Object result = null;
 		try {

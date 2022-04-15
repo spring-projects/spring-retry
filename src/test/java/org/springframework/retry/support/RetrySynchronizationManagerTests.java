@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,14 +48,11 @@ public class RetrySynchronizationManagerTests {
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
 
-		this.template.execute(new RetryCallback<Object, Exception>() {
-			@Override
-			public Object doWithRetry(RetryContext status) throws Exception {
-				RetryContext global = RetrySynchronizationManager.getContext();
-				assertNotNull(status);
-				assertEquals(global, status);
-				return null;
-			}
+		this.template.execute(retryContext -> {
+			RetryContext global = RetrySynchronizationManager.getContext();
+			assertNotNull(retryContext);
+			assertEquals(global, retryContext);
+			return null;
 		});
 
 		status = RetrySynchronizationManager.getContext();

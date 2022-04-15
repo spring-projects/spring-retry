@@ -162,16 +162,10 @@ public class StatefulRetryIntegrationTests {
 		RetryState retryState = new DefaultRetryState("bar");
 		for (int i = 0; i < 3; i++) {
 			try {
-				template.execute(new RetryCallback<String, Exception>() {
-					public String doWithRetry(RetryContext context) throws Exception {
-						times.add(System.currentTimeMillis());
-						throw new Exception("Fail");
-					}
-				}, new RecoveryCallback<String>() {
-					public String recover(RetryContext context) throws Exception {
-						return null;
-					}
-				}, retryState);
+				template.execute(context -> {
+					times.add(System.currentTimeMillis());
+					throw new Exception("Fail");
+				}, context -> null, retryState);
 			}
 			catch (Exception e) {
 				assertTrue(e.getMessage().equals("Fail"));

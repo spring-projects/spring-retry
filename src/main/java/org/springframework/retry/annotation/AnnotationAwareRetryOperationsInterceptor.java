@@ -80,11 +80,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
-	private static final MethodInterceptor NULL_INTERCEPTOR = new MethodInterceptor() {
-		@Override
-		public Object invoke(MethodInvocation methodInvocation) throws Throwable {
-			throw new OperationNotSupportedException("Not supported");
-		}
+	private static final MethodInterceptor NULL_INTERCEPTOR = methodInvocation -> {
+		throw new OperationNotSupportedException("Not supported");
 	};
 
 	private final StandardEvaluationContext evaluationContext = new StandardEvaluationContext();
@@ -298,12 +295,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			return (MethodInvocationRecoverer<?>) target;
 		}
 		final AtomicBoolean foundRecoverable = new AtomicBoolean(false);
-		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				if (AnnotatedElementUtils.findMergedAnnotation(method, Recover.class) != null) {
-					foundRecoverable.set(true);
-				}
+		ReflectionUtils.doWithMethods(target.getClass(), candidate -> {
+			if (AnnotatedElementUtils.findMergedAnnotation(candidate, Recover.class) != null) {
+				foundRecoverable.set(true);
 			}
 		});
 

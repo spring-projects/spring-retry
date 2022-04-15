@@ -250,17 +250,14 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 		public boolean hasAnnotatedMethods(Class<?> clazz) {
 			final AtomicBoolean found = new AtomicBoolean(false);
-			ReflectionUtils.doWithMethods(clazz, new MethodCallback() {
-				@Override
-				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-					if (found.get()) {
-						return;
-					}
-					Annotation annotation = AnnotationUtils.findAnnotation(method,
-							AnnotationMethodsResolver.this.annotationType);
-					if (annotation != null) {
-						found.set(true);
-					}
+			ReflectionUtils.doWithMethods(clazz, method -> {
+				if (found.get()) {
+					return;
+				}
+				Annotation annotation = AnnotationUtils.findAnnotation(method,
+						AnnotationMethodsResolver.this.annotationType);
+				if (annotation != null) {
+					found.set(true);
 				}
 			});
 			return found.get();

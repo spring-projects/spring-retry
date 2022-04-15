@@ -299,17 +299,11 @@ public class EnableRetryTests {
 
 				if (bean instanceof RecoverableService) {
 					Advised advised = (Advised) bean;
-					advised.addAdvice(new MethodInterceptor() {
-
-						@Override
-						public Object invoke(MethodInvocation invocation) throws Throwable {
-
-							if (invocation.getMethod().getName().equals("recover")) {
-								((RecoverableService) bean).setOtherAdviceCalled();
-							}
-							return invocation.proceed();
+					advised.addAdvice((MethodInterceptor) invocation -> {
+						if (invocation.getMethod().getName().equals("recover")) {
+							((RecoverableService) bean).setOtherAdviceCalled();
 						}
-
+						return invocation.proceed();
 					});
 					return bean;
 				}
@@ -350,10 +344,7 @@ public class EnableRetryTests {
 		@SuppressWarnings("serial")
 		@Bean
 		public Sleeper sleeper() {
-			return new Sleeper() {
-				@Override
-				public void sleep(long period) throws InterruptedException {
-				}
+			return period -> {
 			};
 		}
 

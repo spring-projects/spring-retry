@@ -150,12 +150,9 @@ public class StatefulRetryOperationsInterceptorTests {
 	public void testInterceptorChainWithRetry() throws Exception {
 		((Advised) service).addAdvice(interceptor);
 		final List<String> list = new ArrayList<>();
-		((Advised) service).addAdvice(new MethodInterceptor() {
-			@Override
-			public Object invoke(MethodInvocation invocation) throws Throwable {
-				list.add("chain");
-				return invocation.proceed();
-			}
+		((Advised) service).addAdvice((MethodInterceptor) invocation -> {
+			list.add("chain");
+			return invocation.proceed();
 		});
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
@@ -232,12 +229,9 @@ public class StatefulRetryOperationsInterceptorTests {
 			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
-		interceptor.setRecoverer(new MethodInvocationRecoverer<Object>() {
-			@Override
-			public Object recover(Object[] data, Throwable cause) {
-				count++;
-				return null;
-			}
+		interceptor.setRecoverer((data, cause) -> {
+			count++;
+			return null;
 		});
 		service.service("foo");
 		assertEquals(2, count);
@@ -261,13 +255,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testKeyGeneratorAndRawKey() throws Throwable {
-		this.interceptor.setKeyGenerator(new MethodArgumentsKeyGenerator() {
-
-			@Override
-			public Object getKey(Object[] item) {
-				return "bar";
-			}
-		});
+		this.interceptor.setKeyGenerator(item -> "bar");
 		this.interceptor.setLabel("foo");
 		this.interceptor.setUseRawKey(true);
 		RetryOperations template = mock(RetryOperations.class);
@@ -294,12 +282,9 @@ public class StatefulRetryOperationsInterceptorTests {
 			assertTrue("Wrong message: " + message, message.startsWith("Not enough calls"));
 		}
 		assertEquals(1, count);
-		interceptor.setRecoverer(new MethodInvocationRecoverer<Collection<String>>() {
-			@Override
-			public Collection<String> recover(Object[] data, Throwable cause) {
-				count++;
-				return Collections.singleton((String) data[0]);
-			}
+		interceptor.setRecoverer((data, cause) -> {
+			count++;
+			return Collections.singleton((String) data[0]);
 		});
 		Collection<String> result = transformer.transform("foo");
 		assertEquals(2, count);

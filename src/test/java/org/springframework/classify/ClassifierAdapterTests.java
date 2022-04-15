@@ -84,11 +84,7 @@ public class ClassifierAdapterTests {
 	@SuppressWarnings({ "serial" })
 	@Test
 	public void testClassifierAdapterClassifier() {
-		adapter = new ClassifierAdapter<>(new org.springframework.classify.Classifier<String, Integer>() {
-			public Integer classify(String classifiable) {
-				return Integer.valueOf(classifiable);
-			}
-		});
+		adapter = new ClassifierAdapter<>(Integer::valueOf);
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 
@@ -117,11 +113,7 @@ public class ClassifierAdapterTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyWithClassifier() {
-		adapter.setDelegate(new org.springframework.classify.Classifier<String, Integer>() {
-			public Integer classify(String classifiable) {
-				return Integer.valueOf(classifiable);
-			}
-		});
+		adapter.setDelegate(Integer::valueOf);
 		assertEquals(23, adapter.classify("23").intValue());
 	}
 

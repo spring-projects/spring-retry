@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,12 +144,7 @@ public class StatisticsListenerTests {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x + 1);
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
-			retryTemplate.execute(callback, new RecoveryCallback<Object>() {
-				@Override
-				public Object recover(RetryContext context) throws Exception {
-					return null;
-				}
-			});
+			retryTemplate.execute(callback, context -> null);
 			assertEquals(x, callback.attempts);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
@@ -171,12 +166,7 @@ public class StatisticsListenerTests {
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			for (int i = 0; i < x + 1; i++) {
 				try {
-					retryTemplate.execute(callback, new RecoveryCallback<Object>() {
-						@Override
-						public Object recover(RetryContext context) throws Exception {
-							return null;
-						}
-					}, state);
+					retryTemplate.execute(callback, context -> null, state);
 				}
 				catch (Exception e) {
 					// don't care

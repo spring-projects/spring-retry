@@ -160,12 +160,7 @@ public class RetryOperationsInterceptorTests {
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(1));
 		this.interceptor.setRetryOperations(template);
-		this.interceptor.setRecoverer(new MethodInvocationRecoverer<Void>() {
-			@Override
-			public Void recover(Object[] args, Throwable cause) {
-				return null;
-			}
-		});
+		this.interceptor.setRecoverer((args, cause) -> null);
 		((Advised) this.service).addAdvice(this.interceptor);
 		this.service.service();
 		assertEquals(1, count);
@@ -175,12 +170,9 @@ public class RetryOperationsInterceptorTests {
 	public void testInterceptorChainWithRetry() throws Exception {
 		((Advised) this.service).addAdvice(this.interceptor);
 		final List<String> list = new ArrayList<>();
-		((Advised) this.service).addAdvice(new MethodInterceptor() {
-			@Override
-			public Object invoke(MethodInvocation invocation) throws Throwable {
-				list.add("chain");
-				return invocation.proceed();
-			}
+		((Advised) this.service).addAdvice((MethodInterceptor) invocation -> {
+			list.add("chain");
+			return invocation.proceed();
 		});
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(2));

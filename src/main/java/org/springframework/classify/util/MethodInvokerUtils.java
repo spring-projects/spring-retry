@@ -115,21 +115,19 @@ public class MethodInvokerUtils {
 		final Class<?> targetClass = (target instanceof Advised) ? ((Advised) target).getTargetSource().getTargetClass()
 				: target.getClass();
 		if (mi != null) {
-			ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
-				public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-					Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
-					if (annotation != null) {
-						Class<?>[] paramTypes = method.getParameterTypes();
-						if (paramTypes.length > 0) {
-							String errorMsg = "The method [" + method.getName() + "] on target class ["
-									+ targetClass.getSimpleName() + "] is incompatable with the signature ["
-									+ getParamTypesString(expectedParamTypes) + "] expected for the annotation ["
-									+ annotationType.getSimpleName() + "].";
+			ReflectionUtils.doWithMethods(targetClass, method -> {
+				Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
+				if (annotation != null) {
+					Class<?>[] paramTypes = method.getParameterTypes();
+					if (paramTypes.length > 0) {
+						String errorMsg = "The method [" + method.getName() + "] on target class ["
+								+ targetClass.getSimpleName() + "] is incompatable with the signature ["
+								+ getParamTypesString(expectedParamTypes) + "] expected for the annotation ["
+								+ annotationType.getSimpleName() + "].";
 
-							Assert.isTrue(paramTypes.length == expectedParamTypes.length, errorMsg);
-							for (int i = 0; i < paramTypes.length; i++) {
-								Assert.isTrue(expectedParamTypes[i].isAssignableFrom(paramTypes[i]), errorMsg);
-							}
+						Assert.isTrue(paramTypes.length == expectedParamTypes.length, errorMsg);
+						for (int i = 0; i < paramTypes.length; i++) {
+							Assert.isTrue(expectedParamTypes[i].isAssignableFrom(paramTypes[i]), errorMsg);
 						}
 					}
 				}
@@ -160,15 +158,13 @@ public class MethodInvokerUtils {
 			return null;
 		}
 		final AtomicReference<Method> annotatedMethod = new AtomicReference<>();
-		ReflectionUtils.doWithMethods(targetClass, new ReflectionUtils.MethodCallback() {
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
-				if (annotation != null) {
-					Assert.isNull(annotatedMethod.get(),
-							"found more than one method on target class [" + targetClass.getSimpleName()
-									+ "] with the annotation type [" + annotationType.getSimpleName() + "].");
-					annotatedMethod.set(method);
-				}
+		ReflectionUtils.doWithMethods(targetClass, method -> {
+			Annotation annotation = AnnotationUtils.findAnnotation(method, annotationType);
+			if (annotation != null) {
+				Assert.isNull(annotatedMethod.get(),
+						"found more than one method on target class [" + targetClass.getSimpleName()
+								+ "] with the annotation type [" + annotationType.getSimpleName() + "].");
+				annotatedMethod.set(method);
 			}
 		});
 		Method method = annotatedMethod.get();
@@ -189,21 +185,19 @@ public class MethodInvokerUtils {
 	 */
 	public static <C, T> MethodInvoker getMethodInvokerForSingleArgument(Object target) {
 		final AtomicReference<Method> methodHolder = new AtomicReference<>();
-		ReflectionUtils.doWithMethods(target.getClass(), new ReflectionUtils.MethodCallback() {
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-				if ((method.getModifiers() & Modifier.PUBLIC) == 0 || method.isBridge()) {
-					return;
-				}
-				if (method.getParameterTypes() == null || method.getParameterTypes().length != 1) {
-					return;
-				}
-				if (method.getReturnType().equals(Void.TYPE) || ReflectionUtils.isEqualsMethod(method)) {
-					return;
-				}
-				Assert.state(methodHolder.get() == null,
-						"More than one non-void public method detected with single argument.");
-				methodHolder.set(method);
+		ReflectionUtils.doWithMethods(target.getClass(), method -> {
+			if ((method.getModifiers() & Modifier.PUBLIC) == 0 || method.isBridge()) {
+				return;
 			}
+			if (method.getParameterTypes() == null || method.getParameterTypes().length != 1) {
+				return;
+			}
+			if (method.getReturnType().equals(Void.TYPE) || ReflectionUtils.isEqualsMethod(method)) {
+				return;
+			}
+			Assert.state(methodHolder.get() == null,
+					"More than one non-void public method detected with single argument.");
+			methodHolder.set(method);
 		});
 		Method method = methodHolder.get();
 		return new SimpleMethodInvoker(target, method);

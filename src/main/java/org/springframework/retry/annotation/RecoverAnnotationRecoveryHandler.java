@@ -203,23 +203,20 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		if (retryable != null) {
 			this.recoverMethodName = retryable.recover();
 		}
-		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
-			@Override
-			public void doWith(Method method) throws IllegalArgumentException {
-				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
-				if (recover == null) {
-					recover = findAnnotationOnTarget(target, method);
+		ReflectionUtils.doWithMethods(target.getClass(), candidate -> {
+			Recover recover = AnnotationUtils.findAnnotation(candidate, Recover.class);
+			if (recover == null) {
+				recover = findAnnotationOnTarget(target, candidate);
+			}
+			if (recover != null && failingMethod.getGenericReturnType() instanceof ParameterizedType
+					&& candidate.getGenericReturnType() instanceof ParameterizedType) {
+				if (isParameterizedTypeAssignable((ParameterizedType) candidate.getGenericReturnType(),
+						(ParameterizedType) failingMethod.getGenericReturnType())) {
+					putToMethodsMap(candidate, types);
 				}
-				if (recover != null && failingMethod.getGenericReturnType() instanceof ParameterizedType
-						&& method.getGenericReturnType() instanceof ParameterizedType) {
-					if (isParameterizedTypeAssignable((ParameterizedType) method.getGenericReturnType(),
-							(ParameterizedType) failingMethod.getGenericReturnType())) {
-						putToMethodsMap(method, types);
-					}
-				}
-				else if (recover != null && method.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
-					putToMethodsMap(method, types);
-				}
+			}
+			else if (recover != null && candidate.getReturnType().isAssignableFrom(failingMethod.getReturnType())) {
+				putToMethodsMap(candidate, types);
 			}
 		});
 		this.classifier.setTypeMap(types);

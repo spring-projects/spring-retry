@@ -80,13 +80,11 @@ public class ExceptionClassifierRetryPolicyTests {
 		assertFalse(policy.canRetry(context)); // NeverRetryPolicy is the
 		// default
 
-		policy.setExceptionClassifier(new Classifier<Throwable, RetryPolicy>() {
-			public RetryPolicy classify(Throwable throwable) {
-				if (throwable != null) {
-					return new AlwaysRetryPolicy();
-				}
-				return new NeverRetryPolicy();
+		policy.setExceptionClassifier(throwable -> {
+			if (throwable != null) {
+				return new AlwaysRetryPolicy();
 			}
+			return new NeverRetryPolicy();
 		});
 
 		// The context saves the classifier, so changing it now has no effect
@@ -107,13 +105,9 @@ public class ExceptionClassifierRetryPolicyTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testClose() throws Exception {
-		policy.setExceptionClassifier(new Classifier<Throwable, RetryPolicy>() {
-			public RetryPolicy classify(Throwable throwable) {
-				return new MockRetryPolicySupport() {
-					public void close(RetryContext context) {
-						count++;
-					}
-				};
+		policy.setExceptionClassifier(throwable -> new MockRetryPolicySupport() {
+			public void close(RetryContext context) {
+				count++;
 			}
 		});
 		RetryContext context = policy.open(null);

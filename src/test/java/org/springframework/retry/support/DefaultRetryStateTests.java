@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,7 @@ public class DefaultRetryStateTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectBooleanClassifierOfQsuperThrowableBoolean() {
-		DefaultRetryState state = new DefaultRetryState("foo", true, new Classifier<Throwable, Boolean>() {
-			public Boolean classify(Throwable classifiable) {
-				return false;
-			}
-		});
+		DefaultRetryState state = new DefaultRetryState("foo", true, classifiable -> false);
 		assertEquals("foo", state.getKey());
 		assertTrue(state.isForceRefresh());
 		assertFalse(state.rollbackFor(null));
@@ -52,11 +48,7 @@ public class DefaultRetryStateTests {
 	@SuppressWarnings("serial")
 	@Test
 	public void testDefaultRetryStateObjectClassifierOfQsuperThrowableBoolean() {
-		DefaultRetryState state = new DefaultRetryState("foo", new Classifier<Throwable, Boolean>() {
-			public Boolean classify(Throwable classifiable) {
-				return false;
-			}
-		});
+		DefaultRetryState state = new DefaultRetryState("foo", classifiable -> false);
 		assertEquals("foo", state.getKey());
 		assertFalse(state.isForceRefresh());
 		assertFalse(state.rollbackFor(null));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,13 +87,9 @@ public class RetryInterceptorBuilderTests {
 	public void testWithCustomNewMessageIdentifier() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
 		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful().maxAttempts(5)
-				.newMethodArgumentsIdentifier(new NewMethodArgumentsIdentifier() {
-
-					@Override
-					public boolean isNew(Object[] args) {
-						latch.countDown();
-						return false;
-					}
+				.newMethodArgumentsIdentifier(args -> {
+					latch.countDown();
+					return false;
 				}).backOffPolicy(new FixedBackOffPolicy()).build();
 
 		assertEquals(5, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
@@ -123,15 +119,10 @@ public class RetryInterceptorBuilderTests {
 	@Test
 	public void testWithCustomKeyGenerator() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
-		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
-				.keyGenerator(new MethodArgumentsKeyGenerator() {
-
-					@Override
-					public Object getKey(Object[] item) {
-						latch.countDown();
-						return "foo";
-					}
-				}).build();
+		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful().keyGenerator(item -> {
+			latch.countDown();
+			return "foo";
+		}).build();
 
 		assertEquals(3, TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts"));
 		final AtomicInteger count = new AtomicInteger();
@@ -148,14 +139,9 @@ public class RetryInterceptorBuilderTests {
 	}
 
 	private Foo createDelegate(MethodInterceptor interceptor, final AtomicInteger count) {
-		Foo delegate = new Foo() {
-
-			@Override
-			public void onMessage(String s, Object message) {
-				count.incrementAndGet();
-				throw new RuntimeException("foo", new RuntimeException("bar"));
-			}
-
+		Foo delegate = (s, message) -> {
+			count.incrementAndGet();
+			throw new RuntimeException("foo", new RuntimeException("bar"));
 		};
 		ProxyFactory factory = new ProxyFactory();
 		factory.addAdvisor(new DefaultPointcutAdvisor(Pointcut.TRUE, interceptor));

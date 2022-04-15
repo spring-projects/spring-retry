@@ -86,19 +86,13 @@ public class StatefulRecoveryRetryTests {
 		this.retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
-		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
-			@Override
-			public String doWithRetry(RetryContext context) throws Exception {
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<String, Exception> callback = context -> {
+			throw new RuntimeException("Barf!");
 		};
-		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
-			@Override
-			public String recover(RetryContext context) {
-				StatefulRecoveryRetryTests.this.count++;
-				StatefulRecoveryRetryTests.this.list.add(input);
-				return input;
-			}
+		RecoveryCallback<String> recoveryCallback = context -> {
+			StatefulRecoveryRetryTests.this.count++;
+			StatefulRecoveryRetryTests.this.list.add(input);
+			return input;
 		};
 		Object result = null;
 		try {
@@ -125,19 +119,13 @@ public class StatefulRecoveryRetryTests {
 		assertFalse(classifier.classify(new RuntimeException()));
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input, classifier);
-		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
-			@Override
-			public String doWithRetry(RetryContext context) throws Exception {
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<String, Exception> callback = context -> {
+			throw new RuntimeException("Barf!");
 		};
-		RecoveryCallback<String> recoveryCallback = new RecoveryCallback<String>() {
-			@Override
-			public String recover(RetryContext context) {
-				StatefulRecoveryRetryTests.this.count++;
-				StatefulRecoveryRetryTests.this.list.add(input);
-				return input;
-			}
+		RecoveryCallback<String> recoveryCallback = context -> {
+			StatefulRecoveryRetryTests.this.count++;
+			StatefulRecoveryRetryTests.this.list.add(input);
+			return input;
 		};
 		Object result = null;
 		// On the second retry, the recovery path is taken...
@@ -154,11 +142,8 @@ public class StatefulRecoveryRetryTests {
 
 		final String input = "foo";
 		RetryState state = new DefaultRetryState(input);
-		RetryCallback<String, Exception> callback = new RetryCallback<String, Exception>() {
-			@Override
-			public String doWithRetry(RetryContext context) throws Exception {
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<String, Exception> callback = context -> {
+			throw new RuntimeException("Barf!");
 		};
 
 		try {
@@ -190,15 +175,12 @@ public class StatefulRecoveryRetryTests {
 		final StringHolder item = new StringHolder("bar");
 		RetryState state = new DefaultRetryState(item);
 
-		RetryCallback<StringHolder, Exception> callback = new RetryCallback<StringHolder, Exception>() {
-			@Override
-			public StringHolder doWithRetry(RetryContext context) throws Exception {
-				// This simulates what happens if someone uses a primary key
-				// for hashCode and equals and then relies on default key
-				// generator
-				item.string = item.string + (StatefulRecoveryRetryTests.this.count++);
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<StringHolder, Exception> callback = context -> {
+			// This simulates what happens if someone uses a primary key
+			// for hashCode and equals and then relies on default key
+			// generator
+			item.string = item.string + (StatefulRecoveryRetryTests.this.count++);
+			throw new RuntimeException("Barf!");
 		};
 
 		try {
@@ -233,12 +215,9 @@ public class StatefulRecoveryRetryTests {
 		this.retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 		this.retryTemplate.setRetryContextCache(new MapRetryContextCache(1));
 
-		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
-			@Override
-			public Object doWithRetry(RetryContext context) throws Exception {
-				StatefulRecoveryRetryTests.this.count++;
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<Object, Exception> callback = context -> {
+			StatefulRecoveryRetryTests.this.count++;
+			throw new RuntimeException("Barf!");
 		};
 
 		try {
@@ -268,19 +247,11 @@ public class StatefulRecoveryRetryTests {
 		final StringHolder item = new StringHolder("foo");
 		RetryState state = new DefaultRetryState(item);
 
-		RetryCallback<Object, Exception> callback = new RetryCallback<Object, Exception>() {
-			@Override
-			public Object doWithRetry(RetryContext context) throws Exception {
-				StatefulRecoveryRetryTests.this.count++;
-				throw new RuntimeException("Barf!");
-			}
+		RetryCallback<Object, Exception> callback = context -> {
+			StatefulRecoveryRetryTests.this.count++;
+			throw new RuntimeException("Barf!");
 		};
-		RecoveryCallback<Object> recoveryCallback = new RecoveryCallback<Object>() {
-			@Override
-			public Object recover(RetryContext context) throws Exception {
-				return null;
-			}
-		};
+		RecoveryCallback<Object> recoveryCallback = context -> null;
 
 		try {
 			this.retryTemplate.execute(callback, recoveryCallback, state);

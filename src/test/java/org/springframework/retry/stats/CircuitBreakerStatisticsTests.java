@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,12 +63,7 @@ public class CircuitBreakerStatisticsTests {
 	@Before
 	public void init() {
 		this.callback = new MockRetryCallback();
-		this.recovery = new RecoveryCallback<Object>() {
-			@Override
-			public Object recover(RetryContext context) throws Exception {
-				return RECOVERED;
-			}
-		};
+		this.recovery = context -> RECOVERED;
 		this.retryTemplate = new RetryTemplate();
 		this.cache = new MapRetryContextCache();
 		this.retryTemplate.setRetryContextCache(this.cache);
@@ -98,11 +93,8 @@ public class CircuitBreakerStatisticsTests {
 	@Test
 	public void testFailedRecoveryCountsAsAbort() throws Throwable {
 		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
-		this.recovery = new RecoveryCallback<Object>() {
-			@Override
-			public Object recover(RetryContext context) throws Exception {
-				throw new ExhaustedRetryException("Planned exhausted");
-			}
+		this.recovery = context -> {
+			throw new ExhaustedRetryException("Planned exhausted");
 		};
 		try {
 			this.retryTemplate.execute(this.callback, this.recovery, this.state);

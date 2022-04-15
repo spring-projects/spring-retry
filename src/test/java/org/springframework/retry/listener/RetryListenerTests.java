@@ -54,11 +54,7 @@ public class RetryListenerTests {
 				return true;
 			}
 		} });
-		template.execute(new RetryCallback<String, Exception>() {
-			public String doWithRetry(RetryContext context) throws Exception {
-				return null;
-			}
-		});
+		template.execute(context -> null);
 		assertEquals(2, count);
 		assertEquals(2, list.size());
 		assertEquals("1:1", list.get(0));
@@ -73,11 +69,9 @@ public class RetryListenerTests {
 			}
 		});
 		try {
-			template.execute(new RetryCallback<String, Exception>() {
-				public String doWithRetry(RetryContext context) throws Exception {
-					count++;
-					return null;
-				}
+			template.execute(context -> {
+				count++;
+				return null;
 			});
 			fail("Expected TerminatedRetryException");
 		}
@@ -104,11 +98,7 @@ public class RetryListenerTests {
 				list.add("2:" + count);
 			}
 		} });
-		template.execute(new RetryCallback<String, Exception>() {
-			public String doWithRetry(RetryContext context) throws Exception {
-				return null;
-			}
-		});
+		template.execute(context -> null);
 		assertEquals(2, count);
 		assertEquals(2, list.size());
 		// interceptors are called in reverse order on close...
@@ -130,11 +120,9 @@ public class RetryListenerTests {
 			}
 		} });
 		try {
-			template.execute(new RetryCallback<String, Exception>() {
-				public String doWithRetry(RetryContext context) throws Exception {
-					count++;
-					throw new IllegalStateException("foo");
-				}
+			template.execute(context -> {
+				count++;
+				throw new IllegalStateException("foo");
 			});
 			fail("Expected IllegalStateException");
 		}
@@ -159,12 +147,10 @@ public class RetryListenerTests {
 				assertNull(t);
 			}
 		});
-		template.execute(new RetryCallback<String, Exception>() {
-			public String doWithRetry(RetryContext context) throws Exception {
-				if (count++ < 1)
-					throw new RuntimeException("Retry!");
-				return null;
-			}
+		template.execute(context -> {
+			if (count++ < 1)
+				throw new RuntimeException("Retry!");
+			return null;
 		});
 		assertEquals(2, count);
 		// The close interceptor was only called once:
