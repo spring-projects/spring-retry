@@ -633,7 +633,7 @@ public class EnableRetryTests {
 
 	}
 
-	private static class InterceptableService {
+	static class InterceptableService {
 
 		private int count = 0;
 
@@ -650,7 +650,7 @@ public class EnableRetryTests {
 
 	}
 
-	private static class ExpressionService {
+	static class ExpressionService {
 
 		private int count = 0;
 
