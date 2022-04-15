@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2016 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -253,7 +254,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
 		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture());
 		assertNull(captor.getValue().getKey());
 	}
 
@@ -275,7 +276,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
 		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), any(RecoveryCallback.class), captor.capture());
+		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture());
 		assertEquals("bar", captor.getValue().getKey());
 	}
 
