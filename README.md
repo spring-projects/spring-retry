@@ -1,4 +1,4 @@
-[![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-retry/pipelines/spring-retry-1.3.x/jobs/build/badge)](https://ci.spring.io/teams/spring-retry/pipelines/spring-retry-1.3.x) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
+[![ci.spring.io](https://ci.spring.io/api/v1/teams/spring-retry/pipelines/spring-retry-2.0.x/jobs/build/badge)](https://ci.spring.io/teams/spring-retry/pipelines/spring-retry-2.0.x) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
 
 This project provides declarative retry support for Spring
 applications. It is used in Spring Batch, Spring Integration, and
