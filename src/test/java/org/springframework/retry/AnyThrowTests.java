@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,19 +30,19 @@ public class AnyThrowTests {
 	public ExpectedException expected = ExpectedException.none();
 
 	@Test
-	public void testRuntimeException() throws Throwable {
+	public void testRuntimeException() {
 		expected.expect(RuntimeException.class);
 		AnyThrow.throwAny(new RuntimeException("planned"));
 	}
 
 	@Test
-	public void testUncheckedRuntimeException() throws Throwable {
+	public void testUncheckedRuntimeException() {
 		expected.expect(RuntimeException.class);
 		AnyThrow.throwUnchecked(new RuntimeException("planned"));
 	}
 
 	@Test
-	public void testCheckedException() throws Throwable {
+	public void testCheckedException() {
 		expected.expect(Exception.class);
 		AnyThrow.throwAny(new Exception("planned"));
 	}

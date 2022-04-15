@@ -54,9 +54,9 @@ public class CircuitBreakerStatisticsTests {
 
 	private DefaultRetryState state;
 
-	private StatisticsRepository repository = new DefaultStatisticsRepository();
+	private final StatisticsRepository repository = new DefaultStatisticsRepository();
 
-	private StatisticsListener listener = new StatisticsListener(repository);
+	private final StatisticsListener listener = new StatisticsListener(repository);
 
 	private RetryContextCache cache;
 
@@ -110,7 +110,7 @@ public class CircuitBreakerStatisticsTests {
 	}
 
 	@Test
-	public void testCircuitOpenWithNoRecovery() throws Throwable {
+	public void testCircuitOpenWithNoRecovery() {
 		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {

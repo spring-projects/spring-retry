@@ -49,9 +49,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class RetryContextSerializationTests {
 
-	private static Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
+	private static final Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
 
-	private RetryPolicy policy;
+	private final RetryPolicy policy;
 
 	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {

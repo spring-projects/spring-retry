@@ -39,7 +39,7 @@ public class SoftReferenceMapRetryContextCache implements RetryContextCache {
 	 */
 	public static final int DEFAULT_CAPACITY = 4096;
 
-	private Map<Object, SoftReference<RetryContext>> map = Collections.synchronizedMap(new HashMap<>());
+	private final Map<Object, SoftReference<RetryContext>> map = Collections.synchronizedMap(new HashMap<>());
 
 	private int capacity;
 

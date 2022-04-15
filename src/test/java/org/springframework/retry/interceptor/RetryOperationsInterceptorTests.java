@@ -67,7 +67,7 @@ public class RetryOperationsInterceptorTests {
 	private RetryContext context;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		this.interceptor = new RetryOperationsInterceptor();
 		RetryTemplate retryTemplate = new RetryTemplate();
 		final AtomicBoolean calledFirst = new AtomicBoolean();
@@ -183,7 +183,7 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testRetryExceptionAfterTooManyAttempts() throws Exception {
+	public void testRetryExceptionAfterTooManyAttempts() {
 		((Advised) this.service).addAdvice(this.interceptor);
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new NeverRetryPolicy());
@@ -239,7 +239,7 @@ public class RetryOperationsInterceptorTests {
 				}
 
 				@Override
-				public Object proceed() throws Throwable {
+				public Object proceed() {
 					return null;
 				}
 			});
@@ -255,7 +255,7 @@ public class RetryOperationsInterceptorTests {
 
 		void service() throws Exception;
 
-		void doTansactional() throws Exception;
+		void doTansactional();
 
 	}
 
@@ -272,7 +272,7 @@ public class RetryOperationsInterceptorTests {
 		}
 
 		@Override
-		public void doTansactional() throws Exception {
+		public void doTansactional() {
 			if (TransactionSynchronizationManager.isActualTransactionActive() && !this.enteredTransaction) {
 				transactionCount++;
 				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {

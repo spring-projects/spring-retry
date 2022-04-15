@@ -71,7 +71,7 @@ public class CircuitBreakerRetryTemplateTests {
 	}
 
 	@Test
-	public void testCircuitOpenWithNoRecovery() throws Throwable {
+	public void testCircuitOpenWithNoRecovery() {
 		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		try {

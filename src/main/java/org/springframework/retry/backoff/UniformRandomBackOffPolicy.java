@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2021 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 
 	private volatile long maxBackOffPeriod = DEFAULT_BACK_OFF_MAX_PERIOD;
 
-	private Random random = new Random(System.currentTimeMillis());
+	private final Random random = new Random(System.currentTimeMillis());
 
 	private Sleeper sleeper = new ThreadWaitSleeper();
 

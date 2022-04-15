@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class TimeoutRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryCount() throws Exception {
+	public void testRetryCount() {
 		TimeoutRetryPolicy policy = new TimeoutRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
@@ -53,7 +53,7 @@ public class TimeoutRetryPolicyTests {
 	}
 
 	@Test
-	public void testParent() throws Exception {
+	public void testParent() {
 		TimeoutRetryPolicy policy = new TimeoutRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);

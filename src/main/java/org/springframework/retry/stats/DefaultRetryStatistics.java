@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,15 +31,15 @@ public class DefaultRetryStatistics extends AttributeAccessorSupport
 
 	private String name;
 
-	private AtomicInteger startedCount = new AtomicInteger();
+	private final AtomicInteger startedCount = new AtomicInteger();
 
-	private AtomicInteger completeCount = new AtomicInteger();
+	private final AtomicInteger completeCount = new AtomicInteger();
 
-	private AtomicInteger recoveryCount = new AtomicInteger();
+	private final AtomicInteger recoveryCount = new AtomicInteger();
 
-	private AtomicInteger errorCount = new AtomicInteger();
+	private final AtomicInteger errorCount = new AtomicInteger();
 
-	private AtomicInteger abortCount = new AtomicInteger();
+	private final AtomicInteger abortCount = new AtomicInteger();
 
 	DefaultRetryStatistics() {
 	}

@@ -34,7 +34,7 @@ import org.springframework.retry.RetryPolicy;
 public class CompositeRetryPolicyTests {
 
 	@Test
-	public void testEmptyPolicies() throws Exception {
+	public void testEmptyPolicies() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
@@ -42,7 +42,7 @@ public class CompositeRetryPolicyTests {
 	}
 
 	@Test
-	public void testTrivialPolicies() throws Exception {
+	public void testTrivialPolicies() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
 		RetryContext context = policy.open(null);
@@ -52,7 +52,7 @@ public class CompositeRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testNonTrivialPolicies() throws Exception {
+	public void testNonTrivialPolicies() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() {
 			public boolean canRetry(RetryContext context) {
@@ -66,7 +66,7 @@ public class CompositeRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testNonTrivialPoliciesWithThrowable() throws Exception {
+	public void testNonTrivialPoliciesWithThrowable() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() {
 			boolean errorRegistered = false;
@@ -88,7 +88,7 @@ public class CompositeRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testNonTrivialPoliciesClose() throws Exception {
+	public void testNonTrivialPoliciesClose() {
 		final List<String> list = new ArrayList<>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {
@@ -108,7 +108,7 @@ public class CompositeRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testExceptionOnPoliciesClose() throws Exception {
+	public void testExceptionOnPoliciesClose() {
 		final List<String> list = new ArrayList<>();
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {
@@ -134,7 +134,7 @@ public class CompositeRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryCount() throws Exception {
+	public void testRetryCount() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
 		RetryContext context = policy.open(null);
@@ -147,7 +147,7 @@ public class CompositeRetryPolicyTests {
 	}
 
 	@Test
-	public void testParent() throws Exception {
+	public void testParent() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);
@@ -157,7 +157,7 @@ public class CompositeRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testOptimistic() throws Exception {
+	public void testOptimistic() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setOptimistic(true);
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport() {

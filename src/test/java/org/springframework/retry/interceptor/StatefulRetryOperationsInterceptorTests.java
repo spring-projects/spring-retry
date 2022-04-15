@@ -71,7 +71,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	private static int count;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		interceptor = new StatefulRetryOperationsInterceptor();
 		retryTemplate.registerListener(new RetryListenerSupport() {
 			@Override
@@ -87,7 +87,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testDefaultInterceptorSunnyDay() throws Exception {
+	public void testDefaultInterceptorSunnyDay() {
 		((Advised) service).addAdvice(interceptor);
 		try {
 			service.service("foo");
@@ -101,7 +101,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testDefaultInterceptorWithLabel() throws Exception {
+	public void testDefaultInterceptorWithLabel() {
 		interceptor.setLabel("FOO");
 		((Advised) service).addAdvice(interceptor);
 		try {
@@ -117,7 +117,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testDefaultTransformerInterceptorSunnyDay() throws Exception {
+	public void testDefaultTransformerInterceptorSunnyDay() {
 		((Advised) transformer).addAdvice(interceptor);
 		try {
 			transformer.transform("foo");
@@ -131,7 +131,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testDefaultInterceptorAlwaysRetry() throws Exception {
+	public void testDefaultInterceptorAlwaysRetry() {
 		retryTemplate.setRetryPolicy(new AlwaysRetryPolicy());
 		interceptor.setRetryOperations(retryTemplate);
 		((Advised) service).addAdvice(interceptor);

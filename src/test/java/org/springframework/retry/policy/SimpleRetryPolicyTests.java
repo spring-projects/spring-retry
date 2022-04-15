@@ -34,14 +34,14 @@ import org.springframework.retry.RetryContext;
 public class SimpleRetryPolicyTests {
 
 	@Test
-	public void testCanRetryIfNoException() throws Exception {
+	public void testCanRetryIfNoException() {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertTrue(policy.canRetry(context));
 	}
 
 	@Test
-	public void testEmptyExceptionsNeverRetry() throws Exception {
+	public void testEmptyExceptionsNeverRetry() {
 
 		// We can't retry any exceptions...
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
@@ -54,7 +54,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testWithExceptionDefaultAlwaysRetry() throws Exception {
+	public void testWithExceptionDefaultAlwaysRetry() {
 
 		// We retry any exceptions except...
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3,
@@ -72,7 +72,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryLimitInitialState() throws Exception {
+	public void testRetryLimitInitialState() {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertTrue(policy.canRetry(context));
@@ -82,7 +82,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryLimitSubsequentState() throws Exception {
+	public void testRetryLimitSubsequentState() {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
 		policy.setMaxAttempts(2);
@@ -94,7 +94,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryCount() throws Exception {
+	public void testRetryCount() {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
@@ -106,7 +106,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testFatalOverridesRetryable() throws Exception {
+	public void testFatalOverridesRetryable() {
 		Map<Class<? extends Throwable>, Boolean> map = new HashMap<>();
 		map.put(Exception.class, false);
 		map.put(RuntimeException.class, true);
@@ -118,7 +118,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryableWithCause() throws Exception {
+	public void testRetryableWithCause() {
 		Map<Class<? extends Throwable>, Boolean> map = new HashMap<>();
 		map.put(RuntimeException.class, true);
 		SimpleRetryPolicy policy = new SimpleRetryPolicy(3, map, true);
@@ -129,7 +129,7 @@ public class SimpleRetryPolicyTests {
 	}
 
 	@Test
-	public void testParent() throws Exception {
+	public void testParent() {
 		SimpleRetryPolicy policy = new SimpleRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import org.springframework.retry.TerminatedRetryException;
 
 public class TerminatedRetryExceptionTests extends AbstractExceptionTests {
 
-	public Exception getException(String msg) throws Exception {
+	public Exception getException(String msg) {
 		return new TerminatedRetryException(msg);
 	}
 
-	public Exception getException(String msg, Throwable t) throws Exception {
+	public Exception getException(String msg, Throwable t) {
 		return new TerminatedRetryException(msg, t);
 	}
 
-	public void testNothing() throws Exception {
+	public void testNothing() {
 		// fool coverage tools...
 	}
 

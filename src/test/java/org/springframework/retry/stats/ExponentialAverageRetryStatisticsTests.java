@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,17 +31,17 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ExponentialAverageRetryStatisticsTests {
 
-	private ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics("test");
+	private final ExponentialAverageRetryStatistics stats = new ExponentialAverageRetryStatistics("test");
 
 	@Test
-	public void pointless() throws Exception {
+	public void pointless() {
 		stats.setName("spam");
 		assertEquals("spam", stats.getName());
 		assertNotNull(stats.toString());
 	}
 
 	@Test
-	public void attributes() throws Exception {
+	public void attributes() {
 		stats.setAttribute("foo", "bar");
 		;
 		assertEquals("bar", stats.getAttribute("foo"));
@@ -49,7 +49,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void abortCount() throws Exception {
+	public void abortCount() {
 		stats.incrementAbortCount();
 		assertEquals(1, stats.getAbortCount());
 		// rounds up to 1
@@ -57,7 +57,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void errorCount() throws Exception {
+	public void errorCount() {
 		stats.incrementErrorCount();
 		assertEquals(1, stats.getErrorCount());
 		// rounds up to 1
@@ -65,7 +65,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void startedCount() throws Exception {
+	public void startedCount() {
 		stats.incrementStartedCount();
 		assertEquals(1, stats.getStartedCount());
 		// rounds up to 1
@@ -73,7 +73,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void completeCount() throws Exception {
+	public void completeCount() {
 		stats.incrementCompleteCount();
 		assertEquals(1, stats.getCompleteCount());
 		// rounds up to 1
@@ -81,7 +81,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void recoveryCount() throws Exception {
+	public void recoveryCount() {
 		stats.incrementRecoveryCount();
 		assertEquals(1, stats.getRecoveryCount());
 		// rounds up to 1
@@ -89,7 +89,7 @@ public class ExponentialAverageRetryStatisticsTests {
 	}
 
 	@Test
-	public void oldValuesDecay() throws Exception {
+	public void oldValuesDecay() {
 		stats.incrementAbortCount();
 		assertEquals(1, stats.getAbortCount());
 		// Wind back time to epoch 0

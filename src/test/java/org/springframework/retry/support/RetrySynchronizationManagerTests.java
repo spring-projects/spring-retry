@@ -36,14 +36,14 @@ public class RetrySynchronizationManagerTests {
 	RetryTemplate template = new RetryTemplate();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		RetrySynchronizationManagerTests.clearAll();
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
 	}
 
 	@Test
-	public void testStatusIsStoredByTemplate() throws Throwable {
+	public void testStatusIsStoredByTemplate() {
 
 		RetryContext status = RetrySynchronizationManager.getContext();
 		assertNull(status);
@@ -60,7 +60,7 @@ public class RetrySynchronizationManagerTests {
 	}
 
 	@Test
-	public void testStatusRegistration() throws Exception {
+	public void testStatusRegistration() {
 		RetryContext status = new RetryContextSupport(null);
 		RetryContext value = RetrySynchronizationManager.register(status);
 		assertNull(value);
@@ -69,7 +69,7 @@ public class RetrySynchronizationManagerTests {
 	}
 
 	@Test
-	public void testClear() throws Exception {
+	public void testClear() {
 		RetryContext status = new RetryContextSupport(null);
 		RetryContext value = RetrySynchronizationManager.register(status);
 		assertNull(value);
@@ -79,7 +79,7 @@ public class RetrySynchronizationManagerTests {
 	}
 
 	@Test
-	public void testParent() throws Exception {
+	public void testParent() {
 		RetryContext parent = new RetryContextSupport(null);
 		RetryContext child = new RetryContextSupport(parent);
 		assertSame(parent, child.getParent());

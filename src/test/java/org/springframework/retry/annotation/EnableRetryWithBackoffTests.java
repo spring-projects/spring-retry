@@ -133,10 +133,10 @@ public class EnableRetryWithBackoffTests {
 	@SuppressWarnings("serial")
 	protected static class PeriodSleeper implements Sleeper {
 
-		private List<Long> periods = new ArrayList<>();
+		private final List<Long> periods = new ArrayList<>();
 
 		@Override
-		public void sleep(long period) throws InterruptedException {
+		public void sleep(long period) {
 			periods.add(period);
 		}
 

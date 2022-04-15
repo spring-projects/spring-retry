@@ -28,10 +28,10 @@ import org.springframework.retry.support.RetrySynchronizationManager;
 
 public class CircuitBreakerResetTimeoutTests {
 
-	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+	private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 			CircuitBreakerResetTimeoutTests.TestConfiguration.class);
 
-	private TestService serviceInTest = context.getBean(TestService.class);
+	private final TestService serviceInTest = context.getBean(TestService.class);
 
 	@Test
 	public void circuitBreakerShouldBeClosedAfterResetTimeout() throws InterruptedException {

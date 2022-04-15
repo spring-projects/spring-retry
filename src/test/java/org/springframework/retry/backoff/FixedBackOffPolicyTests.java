@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import org.junit.Test;
  */
 public class FixedBackOffPolicyTests {
 
-	private DummySleeper sleeper = new DummySleeper();
+	private final DummySleeper sleeper = new DummySleeper();
 
 	@Test
-	public void testSetBackoffPeriodNegative() throws Exception {
+	public void testSetBackoffPeriodNegative() {
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();
 		strategy.setBackOffPeriod(-1000L);
 		strategy.setSleeper(sleeper);
@@ -41,7 +41,7 @@ public class FixedBackOffPolicyTests {
 	}
 
 	@Test
-	public void testSingleBackOff() throws Exception {
+	public void testSingleBackOff() {
 		int backOffPeriod = 50;
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();
 		strategy.setBackOffPeriod(backOffPeriod);
@@ -52,7 +52,7 @@ public class FixedBackOffPolicyTests {
 	}
 
 	@Test
-	public void testManyBackOffCalls() throws Exception {
+	public void testManyBackOffCalls() {
 		int backOffPeriod = 50;
 		FixedBackOffPolicy strategy = new FixedBackOffPolicy();
 		strategy.setBackOffPeriod(backOffPeriod);

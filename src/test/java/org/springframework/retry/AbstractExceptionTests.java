@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,8 @@ public abstract class AbstractExceptionTests {
 		assertEquals("foo", exception.getMessage().substring(0, 3));
 	}
 
-	public abstract Exception getException(String msg) throws Exception;
+	public abstract Exception getException(String msg);
 
-	public abstract Exception getException(String msg, Throwable t) throws Exception;
+	public abstract Exception getException(String msg, Throwable t);
 
 }

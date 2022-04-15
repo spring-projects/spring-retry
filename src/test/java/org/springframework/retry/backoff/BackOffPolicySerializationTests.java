@@ -46,9 +46,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class BackOffPolicySerializationTests {
 
-	private static Log logger = LogFactory.getLog(BackOffPolicySerializationTests.class);
+	private static final Log logger = LogFactory.getLog(BackOffPolicySerializationTests.class);
 
-	private BackOffPolicy policy;
+	private final BackOffPolicy policy;
 
 	@Parameters(name = "{index}: {0}")
 	public static List<Object[]> policies() {

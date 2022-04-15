@@ -242,7 +242,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 
 	private static class AnnotationMethodsResolver {
 
-		private Class<? extends Annotation> annotationType;
+		private final Class<? extends Annotation> annotationType;
 
 		public AnnotationMethodsResolver(Class<? extends Annotation> annotationType) {
 			this.annotationType = annotationType;

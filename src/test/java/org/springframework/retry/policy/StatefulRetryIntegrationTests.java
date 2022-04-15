@@ -152,7 +152,7 @@ public class StatefulRetryIntegrationTests {
 	}
 
 	@Test
-	public void testExponentialBackOffIsExponential() throws Throwable {
+	public void testExponentialBackOffIsExponential() {
 		ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
 		policy.setInitialInterval(100);
 		policy.setMultiplier(1.5);
@@ -214,7 +214,7 @@ public class StatefulRetryIntegrationTests {
 
 		RetryContext context;
 
-		public String doWithRetry(RetryContext context) throws Exception {
+		public String doWithRetry(RetryContext context) {
 			attempts++;
 			this.context = context;
 			if (attempts < 2) {

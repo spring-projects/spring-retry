@@ -43,14 +43,14 @@ import static org.junit.Assert.fail;
 
 public class StatefulRecoveryRetryTests {
 
-	private RetryTemplate retryTemplate = new RetryTemplate();
+	private final RetryTemplate retryTemplate = new RetryTemplate();
 
 	private int count = 0;
 
-	private List<String> list = new ArrayList<>();
+	private final List<String> list = new ArrayList<>();
 
 	@Test
-	public void testOpenSunnyDay() throws Exception {
+	public void testOpenSunnyDay() {
 		RetryContext context = this.retryTemplate.open(new NeverRetryPolicy(), new DefaultRetryState("foo"));
 		assertNotNull(context);
 		// we haven't called the processor yet...
@@ -68,7 +68,7 @@ public class StatefulRecoveryRetryTests {
 	}
 
 	@Test
-	public void testClose() throws Exception {
+	public void testClose() {
 		NeverRetryPolicy retryPolicy = new NeverRetryPolicy();
 		RetryState state = new DefaultRetryState("foo");
 		RetryContext context = this.retryTemplate.open(retryPolicy, state);

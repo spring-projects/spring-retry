@@ -27,10 +27,10 @@ import org.junit.Test;
  */
 public class ExponentialBackOffPolicyTests {
 
-	private DummySleeper sleeper = new DummySleeper();
+	private final DummySleeper sleeper = new DummySleeper();
 
 	@Test
-	public void testSetMaxInterval() throws Exception {
+	public void testSetMaxInterval() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMaxInterval(1000);
 		assertTrue(strategy.toString().contains("maxInterval=1000"));
@@ -40,7 +40,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testSetInitialInterval() throws Exception {
+	public void testSetInitialInterval() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setInitialInterval(10000);
 		assertTrue(strategy.toString().contains("initialInterval=10000,"));
@@ -49,7 +49,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testSetMultiplier() throws Exception {
+	public void testSetMultiplier() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMultiplier(3.);
 		assertTrue(strategy.toString().contains("multiplier=3."));
@@ -58,7 +58,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testSingleBackOff() throws Exception {
+	public void testSingleBackOff() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setSleeper(sleeper);
 		BackOffContext context = strategy.start(null);
@@ -67,7 +67,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testMaximumBackOff() throws Exception {
+	public void testMaximumBackOff() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMaxInterval(50);
 		strategy.setSleeper(sleeper);
@@ -77,7 +77,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testMultiBackOff() throws Exception {
+	public void testMultiBackOff() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		long seed = 40;
 		double multiplier = 1.2;

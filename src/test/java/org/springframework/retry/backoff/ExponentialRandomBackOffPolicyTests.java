@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ExponentialRandomBackOffPolicyTests {
 	}
 
 	@Test
-	public void testSingleBackoff() throws Exception {
+	public void testSingleBackoff() {
 		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
 		RetrySimulation simulation = simulator.executeSimulation(1);
@@ -70,7 +70,7 @@ public class ExponentialRandomBackOffPolicyTests {
 	}
 
 	@Test
-	public void testMaxInterval() throws Exception {
+	public void testMaxInterval() {
 		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
 		backOffPolicy.setInitialInterval(3000);
 		long maxInterval = backOffPolicy.getMaxInterval();
@@ -91,7 +91,7 @@ public class ExponentialRandomBackOffPolicyTests {
 	}
 
 	@Test
-	public void testMultiBackOff() throws Exception {
+	public void testMultiBackOff() {
 		ExponentialBackOffPolicy backOffPolicy = makeBackoffPolicy();
 		RetrySimulator simulator = new RetrySimulator(backOffPolicy, makeRetryPolicy());
 		RetrySimulation simulation = simulator.executeSimulation(NUM_TRIALS);

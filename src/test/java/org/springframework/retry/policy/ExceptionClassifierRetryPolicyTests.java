@@ -33,16 +33,16 @@ import org.springframework.retry.RetryPolicy;
 
 public class ExceptionClassifierRetryPolicyTests {
 
-	private ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
+	private final ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 
 	@Test
-	public void testDefaultPolicies() throws Exception {
+	public void testDefaultPolicies() {
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 	}
 
 	@Test
-	public void testTrivialPolicies() throws Exception {
+	public void testTrivialPolicies() {
 		policy.setPolicyMap(Collections.<Class<? extends Throwable>, RetryPolicy>singletonMap(Exception.class,
 				new MockRetryPolicySupport()));
 		RetryContext context = policy.open(null);
@@ -51,14 +51,14 @@ public class ExceptionClassifierRetryPolicyTests {
 	}
 
 	@Test
-	public void testNullPolicies() throws Exception {
+	public void testNullPolicies() {
 		policy.setPolicyMap(new HashMap<>());
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
 	}
 
 	@Test
-	public void testNullContext() throws Exception {
+	public void testNullContext() {
 		policy.setPolicyMap(Collections.<Class<? extends Throwable>, RetryPolicy>singletonMap(Exception.class,
 				new NeverRetryPolicy()));
 
@@ -70,7 +70,7 @@ public class ExceptionClassifierRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testClassifierOperates() throws Exception {
+	public void testClassifierOperates() {
 
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
@@ -104,7 +104,7 @@ public class ExceptionClassifierRetryPolicyTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testClose() throws Exception {
+	public void testClose() {
 		policy.setExceptionClassifier(throwable -> new MockRetryPolicySupport() {
 			public void close(RetryContext context) {
 				count++;
@@ -124,7 +124,7 @@ public class ExceptionClassifierRetryPolicyTests {
 	}
 
 	@Test
-	public void testRetryCount() throws Exception {
+	public void testRetryCount() {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);
 		assertNotNull(context);
@@ -136,7 +136,7 @@ public class ExceptionClassifierRetryPolicyTests {
 	}
 
 	@Test
-	public void testParent() throws Exception {
+	public void testParent() {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);

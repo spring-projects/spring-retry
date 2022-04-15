@@ -52,7 +52,7 @@ public class BinaryExceptionClassifierBuilder {
 
 	private boolean traverseCauses = false;
 
-	private List<Class<? extends Throwable>> exceptionClasses = new ArrayList<>();
+	private final List<Class<? extends Throwable>> exceptionClasses = new ArrayList<>();
 
 	public BinaryExceptionClassifierBuilder retryOn(Class<? extends Throwable> throwable) {
 		Assert.isTrue(isWhiteList == null || isWhiteList, "Please use only retryOn() or only notRetryOn()");

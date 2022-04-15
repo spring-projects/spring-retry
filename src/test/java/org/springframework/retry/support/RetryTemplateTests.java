@@ -67,7 +67,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testSpecificExceptionRetry() throws Throwable {
+	public void testSpecificExceptionRetry() {
 		for (int x = 1; x <= 10; x++) {
 			final int attemptsBeforeSuccess = x;
 			final AtomicInteger attempts = new AtomicInteger(0);
@@ -200,7 +200,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testEarlyTermination() throws Throwable {
+	public void testEarlyTermination() {
 		try {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.execute(status -> {
@@ -217,7 +217,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testEarlyTerminationWithOriginalException() throws Throwable {
+	public void testEarlyTerminationWithOriginalException() {
 		try {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setThrowLastExceptionOnExhausted(true);
@@ -256,7 +256,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testRethrowError() throws Throwable {
+	public void testRethrowError() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		try {
@@ -272,7 +272,7 @@ public class RetryTemplateTests {
 
 	@SuppressWarnings("serial")
 	@Test
-	public void testFailedPolicy() throws Throwable {
+	public void testFailedPolicy() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy() {
 			@Override
@@ -292,7 +292,7 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testBackOffInterrupted() throws Throwable {
+	public void testBackOffInterrupted() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setBackOffPolicy(new StatelessBackOffPolicy() {
 			@Override
@@ -313,10 +313,9 @@ public class RetryTemplateTests {
 
 	/**
 	 * {@link BackOffPolicy} should apply also for exceptions that are re-thrown.
-	 * @throws Throwable on error
 	 */
 	@Test
-	public void testNoBackOffForRethrownException() throws Throwable {
+	public void testNoBackOffForRethrownException() {
 
 		RetryTemplate tested = new RetryTemplate();
 		tested.setRetryPolicy(new SimpleRetryPolicy(1));

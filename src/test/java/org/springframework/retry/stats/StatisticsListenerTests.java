@@ -36,9 +36,9 @@ import org.springframework.retry.support.RetryTemplate;
  */
 public class StatisticsListenerTests {
 
-	private StatisticsRepository repository = new DefaultStatisticsRepository();
+	private final StatisticsRepository repository = new DefaultStatisticsRepository();
 
-	private StatisticsListener listener = new StatisticsListener(repository);
+	private final StatisticsListener listener = new StatisticsListener(repository);
 
 	@Test
 	public void testStatelessSuccessful() throws Throwable {
@@ -60,7 +60,7 @@ public class StatisticsListenerTests {
 	}
 
 	@Test
-	public void testStatefulSuccessful() throws Throwable {
+	public void testStatefulSuccessful() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setListeners(new RetryListenerSupport[] { listener });
 		RetryState state = new DefaultRetryState("foo");
@@ -87,7 +87,7 @@ public class StatisticsListenerTests {
 	}
 
 	@Test
-	public void testStatelessUnsuccessful() throws Throwable {
+	public void testStatelessUnsuccessful() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setListeners(new RetryListenerSupport[] { listener });
 		for (int x = 1; x <= 10; x++) {
@@ -110,7 +110,7 @@ public class StatisticsListenerTests {
 	}
 
 	@Test
-	public void testStatefulUnsuccessful() throws Throwable {
+	public void testStatefulUnsuccessful() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setListeners(new RetryListenerSupport[] { listener });
 		RetryState state = new DefaultRetryState("foo");
@@ -156,7 +156,7 @@ public class StatisticsListenerTests {
 	}
 
 	@Test
-	public void testStatefulRecovery() throws Throwable {
+	public void testStatefulRecovery() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setListeners(new RetryListenerSupport[] { listener });
 		RetryState state = new DefaultRetryState("foo");
@@ -188,7 +188,7 @@ public class StatisticsListenerTests {
 
 		private int attemptsBeforeSuccess;
 
-		private Exception exceptionToThrow = new Exception();
+		private final Exception exceptionToThrow = new Exception();
 
 		@Override
 		public Object doWithRetry(RetryContext status) throws Exception {
