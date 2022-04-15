@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -456,7 +456,7 @@ public class EnableRetryTests {
 
 		@Bean
 		public Integer integerFiveBean() {
-			return Integer.valueOf(5);
+			return 5;
 		}
 
 		@Bean

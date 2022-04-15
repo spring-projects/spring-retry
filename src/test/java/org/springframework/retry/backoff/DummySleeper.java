@@ -35,7 +35,7 @@ public class DummySleeper implements Sleeper {
 	 * @return the lastBackOff
 	 */
 	public long getLastBackOff() {
-		return backOffs.get(backOffs.size() - 1).longValue();
+		return backOffs.get(backOffs.size() - 1);
 	}
 
 	public long[] getBackOffs() {
@@ -43,7 +43,7 @@ public class DummySleeper implements Sleeper {
 		int i = 0;
 		for (Iterator<Long> iterator = backOffs.iterator(); iterator.hasNext();) {
 			Long value = iterator.next();
-			result[i++] = value.longValue();
+			result[i++] = value;
 		}
 		return result;
 	}
@@ -54,7 +54,7 @@ public class DummySleeper implements Sleeper {
 	 * @see org.springframework.batch.retry.backoff.Sleeper#sleep(long)
 	 */
 	public void sleep(long backOffPeriod) throws InterruptedException {
-		this.backOffs.add(Long.valueOf(backOffPeriod));
+		this.backOffs.add(backOffPeriod);
 	}
 
 }
