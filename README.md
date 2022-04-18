@@ -19,11 +19,6 @@ The following example shows how to use Spring Retry in its declarative style:
 @EnableRetry
 public class Application {
 
-    @Bean
-    public Service service() {
-        return new Service();
-    }
-
 }
 
 @Service
