@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 import org.springframework.classify.BinaryExceptionClassifier;
-import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.TerminatedRetryException;
@@ -33,20 +32,20 @@ import org.springframework.retry.backoff.StatelessBackOffPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
-import static org.easymock.EasyMock.createStrictMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class RetryTemplateTests {
 
@@ -320,14 +319,13 @@ public class RetryTemplateTests {
 		RetryTemplate tested = new RetryTemplate();
 		tested.setRetryPolicy(new SimpleRetryPolicy(1));
 
-		BackOffPolicy bop = createStrictMock(BackOffPolicy.class);
+		BackOffPolicy bop = mock(BackOffPolicy.class);
 		@SuppressWarnings("serial")
 		BackOffContext backOffContext = new BackOffContext() {
 		};
 		tested.setBackOffPolicy(bop);
 
-		expect(bop.start(isA(RetryContext.class))).andReturn(backOffContext);
-		replay(bop);
+		given(bop.start(any())).willReturn(backOffContext);
 
 		try {
 			tested.execute(context -> {
@@ -345,8 +343,7 @@ public class RetryTemplateTests {
 		catch (Exception expected) {
 			assertEquals("maybe next time!", expected.getMessage());
 		}
-
-		verify(bop);
+		verify(bop).start(any());
 	}
 
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {
