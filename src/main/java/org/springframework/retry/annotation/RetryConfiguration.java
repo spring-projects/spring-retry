@@ -39,6 +39,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.OrderComparator;
@@ -51,7 +52,6 @@ import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 
 /**
  * Basic configuration for <code>@Retryable</code> processing. For stateful retry, if
@@ -62,6 +62,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Markus Heiden
+ * @author Gary Russell
  * @since 1.1
  *
  */
@@ -69,9 +70,9 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
-		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean {
+		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean, SmartInitializingSingleton {
 
-	private Advice advice;
+	private AnnotationAwareRetryOperationsInterceptor advice;
 
 	private Pointcut pointcut;
 
@@ -92,7 +93,6 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		this.retryContextCache = findBean(RetryContextCache.class);
 		this.methodArgumentsKeyGenerator = findBean(MethodArgumentsKeyGenerator.class);
 		this.newMethodArgumentsIdentifier = findBean(NewMethodArgumentsIdentifier.class);
-		this.retryListeners = findBeans(RetryListener.class);
 		this.sleeper = findBean(Sleeper.class);
 		Set<Class<? extends Annotation>> retryableAnnotationTypes = new LinkedHashSet<>(1);
 		retryableAnnotationTypes.add(Retryable.class);
@@ -100,6 +100,14 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		this.advice = buildAdvice();
 		if (this.advice instanceof BeanFactoryAware) {
 			((BeanFactoryAware) this.advice).setBeanFactory(this.beanFactory);
+		}
+	}
+
+	@Override
+	public void afterSingletonsInstantiated() {
+		this.retryListeners = findBeans(RetryListener.class);
+		if (this.retryListeners != null) {
+			this.advice.setListeners(this.retryListeners);
 		}
 	}
 
@@ -157,13 +165,10 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		return this.pointcut;
 	}
 
-	protected Advice buildAdvice() {
+	protected AnnotationAwareRetryOperationsInterceptor buildAdvice() {
 		AnnotationAwareRetryOperationsInterceptor interceptor = new AnnotationAwareRetryOperationsInterceptor();
 		if (this.retryContextCache != null) {
 			interceptor.setRetryContextCache(this.retryContextCache);
-		}
-		if (this.retryListeners != null) {
-			interceptor.setListeners(this.retryListeners);
 		}
 		if (this.methodArgumentsKeyGenerator != null) {
 			interceptor.setKeyGenerator(this.methodArgumentsKeyGenerator);
