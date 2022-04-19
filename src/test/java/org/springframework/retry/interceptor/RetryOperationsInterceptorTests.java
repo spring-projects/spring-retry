@@ -129,9 +129,11 @@ public class RetryOperationsInterceptorTests {
 		final String methodTagName = "method";
 		final String labelTagName = "label";
 		final Map<String, String> monitoringTags = new HashMap<>();
+		AtomicBoolean argumentsAsExpected = new AtomicBoolean();
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new SimpleRetryPolicy(2));
 		template.registerListener(new MethodInvocationRetryListenerSupport() {
+
 			@Override
 			protected <T, E extends Throwable> void doClose(RetryContext context,
 					MethodInvocationRetryCallback<T, E> callback, Throwable throwable) {
@@ -140,6 +142,14 @@ public class RetryOperationsInterceptorTests {
 				monitoringTags.put(classTagName, method.getDeclaringClass().getSimpleName());
 				monitoringTags.put(methodTagName, method.getName());
 			}
+
+			@Override
+			protected <T, E extends Throwable> void doOnSuccess(RetryContext context,
+					MethodInvocationRetryCallback<T, E> callback, T result) {
+
+				argumentsAsExpected.set(callback.getInvocation().getArguments().length == 0);
+			}
+
 		});
 
 		this.interceptor.setLabel(label);
@@ -153,6 +163,7 @@ public class RetryOperationsInterceptorTests {
 		assertThat(monitoringTags.get(classTagName),
 				equalTo(RetryOperationsInterceptorTests.Service.class.getSimpleName()));
 		assertThat(monitoringTags.get(methodTagName), equalTo("service"));
+		assertTrue(argumentsAsExpected.get());
 	}
 
 	@Test

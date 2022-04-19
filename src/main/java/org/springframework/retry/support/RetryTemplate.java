@@ -326,7 +326,9 @@ public class RetryTemplate implements RetryOperations {
 					// Reset the last exception, so if we are successful
 					// the close interceptors will not think we failed...
 					lastException = null;
-					return retryCallback.doWithRetry(context);
+					T result = retryCallback.doWithRetry(context);
+					doOnSuccessInterceptors(retryCallback, context, result);
+					return result;
 				}
 				catch (Throwable e) {
 
@@ -587,6 +589,13 @@ public class RetryTemplate implements RetryOperations {
 			Throwable lastException) {
 		for (int i = this.listeners.length; i-- > 0;) {
 			this.listeners[i].close(context, callback, lastException);
+		}
+	}
+
+	private <T, E extends Throwable> void doOnSuccessInterceptors(RetryCallback<T, E> callback, RetryContext context,
+			T result) {
+		for (int i = this.listeners.length; i-- > 0;) {
+			this.listeners[i].onSuccess(context, callback, result);
 		}
 	}
 
