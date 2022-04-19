@@ -362,7 +362,7 @@ The type of the exception thrown is then used to determine whether the call shou
 If there has been an error, it is the last one thrown by the `RetryCallback`.
 
 Note that when there is more than one listener, they are in a list, so there is an order.
-In this case, `open` is called in the same order, while `onSuccess`, `onError`, and `close` are called in reverse order
+In this case, `open` is called in the same order, while `onSuccess`, `onError`, and `close` are called in reverse order.
 
 `RetryListenerSupport` is provided, with no-op implementations; you can extend this class if you don't need to implement all of the `RetryListener` methods.
 
