@@ -17,6 +17,7 @@
 package org.springframework.retry.support;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
@@ -29,6 +30,7 @@ import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.StatelessBackOffPolicy;
+import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
@@ -344,6 +346,30 @@ public class RetryTemplateTests {
 			assertEquals("maybe next time!", expected.getMessage());
 		}
 		verify(bop).start(any());
+	}
+
+	@Test
+	public void testRetryOnBadResult() {
+		RetryTemplate template = new RetryTemplate();
+		template.registerListener(new RetryListenerSupport() {
+
+			@Override
+			public <T, E extends Throwable> void onSuccess(RetryContext context, RetryCallback<T, E> callback,
+					T result) {
+
+				if (result.equals("bad")) {
+					throw new IllegalStateException("test");
+				}
+			}
+
+		});
+		AtomicBoolean first = new AtomicBoolean(true);
+		AtomicInteger callCount = new AtomicInteger();
+		template.execute((ctx) -> {
+			callCount.incrementAndGet();
+			return first.getAndSet(false) ? "bad" : "good";
+		});
+		assertEquals(2, callCount.get());
 	}
 
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {
