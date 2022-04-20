@@ -59,6 +59,8 @@ public class CircuitBreakerTests {
 		assertThat(service.getCount()).isEqualTo(3);
 		service.expressionService();
 		assertThat(service.getCount()).isEqualTo(4);
+		service.expressionService2();
+		assertThat(service.getCount()).isEqualTo(5);
 		Advised advised = (Advised) service;
 		Advisor advisor = advised.getAdvisors()[0];
 		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
@@ -72,6 +74,12 @@ public class CircuitBreakerTests {
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")).isEqualTo(20000L);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"))
 				.isEqualTo("#root instanceof RuntimeExpression");
+
+		interceptor = (MethodInterceptor) methodMap.get(Service.class.getDeclaredMethod("expressionService2"));
+		accessor = new DirectFieldAccessor(interceptor);
+		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")).isEqualTo(10);
+		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")).isEqualTo(10000L);
+		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")).isEqualTo(20000L);
 		context.close();
 	}
 
@@ -84,6 +92,21 @@ public class CircuitBreakerTests {
 			return new ServiceImpl();
 		}
 
+		@Bean
+		Configs configs() {
+			return new Configs();
+		}
+
+	}
+
+	public static class Configs {
+
+		public int maxAttempts = 10;
+
+		public long openTimeout = 10000;
+
+		public long resetTimeout = 20000;
+
 	}
 
 	interface Service {
@@ -91,6 +114,8 @@ public class CircuitBreakerTests {
 		void service();
 
 		void expressionService();
+
+		void expressionService2();
 
 		int getCount();
 
@@ -118,6 +143,13 @@ public class CircuitBreakerTests {
 				resetTimeoutExpression = "#{${baz:20}000}",
 				exceptionExpression = "#{#root instanceof RuntimeExpression}")
 		public void expressionService() {
+			this.count++;
+		}
+
+		@Override
+		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
+				resetTimeoutExpression = "@configs.resetTimeout")
+		public void expressionService2() {
 			this.count++;
 		}
 
