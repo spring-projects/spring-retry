@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryCallback;
@@ -34,11 +34,8 @@ import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -63,7 +60,7 @@ public class RetryTemplateTests {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback);
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 		}
 	}
 
@@ -84,7 +81,7 @@ public class RetryTemplateTests {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback);
-			assertEquals(x, attempts.get());
+			assertThat(attempts.get()).isEqualTo(x);
 		}
 	}
 
@@ -96,8 +93,8 @@ public class RetryTemplateTests {
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		final Object value = new Object();
 		Object result = retryTemplate.execute(callback, context -> value);
-		assertEquals(2, callback.attempts);
-		assertEquals(value, result);
+		assertThat(callback.attempts).isEqualTo(2);
+		assertThat(result).isEqualTo(value);
 	}
 
 	@Test
@@ -106,7 +103,7 @@ public class RetryTemplateTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		retryTemplate.execute(callback);
-		assertEquals(1, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(1);
 	}
 
 	@Test
@@ -123,8 +120,8 @@ public class RetryTemplateTests {
 			fail("Expected IllegalArgumentException");
 		}
 		catch (IllegalArgumentException e) {
-			assertNotNull(e);
-			assertEquals(retryAttempts, callback.attempts);
+			assertThat(e).isNotNull();
+			assertThat(callback.attempts).isEqualTo(retryAttempts);
 			return;
 		}
 		fail("Expected IllegalArgumentException");
@@ -140,7 +137,7 @@ public class RetryTemplateTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(attempts));
 		retryTemplate.execute(callback);
-		assertEquals(attempts, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
 	@Test
@@ -156,7 +153,7 @@ public class RetryTemplateTests {
 		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
 				Collections.<Class<? extends Throwable>>singleton(IllegalArgumentException.class), false);
 		retryTemplate.execute(callback, new DefaultRetryState("foo", classifier));
-		assertEquals(attempts, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
 	@Test
@@ -175,13 +172,13 @@ public class RetryTemplateTests {
 			template.execute(callback);
 		}
 		catch (Exception e) {
-			assertNotNull(e);
-			assertEquals(1, callback.attempts);
+			assertThat(e).isNotNull();
+			assertThat(callback.attempts).isEqualTo(1);
 		}
 		callback.setExceptionToThrow(new RuntimeException());
 
 		template.execute(callback);
-		assertEquals(attempts, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
 	@Test
@@ -194,9 +191,9 @@ public class RetryTemplateTests {
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(10));
 			retryTemplate.setBackOffPolicy(backOff);
 			retryTemplate.execute(callback);
-			assertEquals(x, callback.attempts);
-			assertEquals(1, backOff.startCalls);
-			assertEquals(x - 1, backOff.backOffCalls);
+			assertThat(callback.attempts).isEqualTo(x);
+			assertThat(backOff.startCalls).isEqualTo(1);
+			assertThat(backOff.backOffCalls).isEqualTo(x - 1);
 		}
 	}
 
@@ -213,7 +210,7 @@ public class RetryTemplateTests {
 		catch (IllegalStateException ex) {
 			// Expected for internal retry policy (external would recover
 			// gracefully)
-			assertEquals("Retry this operation", ex.getMessage());
+			assertThat(ex.getMessage()).isEqualTo("Retry this operation");
 		}
 	}
 
@@ -231,7 +228,7 @@ public class RetryTemplateTests {
 		catch (IllegalStateException ex) {
 			// Expected for internal retry policy (external would recover
 			// gracefully)
-			assertEquals("Retry this operation", ex.getMessage());
+			assertThat(ex.getMessage()).isEqualTo("Retry this operation");
 		}
 	}
 
@@ -244,16 +241,18 @@ public class RetryTemplateTests {
 			RetryTemplateTests.this.count++;
 			Object result = inner.execute((RetryCallback<Object, Throwable>) status1 -> {
 				RetryTemplateTests.this.count++;
-				assertNotNull(RetryTemplateTests.this.context);
-				assertNotSame(status1, RetryTemplateTests.this.context);
-				assertSame(RetryTemplateTests.this.context, status1.getParent());
-				assertSame("The context should be the child", status1, RetrySynchronizationManager.getContext());
+				assertThat(RetryTemplateTests.this.context).isNotNull();
+				assertThat(RetryTemplateTests.this.context).isNotSameAs(status1);
+				assertThat(status1.getParent()).isSameAs(RetryTemplateTests.this.context);
+				assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be the child")
+						.isSameAs(status1);
 				return null;
 			});
-			assertSame("The context should be restored", status, RetrySynchronizationManager.getContext());
+			assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be restored")
+					.isSameAs(status);
 			return result;
 		});
-		assertEquals(2, this.count);
+		assertThat(this.count).isEqualTo(2);
 	}
 
 	@Test
@@ -267,7 +266,7 @@ public class RetryTemplateTests {
 			fail("Expected Error");
 		}
 		catch (Error e) {
-			assertEquals("Realllly bad!", e.getMessage());
+			assertThat(e.getMessage()).isEqualTo("Realllly bad!");
 		}
 	}
 
@@ -288,7 +287,7 @@ public class RetryTemplateTests {
 			fail("Expected Error");
 		}
 		catch (TerminatedRetryException e) {
-			assertEquals("Planned", e.getCause().getMessage());
+			assertThat(e.getCause().getMessage()).isEqualTo("Planned");
 		}
 	}
 
@@ -308,7 +307,7 @@ public class RetryTemplateTests {
 			fail("Expected RuntimeException");
 		}
 		catch (BackOffInterruptedException e) {
-			assertEquals("foo", e.getMessage());
+			assertThat(e.getMessage()).isEqualTo("foo");
 		}
 	}
 
@@ -343,7 +342,7 @@ public class RetryTemplateTests {
 			fail();
 		}
 		catch (Exception expected) {
-			assertEquals("maybe next time!", expected.getMessage());
+			assertThat(expected.getMessage()).isEqualTo("maybe next time!");
 		}
 		verify(bop).start(any());
 	}
@@ -369,7 +368,7 @@ public class RetryTemplateTests {
 			callCount.incrementAndGet();
 			return first.getAndSet(false) ? "bad" : "good";
 		});
-		assertEquals(2, callCount.get());
+		assertThat(callCount.get()).isEqualTo(2);
 	}
 
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {

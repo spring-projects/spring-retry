@@ -16,22 +16,22 @@
 
 package org.springframework.retry;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class AbstractExceptionTests {
 
 	@Test
 	public void testExceptionString() throws Exception {
 		Exception exception = getException("foo");
-		assertEquals("foo", exception.getMessage());
+		assertThat(exception.getMessage()).isEqualTo("foo");
 	}
 
 	@Test
 	public void testExceptionStringThrowable() throws Exception {
 		Exception exception = getException("foo", new IllegalStateException());
-		assertEquals("foo", exception.getMessage().substring(0, 3));
+		assertThat(exception.getMessage().substring(0, 3)).isEqualTo("foo");
 	}
 
 	public abstract Exception getException(String msg);

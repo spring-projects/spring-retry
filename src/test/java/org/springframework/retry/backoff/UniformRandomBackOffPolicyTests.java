@@ -16,12 +16,13 @@
 
 package org.springframework.retry.backoff;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Tomaz Fernandes
+ * @author Gary Russell
  * @since 1.3.2
  */
 public class UniformRandomBackOffPolicyTests {
@@ -35,8 +36,8 @@ public class UniformRandomBackOffPolicyTests {
 		backOffPolicy.setMaxBackOffPeriod(maxBackOff);
 		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(new DummySleeper());
 
-		assertEquals(minBackOff, withSleeper.getMinBackOffPeriod());
-		assertEquals(maxBackOff, withSleeper.getMaxBackOffPeriod());
+		assertThat(withSleeper.getMinBackOffPeriod()).isEqualTo(minBackOff);
+		assertThat(withSleeper.getMaxBackOffPeriod()).isEqualTo(maxBackOff);
 	}
 
 }

@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.framework.ProxyFactory;
@@ -44,13 +44,8 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RetryOperationsInterceptorTests {
 
@@ -66,7 +61,7 @@ public class RetryOperationsInterceptorTests {
 
 	private RetryContext context;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		this.interceptor = new RetryOperationsInterceptor();
 		RetryTemplate retryTemplate = new RetryTemplate();
@@ -93,7 +88,7 @@ public class RetryOperationsInterceptorTests {
 			@Override
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
 
-				assertFalse(calledFirst.get());
+				assertThat(calledFirst.get()).isFalse();
 				return true;
 			}
 
@@ -109,7 +104,7 @@ public class RetryOperationsInterceptorTests {
 	public void testDefaultInterceptorSunnyDay() throws Exception {
 		((Advised) this.service).addAdvice(this.interceptor);
 		this.service.service();
-		assertEquals(2, count);
+		assertThat(count).isEqualTo(2);
 	}
 
 	@Test
@@ -117,8 +112,8 @@ public class RetryOperationsInterceptorTests {
 		this.interceptor.setLabel("FOO");
 		((Advised) this.service).addAdvice(this.interceptor);
 		this.service.service();
-		assertEquals(2, count);
-		assertEquals("FOO", this.context.getAttribute(RetryContext.NAME));
+		assertThat(count).isEqualTo(2);
+		assertThat(this.context.getAttribute(RetryContext.NAME)).isEqualTo("FOO");
 	}
 
 	@Test
@@ -157,13 +152,13 @@ public class RetryOperationsInterceptorTests {
 
 		((Advised) this.service).addAdvice(this.interceptor);
 		this.service.service();
-		assertEquals(2, count);
-		assertEquals(3, monitoringTags.entrySet().size());
-		assertThat(monitoringTags.get(labelTagName), equalTo(label));
-		assertThat(monitoringTags.get(classTagName),
-				equalTo(RetryOperationsInterceptorTests.Service.class.getSimpleName()));
-		assertThat(monitoringTags.get(methodTagName), equalTo("service"));
-		assertTrue(argumentsAsExpected.get());
+		assertThat(count).isEqualTo(2);
+		assertThat(monitoringTags.entrySet()).hasSize(3);
+		assertThat(monitoringTags.get(labelTagName)).isEqualTo(label);
+		assertThat(monitoringTags.get(classTagName))
+				.isEqualTo(RetryOperationsInterceptorTests.Service.class.getSimpleName());
+		assertThat(monitoringTags.get(methodTagName)).isEqualTo("service");
+		assertThat(argumentsAsExpected.get()).isTrue();
 	}
 
 	@Test
@@ -174,7 +169,7 @@ public class RetryOperationsInterceptorTests {
 		this.interceptor.setRecoverer((args, cause) -> null);
 		((Advised) this.service).addAdvice(this.interceptor);
 		this.service.service();
-		assertEquals(1, count);
+		assertThat(count).isEqualTo(1);
 	}
 
 	@Test
@@ -189,8 +184,8 @@ public class RetryOperationsInterceptorTests {
 		template.setRetryPolicy(new SimpleRetryPolicy(2));
 		this.interceptor.setRetryOperations(template);
 		this.service.service();
-		assertEquals(2, count);
-		assertEquals(2, list.size());
+		assertThat(count).isEqualTo(2);
+		assertThat(list).hasSize(2);
 	}
 
 	@Test
@@ -204,9 +199,9 @@ public class RetryOperationsInterceptorTests {
 			fail("Expected Exception.");
 		}
 		catch (Exception e) {
-			assertTrue(e.getMessage().startsWith("Not enough calls"));
+			assertThat(e.getMessage()).startsWith("Not enough calls");
 		}
-		assertEquals(1, count);
+		assertThat(count).isEqualTo(1);
 	}
 
 	@Test
@@ -214,13 +209,12 @@ public class RetryOperationsInterceptorTests {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				ClassUtils.addResourcePathToPackagePath(getClass(), "retry-transaction-test.xml"));
 		Object object = context.getBean("bean");
-		assertNotNull(object);
-		assertTrue(object instanceof Service);
+		assertThat(object).isInstanceOf(Service.class);
 		Service bean = (Service) object;
 		bean.doTansactional();
-		assertEquals(2, count);
+		assertThat(count).isEqualTo(2);
 		// Expect 2 separate transactions...
-		assertEquals(2, transactionCount);
+		assertThat(transactionCount).isEqualTo(2);
 		context.close();
 	}
 
@@ -257,8 +251,7 @@ public class RetryOperationsInterceptorTests {
 			fail("IllegalStateException expected");
 		}
 		catch (IllegalStateException e) {
-			assertTrue("Exception message should contain MethodInvocation: " + e.getMessage(),
-					e.getMessage().contains("MethodInvocation"));
+			assertThat(e.getMessage()).contains("MethodInvocation");
 		}
 	}
 

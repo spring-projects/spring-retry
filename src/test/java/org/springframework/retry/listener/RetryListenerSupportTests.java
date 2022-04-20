@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,29 @@
 
 package org.springframework.retry.listener;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 public class RetryListenerSupportTests {
 
 	@Test
 	public void testClose() {
 		RetryListenerSupport support = new RetryListenerSupport();
-		try {
-			support.close(null, null, null);
-		}
-		catch (Exception e) {
-			fail("Unexpected exception");
-		}
+		assertThatNoException().isThrownBy(() -> support.close(null, null, null));
 	}
 
 	@Test
 	public void testOnError() {
 		RetryListenerSupport support = new RetryListenerSupport();
-		try {
-			support.onError(null, null, null);
-		}
-		catch (Exception e) {
-			fail("Unexpected exception");
-		}
+		assertThatNoException().isThrownBy(() -> support.onError(null, null, null));
 	}
 
 	@Test
 	public void testOpen() {
 		RetryListenerSupport support = new RetryListenerSupport();
-		assertTrue(support.open(null, null));
+		assertThat(support.open(null, null)).isTrue();
 	}
 
 }

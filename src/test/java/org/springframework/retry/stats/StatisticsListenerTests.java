@@ -16,11 +16,8 @@
 
 package org.springframework.retry.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
-import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryState;
@@ -29,6 +26,8 @@ import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
@@ -49,13 +48,13 @@ public class StatisticsListenerTests {
 			callback.setAttemptsBeforeSuccess(x);
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback);
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
-			assertNotNull(stats);
-			assertEquals(x, stats.getCompleteCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount() + x);
+			assertThat(stats).isNotNull();
+			assertThat(stats.getCompleteCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount() + x).isEqualTo(stats.getStartedCount());
 		}
 	}
 
@@ -76,13 +75,13 @@ public class StatisticsListenerTests {
 					// don't care
 				}
 			}
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
-			assertNotNull(stats);
-			assertEquals(x, stats.getCompleteCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount() + x);
+			assertThat(stats).isNotNull();
+			assertThat(stats.getCompleteCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount() + x).isEqualTo(stats.getStartedCount());
 		}
 	}
 
@@ -100,12 +99,12 @@ public class StatisticsListenerTests {
 			catch (Exception e) {
 				// not interested
 			}
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
-			assertNotNull(stats);
-			assertEquals(x, stats.getAbortCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount());
+			assertThat(stats).isNotNull();
+			assertThat(stats.getAbortCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount()).isEqualTo(stats.getStartedCount());
 		}
 	}
 
@@ -126,13 +125,13 @@ public class StatisticsListenerTests {
 					// don't care
 				}
 			}
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
-			assertNotNull(stats);
-			assertEquals(x, stats.getAbortCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount());
+			assertThat(stats).isNotNull();
+			assertThat(stats.getAbortCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount()).isEqualTo(stats.getStartedCount());
 		}
 	}
 
@@ -145,13 +144,13 @@ public class StatisticsListenerTests {
 			callback.setAttemptsBeforeSuccess(x + 1);
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
 			retryTemplate.execute(callback, context -> null);
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
-			assertNotNull(stats);
-			assertEquals(x, stats.getRecoveryCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount());
+			assertThat(stats).isNotNull();
+			assertThat(stats.getRecoveryCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount()).isEqualTo(stats.getStartedCount());
 		}
 	}
 
@@ -172,13 +171,13 @@ public class StatisticsListenerTests {
 					// don't care
 				}
 			}
-			assertEquals(x, callback.attempts);
+			assertThat(callback.attempts).isEqualTo(x);
 			RetryStatistics stats = repository.findOne("test");
 			// System.err.println(stats);
-			assertNotNull(stats);
-			assertEquals(x, stats.getRecoveryCount());
-			assertEquals((x + 1) * x / 2, stats.getStartedCount());
-			assertEquals(stats.getStartedCount(), stats.getErrorCount());
+			assertThat(stats).isNotNull();
+			assertThat(stats.getRecoveryCount()).isEqualTo(x);
+			assertThat(stats.getStartedCount()).isEqualTo((x + 1) * x / 2);
+			assertThat(stats.getErrorCount()).isEqualTo(stats.getStartedCount());
 		}
 	}
 

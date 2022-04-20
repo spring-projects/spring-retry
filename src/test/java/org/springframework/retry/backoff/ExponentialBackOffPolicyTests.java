@@ -16,14 +16,14 @@
 
 package org.springframework.retry.backoff;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class ExponentialBackOffPolicyTests {
 
@@ -33,28 +33,28 @@ public class ExponentialBackOffPolicyTests {
 	public void testSetMaxInterval() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMaxInterval(1000);
-		assertTrue(strategy.toString().contains("maxInterval=1000"));
+		assertThat(strategy.toString()).contains("maxInterval=1000");
 		strategy.setMaxInterval(0);
 		// The minimum value for the max interval is 1
-		assertTrue(strategy.toString().contains("maxInterval=1"));
+		assertThat(strategy.toString()).contains("maxInterval=1");
 	}
 
 	@Test
 	public void testSetInitialInterval() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setInitialInterval(10000);
-		assertTrue(strategy.toString().contains("initialInterval=10000,"));
+		assertThat(strategy.toString()).contains("initialInterval=10000,");
 		strategy.setInitialInterval(0);
-		assertTrue(strategy.toString().contains("initialInterval=1,"));
+		assertThat(strategy.toString()).contains("initialInterval=1,");
 	}
 
 	@Test
 	public void testSetMultiplier() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setMultiplier(3.);
-		assertTrue(strategy.toString().contains("multiplier=3."));
+		assertThat(strategy.toString()).contains("multiplier=3.");
 		strategy.setMultiplier(.5);
-		assertTrue(strategy.toString().contains("multiplier=1."));
+		assertThat(strategy.toString()).contains("multiplier=1.");
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class ExponentialBackOffPolicyTests {
 		strategy.setSleeper(sleeper);
 		BackOffContext context = strategy.start(null);
 		strategy.backOff(context);
-		assertEquals(ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL, sleeper.getLastBackOff());
+		assertThat(sleeper.getLastBackOff()).isEqualTo(ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL);
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class ExponentialBackOffPolicyTests {
 		strategy.setSleeper(sleeper);
 		BackOffContext context = strategy.start(null);
 		strategy.backOff(context);
-		assertEquals(50, sleeper.getLastBackOff());
+		assertThat(sleeper.getLastBackOff()).isEqualTo(50);
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class ExponentialBackOffPolicyTests {
 		BackOffContext context = strategy.start(null);
 		for (int x = 0; x < 5; x++) {
 			strategy.backOff(context);
-			assertEquals(seed, sleeper.getLastBackOff());
+			assertThat(sleeper.getLastBackOff()).isEqualTo(seed);
 			seed *= multiplier;
 		}
 	}

@@ -16,18 +16,21 @@
 
 package org.springframework.retry.policy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 public class FatalExceptionRetryPolicyTests {
 
@@ -48,17 +51,11 @@ public class FatalExceptionRetryPolicyTests {
 		retryTemplate.setRetryPolicy(policy);
 		RecoveryCallback<String> recoveryCallback = context -> "bar";
 
-		Object result = null;
-		try {
-			result = retryTemplate.execute(callback, recoveryCallback);
-		}
-		catch (IllegalArgumentException e) {
-			// We should swallow the exception when recovery is possible
-			fail("Did not expect IllegalArgumentException");
-		}
+		AtomicReference<Object> result = new AtomicReference<>();
+		assertThatNoException().isThrownBy(() -> result.set(retryTemplate.execute(callback, recoveryCallback)));
 		// Callback is called once: the recovery path should also be called
-		assertEquals(1, callback.attempts);
-		assertEquals("bar", result);
+		assertThat(callback.attempts).isEqualTo(1);
+		assertThat(result.get()).isEqualTo("bar");
 	}
 
 	@Test
@@ -78,18 +75,12 @@ public class FatalExceptionRetryPolicyTests {
 		RecoveryCallback<String> recoveryCallback = context -> "bar";
 
 		Object result = null;
-		try {
-			retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo"));
-			fail("Expected IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
-			// If stateful we have to always rethrow. Clients who want special
-			// cases have to implement them in the callback
-		}
+		assertThatIllegalArgumentException()
+				.isThrownBy(() -> retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo")));
 		result = retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo"));
 		// Callback is called once: the recovery path should also be called
-		assertEquals(1, callback.attempts);
-		assertEquals("bar", result);
+		assertThat(callback.attempts).isEqualTo(1);
+		assertThat(result).isEqualTo("bar");
 	}
 
 	private static class MockRetryCallback implements RetryCallback<String, Exception> {

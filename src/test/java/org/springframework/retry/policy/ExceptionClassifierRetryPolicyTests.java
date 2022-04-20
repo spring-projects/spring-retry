@@ -16,20 +16,17 @@
 
 package org.springframework.retry.policy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Collections;
 import java.util.HashMap;
 
-import org.junit.Test;
-import org.springframework.classify.Classifier;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ExceptionClassifierRetryPolicyTests {
 
@@ -38,7 +35,7 @@ public class ExceptionClassifierRetryPolicyTests {
 	@Test
 	public void testDefaultPolicies() {
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 	}
 
 	@Test
@@ -46,7 +43,7 @@ public class ExceptionClassifierRetryPolicyTests {
 		policy.setPolicyMap(Collections.<Class<? extends Throwable>, RetryPolicy>singletonMap(Exception.class,
 				new MockRetryPolicySupport()));
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 		assertTrue(policy.canRetry(context));
 	}
 
@@ -54,7 +51,7 @@ public class ExceptionClassifierRetryPolicyTests {
 	public void testNullPolicies() {
 		policy.setPolicyMap(new HashMap<>());
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 	}
 
 	@Test
@@ -63,7 +60,7 @@ public class ExceptionClassifierRetryPolicyTests {
 				new NeverRetryPolicy()));
 
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 
 		assertTrue(policy.canRetry(context));
 	}
@@ -73,7 +70,7 @@ public class ExceptionClassifierRetryPolicyTests {
 	public void testClassifierOperates() {
 
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 
 		assertTrue(policy.canRetry(context));
 		policy.registerThrowable(context, new IllegalArgumentException());
@@ -115,24 +112,24 @@ public class ExceptionClassifierRetryPolicyTests {
 		// The mapped (child) policy hasn't been used yet, so if we close now
 		// we don't incur the possible expense of creating the child context.
 		policy.close(context);
-		assertEquals(0, count); // not classified yet
+		assertThat(count).isEqualTo(0); // not classified yet
 		// This forces a child context to be created and the child policy is
 		// then closed
 		policy.registerThrowable(context, new IllegalStateException());
 		policy.close(context);
-		assertEquals(1, count); // now classified
+		assertThat(count).isEqualTo(1); // now classified
 	}
 
 	@Test
 	public void testRetryCount() {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 		policy.registerThrowable(context, null);
-		assertEquals(0, context.getRetryCount());
+		assertThat(context.getRetryCount()).isEqualTo(0);
 		policy.registerThrowable(context, new RuntimeException("foo"));
-		assertEquals(1, context.getRetryCount());
-		assertEquals("foo", context.getLastThrowable().getMessage());
+		assertThat(context.getRetryCount()).isEqualTo(1);
+		assertThat(context.getLastThrowable().getMessage()).isEqualTo("foo");
 	}
 
 	@Test
@@ -140,8 +137,8 @@ public class ExceptionClassifierRetryPolicyTests {
 		ExceptionClassifierRetryPolicy policy = new ExceptionClassifierRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);
-		assertNotSame(child, context);
-		assertSame(context, child.getParent());
+		assertThat(context).isNotSameAs(child);
+		assertThat(child.getParent()).isSameAs(context);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2014 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package org.springframework.retry.backoff;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  */
 public class ThreadWaitSleeperTests {
 
@@ -39,8 +40,8 @@ public class ThreadWaitSleeperTests {
 	private void assertEqualsApprox(long desired, long actual, long variance) {
 		long lower = desired - variance;
 		long upper = desired + 2 * variance;
-		assertTrue("Expected value to be between '" + lower + "' and '" + upper + "' but was '" + actual + "'",
-				lower <= actual);
+		assertThat(lower).describedAs("Expected value to be between '%d' and '%d' but was '%d'", lower, upper, actual)
+				.isLessThanOrEqualTo(actual);
 	}
 
 }

@@ -16,20 +16,21 @@
 
 package org.springframework.retry.backoff;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetrySimulation;
 import org.springframework.retry.support.RetrySimulator;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
  * @author Jon Travis
  * @author Chase Diem
+ * @author Gary Russell
  *
  */
 public class ExponentialRandomBackOffPolicyTests {
@@ -59,13 +60,15 @@ public class ExponentialRandomBackOffPolicyTests {
 
 		List<Long> sleeps = simulation.getLongestTotalSleepSequence().getSleeps();
 		System.out.println("Single trial of " + backOffPolicy + ": sleeps=" + sleeps);
-		assertEquals(MAX_RETRIES - 1, sleeps.size());
+		assertThat(sleeps).hasSize(MAX_RETRIES - 1);
 		long initialInterval = backOffPolicy.getInitialInterval();
 		for (int i = 0; i < sleeps.size(); i++) {
 			long expectedMaxValue = 2 * (long) (initialInterval
 					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
-			assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max expected value of "
-					+ expectedMaxValue + " at interval " + i, sleeps.get(i) < expectedMaxValue);
+			assertThat(sleeps.get(i))
+					.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
+							sleeps.get(i), expectedMaxValue, i)
+					.isLessThan(expectedMaxValue);
 		}
 	}
 
@@ -80,13 +83,15 @@ public class ExponentialRandomBackOffPolicyTests {
 
 		List<Long> sleeps = simulation.getLongestTotalSleepSequence().getSleeps();
 		System.out.println("Single trial of " + backOffPolicy + ": sleeps=" + sleeps);
-		assertEquals(MAX_RETRIES - 1, sleeps.size());
+		assertThat(sleeps).hasSize(MAX_RETRIES - 1);
 		long initialInterval = backOffPolicy.getInitialInterval();
 		for (int i = 0; i < sleeps.size(); i++) {
 			long expectedMaxValue = 2 * (long) (initialInterval
 					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
-			assertTrue("Found a sleep [" + sleeps.get(i) + "] which exceeds our max interval value of "
-					+ expectedMaxValue + " at interval " + i, sleeps.get(i) <= maxInterval);
+			assertThat(sleeps.get(i))
+					.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
+							sleeps.get(i), expectedMaxValue, i)
+					.isLessThanOrEqualTo(expectedMaxValue);
 		}
 	}
 

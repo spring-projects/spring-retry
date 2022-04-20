@@ -15,14 +15,17 @@
  */
 package org.springframework.classify;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.classify.annotation.Classifier;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public class ClassifierAdapterTests {
@@ -42,12 +45,12 @@ public class ClassifierAdapterTests {
 				throw new UnsupportedOperationException("Not allowed");
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void testClassifierAdapterObjectWithNoAnnotation() {
-		adapter = new ClassifierAdapter<>(new Object() {
+		assertThatIllegalStateException().isThrownBy(() -> new ClassifierAdapter<>(new Object() {
 			@SuppressWarnings("unused")
 			public Integer getValue(String key) {
 				return Integer.parseInt(key);
@@ -57,8 +60,7 @@ public class ClassifierAdapterTests {
 			public Integer getAnother(String key) {
 				throw new UnsupportedOperationException("Not allowed");
 			}
-		});
-		assertEquals(23, adapter.classify("23").intValue());
+		}));
 	}
 
 	@Test
@@ -78,14 +80,14 @@ public class ClassifierAdapterTests {
 				return "foo";
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 	@SuppressWarnings({ "serial" })
 	@Test
 	public void testClassifierAdapterClassifier() {
 		adapter = new ClassifierAdapter<>(Integer::valueOf);
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 	@Test
@@ -96,10 +98,10 @@ public class ClassifierAdapterTests {
 				return Integer.parseInt(key);
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testClassifyWithWrongType() {
 		adapter.setDelegate(new Object() {
 			@Classifier
@@ -107,14 +109,13 @@ public class ClassifierAdapterTests {
 				return key.toString();
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThatIllegalArgumentException().isThrownBy(() -> adapter.classify("23"));
 	}
 
-	@SuppressWarnings("serial")
 	@Test
 	public void testClassifyWithClassifier() {
 		adapter.setDelegate(Integer::valueOf);
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 }
