@@ -150,6 +150,11 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				Method method = entry.getKey();
 				if (method.getName().equals(this.recoverMethodName)) {
 					SimpleMetadata meta = entry.getValue();
+					// BEGIN: Fix to use multiple recovery method in same class. Usage: @Retryable(recover="methodName")
+					if (type == null) {
+						type = Throwable.class;
+					}
+					// END: Fix to use multiple recovery method in same class. Usage: @Retryable(recover="methodName")
 					if (meta.type.isAssignableFrom(cause)
 							&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
 						result = method;
