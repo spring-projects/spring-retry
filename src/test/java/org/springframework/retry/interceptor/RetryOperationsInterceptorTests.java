@@ -40,12 +40,12 @@ import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 public class RetryOperationsInterceptorTests {
 
@@ -194,13 +194,7 @@ public class RetryOperationsInterceptorTests {
 		RetryTemplate template = new RetryTemplate();
 		template.setRetryPolicy(new NeverRetryPolicy());
 		this.interceptor.setRetryOperations(template);
-		try {
-			this.service.service();
-			fail("Expected Exception.");
-		}
-		catch (Exception e) {
-			assertThat(e.getMessage()).startsWith("Not enough calls");
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		assertThat(count).isEqualTo(1);
 	}
 
@@ -220,39 +214,32 @@ public class RetryOperationsInterceptorTests {
 
 	@Test
 	public void testIllegalMethodInvocationType() throws Throwable {
-		try {
-			this.interceptor.invoke(new MethodInvocation() {
-				@Override
-				public Method getMethod() {
-					return ClassUtils.getMethod(RetryOperationsInterceptorTests.class,
-							"testIllegalMethodInvocationType");
-				}
+		assertThatIllegalStateException().isThrownBy(() -> this.interceptor.invoke(new MethodInvocation() {
+			@Override
+			public Method getMethod() {
+				return ClassUtils.getMethod(RetryOperationsInterceptorTests.class, "testIllegalMethodInvocationType");
+			}
 
-				@Override
-				public Object[] getArguments() {
-					return null;
-				}
+			@Override
+			public Object[] getArguments() {
+				return null;
+			}
 
-				@Override
-				public AccessibleObject getStaticPart() {
-					return null;
-				}
+			@Override
+			public AccessibleObject getStaticPart() {
+				return null;
+			}
 
-				@Override
-				public Object getThis() {
-					return null;
-				}
+			@Override
+			public Object getThis() {
+				return null;
+			}
 
-				@Override
-				public Object proceed() {
-					return null;
-				}
-			});
-			fail("IllegalStateException expected");
-		}
-		catch (IllegalStateException e) {
-			assertThat(e.getMessage()).contains("MethodInvocation");
-		}
+			@Override
+			public Object proceed() {
+				return null;
+			}
+		})).withMessageContaining("MethodInvocation");
 	}
 
 	public static interface Service {
@@ -275,16 +262,18 @@ public class RetryOperationsInterceptorTests {
 			}
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public void doTansactional() {
 			if (TransactionSynchronizationManager.isActualTransactionActive() && !this.enteredTransaction) {
 				transactionCount++;
-				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-					@Override
-					public void beforeCompletion() {
-						ServiceImpl.this.enteredTransaction = false;
-					}
-				});
+				TransactionSynchronizationManager.registerSynchronization(
+						new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
+							@Override
+							public void beforeCompletion() {
+								ServiceImpl.this.enteredTransaction = false;
+							}
+						});
 				this.enteredTransaction = true;
 			}
 			count++;

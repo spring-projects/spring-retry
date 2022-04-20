@@ -26,7 +26,6 @@ import org.springframework.retry.interceptor.MethodInvocationRetryCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 public class MethodInvocationRetryListenerSupportTests {
@@ -73,12 +72,7 @@ public class MethodInvocationRetryListenerSupportTests {
 	@Test
 	public void testOnError() {
 		MethodInvocationRetryListenerSupport support = new MethodInvocationRetryListenerSupport();
-		try {
-			support.onError(null, null, null);
-		}
-		catch (Exception e) {
-			fail("Unexpected exception");
-		}
+		assertThatNoException().isThrownBy(() -> support.onError(null, null, null));
 	}
 
 	@Test
