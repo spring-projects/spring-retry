@@ -33,7 +33,7 @@ import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetrySynchronizationManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
@@ -47,34 +47,14 @@ public class CircuitBreakerTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		assertThat(AopUtils.isAopProxy(service)).isTrue();
-		try {
-			service.service();
-			fail("Expected exception");
-		}
-		catch (Exception e) {
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		assertThat((Boolean) service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)).isFalse();
-		try {
-			service.service();
-			fail("Expected exception");
-		}
-		catch (Exception e) {
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		assertThat((Boolean) service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)).isFalse();
-		try {
-			service.service();
-			fail("Expected exception");
-		}
-		catch (Exception e) {
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		assertThat((Boolean) service.getContext().getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)).isTrue();
 		assertThat(service.getCount()).isEqualTo(3);
-		try {
-			service.service();
-			fail("Expected exception");
-		}
-		catch (Exception e) {
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		// Not called again once circuit is open
 		assertThat(service.getCount()).isEqualTo(3);
 		service.expressionService();

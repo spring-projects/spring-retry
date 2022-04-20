@@ -44,8 +44,9 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Dave Syer
@@ -127,12 +128,7 @@ public class EnableRetryTests {
 	public void excludes() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		ExcludesService service = context.getBean(ExcludesService.class);
-		try {
-			service.service();
-			fail("Expected IllegalStateException");
-		}
-		catch (IllegalStateException e) {
-		}
+		assertThatIllegalStateException().isThrownBy(() -> service.service());
 		assertThat(service.getCount()).isEqualTo(1);
 		context.close();
 	}
@@ -142,12 +138,7 @@ public class EnableRetryTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		ExcludesOnlyService service = context.getBean(ExcludesOnlyService.class);
 		service.setExceptionToThrow(new IllegalStateException());
-		try {
-			service.service();
-			fail("Expected IllegalStateException");
-		}
-		catch (IllegalStateException e) {
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service());
 		assertThat(service.getCount()).isEqualTo(1);
 
 		service.setExceptionToThrow(new IllegalArgumentException());
@@ -217,13 +208,7 @@ public class EnableRetryTests {
 		ExpressionService service = context.getBean(ExpressionService.class);
 		service.service1();
 		assertThat(service.getCount()).isEqualTo(3);
-		try {
-			service.service2();
-			fail("expected exception");
-		}
-		catch (RuntimeException e) {
-			assertThat(e.getMessage()).isEqualTo("this cannot be retried");
-		}
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service2());
 		assertThat(service.getCount()).isEqualTo(4);
 		service.service3();
 		assertThat(service.getCount()).isEqualTo(9);

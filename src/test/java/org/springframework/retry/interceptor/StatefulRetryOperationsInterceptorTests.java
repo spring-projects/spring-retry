@@ -42,7 +42,6 @@ import org.springframework.retry.support.RetryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -191,7 +190,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		this.interceptor.invoke(invocation);
 		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
 		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture());
-		assertNull(captor.getValue().getKey());
+		assertThat(captor.getValue().getKey()).isNull();
 	}
 
 	@SuppressWarnings("unchecked")

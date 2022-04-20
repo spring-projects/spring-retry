@@ -29,9 +29,8 @@ import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class RetryListenerTests {
 
@@ -70,16 +69,10 @@ public class RetryListenerTests {
 				return false;
 			}
 		});
-		try {
-			template.execute(context -> {
-				count++;
-				return null;
-			});
-			fail("Expected TerminatedRetryException");
-		}
-		catch (TerminatedRetryException e) {
-			// expected
-		}
+		assertThatExceptionOfType(TerminatedRetryException.class).isThrownBy(() -> template.execute(context -> {
+			count++;
+			return null;
+		}));
 		assertThat(count).isEqualTo(0);
 		assertThat(list).hasSize(1);
 		assertThat(list.get(0)).isEqualTo("1");
@@ -140,7 +133,7 @@ public class RetryListenerTests {
 					Throwable t) {
 				list.add("" + count);
 				// The last attempt should have been successful:
-				assertNull(t);
+				assertThat(t).isNull();
 			}
 		});
 		template.execute(context -> {

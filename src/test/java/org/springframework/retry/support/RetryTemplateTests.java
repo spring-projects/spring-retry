@@ -35,6 +35,9 @@ import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -115,16 +118,8 @@ public class RetryTemplateTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		int retryAttempts = 2;
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(retryAttempts));
-		try {
-			retryTemplate.execute(callback);
-			fail("Expected IllegalArgumentException");
-		}
-		catch (IllegalArgumentException e) {
-			assertThat(e).isNotNull();
-			assertThat(callback.attempts).isEqualTo(retryAttempts);
-			return;
-		}
-		fail("Expected IllegalArgumentException");
+		assertThatIllegalArgumentException().isThrownBy(() -> retryTemplate.execute(callback));
+		assertThat(callback.attempts).isEqualTo(retryAttempts);
 	}
 
 	@Test
@@ -199,37 +194,21 @@ public class RetryTemplateTests {
 
 	@Test
 	public void testEarlyTermination() {
-		try {
-			RetryTemplate retryTemplate = new RetryTemplate();
-			retryTemplate.execute(status -> {
-				status.setExhaustedOnly();
-				throw new IllegalStateException("Retry this operation");
-			});
-			fail("Expected ExhaustedRetryException");
-		}
-		catch (IllegalStateException ex) {
-			// Expected for internal retry policy (external would recover
-			// gracefully)
-			assertThat(ex.getMessage()).isEqualTo("Retry this operation");
-		}
+		RetryTemplate retryTemplate = new RetryTemplate();
+		assertThatIllegalStateException().isThrownBy(() -> retryTemplate.execute(status -> {
+			status.setExhaustedOnly();
+			throw new IllegalStateException("Retry this operation");
+		})).withMessage("Retry this operation");
 	}
 
 	@Test
 	public void testEarlyTerminationWithOriginalException() {
-		try {
-			RetryTemplate retryTemplate = new RetryTemplate();
-			retryTemplate.setThrowLastExceptionOnExhausted(true);
-			retryTemplate.execute(status -> {
-				status.setExhaustedOnly();
-				throw new IllegalStateException("Retry this operation");
-			});
-			fail("Expected ExhaustedRetryException");
-		}
-		catch (IllegalStateException ex) {
-			// Expected for internal retry policy (external would recover
-			// gracefully)
-			assertThat(ex.getMessage()).isEqualTo("Retry this operation");
-		}
+		RetryTemplate retryTemplate = new RetryTemplate();
+		retryTemplate.setThrowLastExceptionOnExhausted(true);
+		assertThatIllegalStateException().isThrownBy(() -> retryTemplate.execute(status -> {
+			status.setExhaustedOnly();
+			throw new IllegalStateException("Retry this operation");
+		})).withMessage("Retry this operation");
 	}
 
 	@Test
@@ -280,15 +259,9 @@ public class RetryTemplateTests {
 				throw new RuntimeException("Planned");
 			}
 		});
-		try {
-			retryTemplate.execute(context -> {
-				throw new RuntimeException("Realllly bad!");
-			});
-			fail("Expected Error");
-		}
-		catch (TerminatedRetryException e) {
-			assertThat(e.getCause().getMessage()).isEqualTo("Planned");
-		}
+		assertThatExceptionOfType(TerminatedRetryException.class).isThrownBy(() -> retryTemplate.execute(context -> {
+			throw new RuntimeException("Realllly bad!");
+		})).withCauseInstanceOf(RuntimeException.class).withMessageContaining("Planned");
 	}
 
 	@Test
@@ -300,15 +273,9 @@ public class RetryTemplateTests {
 				throw new BackOffInterruptedException("foo");
 			}
 		});
-		try {
-			retryTemplate.execute(context -> {
-				throw new RuntimeException("Bad!");
-			});
-			fail("Expected RuntimeException");
-		}
-		catch (BackOffInterruptedException e) {
-			assertThat(e.getMessage()).isEqualTo("foo");
-		}
+		assertThatExceptionOfType(BackOffInterruptedException.class).isThrownBy(() -> retryTemplate.execute(context -> {
+			throw new RuntimeException("Bad!");
+		})).withMessage("foo");
 	}
 
 	/**
@@ -328,22 +295,16 @@ public class RetryTemplateTests {
 
 		given(bop.start(any())).willReturn(backOffContext);
 
-		try {
-			tested.execute(context -> {
-				throw new Exception("maybe next time!");
-			}, null, new DefaultRetryState(tested) {
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> tested.execute(context -> {
+			throw new Exception("maybe next time!");
+		}, null, new DefaultRetryState(tested) {
 
-				@Override
-				public boolean rollbackFor(Throwable exception) {
-					return true;
-				}
+			@Override
+			public boolean rollbackFor(Throwable exception) {
+				return true;
+			}
 
-			});
-			fail();
-		}
-		catch (Exception expected) {
-			assertThat(expected.getMessage()).isEqualTo("maybe next time!");
-		}
+		})).withMessage("maybe next time!");
 		verify(bop).start(any());
 	}
 
