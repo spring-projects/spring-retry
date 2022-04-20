@@ -33,7 +33,6 @@ import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetrySynchronizationManager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -89,8 +88,8 @@ public class CircuitBreakerTests {
 				.get(Service.class.getDeclaredMethod("expressionService"));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")).isEqualTo(8);
-		assertEquals(19000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout"));
-		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout"));
+		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")).isEqualTo(19000L);
+		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")).isEqualTo(20000L);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"))
 				.isEqualTo("#root instanceof RuntimeExpression");
 		context.close();

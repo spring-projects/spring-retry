@@ -22,10 +22,10 @@ import org.springframework.classify.annotation.Classifier;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public class ClassifierAdapterTests {
@@ -80,14 +80,14 @@ public class ClassifierAdapterTests {
 				return "foo";
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 	@SuppressWarnings({ "serial" })
 	@Test
 	public void testClassifierAdapterClassifier() {
 		adapter = new ClassifierAdapter<>(Integer::valueOf);
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 	@Test
@@ -98,7 +98,7 @@ public class ClassifierAdapterTests {
 				return Integer.parseInt(key);
 			}
 		});
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 	@Test
@@ -115,7 +115,7 @@ public class ClassifierAdapterTests {
 	@Test
 	public void testClassifyWithClassifier() {
 		adapter.setDelegate(Integer::valueOf);
-		assertEquals(23, adapter.classify("23").intValue());
+		assertThat(adapter.classify("23").intValue()).isEqualTo(23);
 	}
 
 }
