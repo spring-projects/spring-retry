@@ -62,7 +62,6 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
 
 /**
@@ -254,8 +253,15 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private long getOpenTimeout(CircuitBreaker circuit) {
 		if (StringUtils.hasText(circuit.openTimeoutExpression())) {
-			Long value = PARSER.parseExpression(resolve(circuit.openTimeoutExpression()), PARSER_CONTEXT)
-					.getValue(Long.class);
+			Long value = null;
+			if (isTemplate(circuit.openTimeoutExpression())) {
+				value = PARSER.parseExpression(resolve(circuit.openTimeoutExpression()), PARSER_CONTEXT)
+						.getValue(this.evaluationContext, Long.class);
+			}
+			else {
+				value = PARSER.parseExpression(resolve(circuit.openTimeoutExpression()))
+						.getValue(this.evaluationContext, Long.class);
+			}
 			if (value != null) {
 				return value;
 			}
@@ -265,13 +271,25 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private long getResetTimeout(CircuitBreaker circuit) {
 		if (StringUtils.hasText(circuit.resetTimeoutExpression())) {
-			Long value = PARSER.parseExpression(resolve(circuit.resetTimeoutExpression()), PARSER_CONTEXT)
-					.getValue(Long.class);
+			Long value = null;
+			if (isTemplate(circuit.openTimeoutExpression())) {
+				value = PARSER.parseExpression(resolve(circuit.resetTimeoutExpression()), PARSER_CONTEXT)
+						.getValue(this.evaluationContext, Long.class);
+			}
+			else {
+				value = PARSER.parseExpression(resolve(circuit.resetTimeoutExpression()))
+						.getValue(this.evaluationContext, Long.class);
+			}
 			if (value != null) {
 				return value;
 			}
 		}
 		return circuit.resetTimeout();
+	}
+
+	private boolean isTemplate(String expression) {
+		return expression.contains(PARSER_CONTEXT.getExpressionPrefix())
+				&& expression.contains(PARSER_CONTEXT.getExpressionSuffix());
 	}
 
 	private RetryTemplate createTemplate(String[] listenersBeanNames) {

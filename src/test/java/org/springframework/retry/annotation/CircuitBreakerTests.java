@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  *
  */
 public class CircuitBreakerTests {
@@ -81,6 +82,8 @@ public class CircuitBreakerTests {
 		assertEquals(3, service.getCount());
 		service.expressionService();
 		assertEquals(4, service.getCount());
+		service.expressionService2();
+		assertEquals(5, service.getCount());
 		Advised advised = (Advised) service;
 		Advisor advisor = advised.getAdvisors()[0];
 		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
@@ -94,6 +97,12 @@ public class CircuitBreakerTests {
 		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout"));
 		assertEquals("#root instanceof RuntimeExpression",
 				accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"));
+
+		interceptor = (MethodInterceptor) methodMap.get(Service.class.getDeclaredMethod("expressionService2"));
+		accessor = new DirectFieldAccessor(interceptor);
+		assertEquals(10, accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts"));
+		assertEquals(10000L, accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout"));
+		assertEquals(20000L, accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout"));
 		context.close();
 	}
 
@@ -106,6 +115,21 @@ public class CircuitBreakerTests {
 			return new ServiceImpl();
 		}
 
+		@Bean
+		Configs configs() {
+			return new Configs();
+		}
+
+	}
+
+	public static class Configs {
+
+		public int maxAttempts = 10;
+
+		public long openTimeout = 10000;
+
+		public long resetTimeout = 20000;
+
 	}
 
 	interface Service {
@@ -113,6 +137,8 @@ public class CircuitBreakerTests {
 		void service();
 
 		void expressionService();
+
+		void expressionService2();
 
 		int getCount();
 
@@ -140,6 +166,13 @@ public class CircuitBreakerTests {
 				resetTimeoutExpression = "#{${baz:20}000}",
 				exceptionExpression = "#{#root instanceof RuntimeExpression}")
 		public void expressionService() {
+			this.count++;
+		}
+
+		@Override
+		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
+				resetTimeoutExpression = "@configs.resetTimeout")
+		public void expressionService2() {
 			this.count++;
 		}
 
