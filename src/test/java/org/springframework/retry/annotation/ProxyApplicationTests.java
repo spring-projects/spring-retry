@@ -21,7 +21,7 @@ import java.net.URLClassLoader;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProxyApplicationTests {
 
@@ -47,13 +47,13 @@ public class ProxyApplicationTests {
 		int base = count();
 		runAndClose();
 		count = count();
-		assertEquals("Class leak", base, count);
+		assertThat(count).describedAs("Class leak").isEqualTo(base);
 		runAndClose();
 		count = count();
-		assertEquals("Class leak", base, count);
+		assertThat(count).describedAs("Class leak").isEqualTo(base);
 		runAndClose();
 		count = count();
-		assertEquals("Class leak", base, count);
+		assertThat(count).describedAs("Class leak").isEqualTo(base);
 	}
 
 	@SuppressWarnings("resource")

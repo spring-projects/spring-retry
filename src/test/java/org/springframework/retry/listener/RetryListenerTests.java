@@ -16,20 +16,22 @@
 
 package org.springframework.retry.listener;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RetryListenerTests {
 
@@ -55,9 +57,9 @@ public class RetryListenerTests {
 			}
 		} });
 		template.execute(context -> null);
-		assertEquals(2, count);
-		assertEquals(2, list.size());
-		assertEquals("1:1", list.get(0));
+		assertThat(count).isEqualTo(2);
+		assertThat(list).hasSize(2);
+		assertThat(list.get(0)).isEqualTo("1:1");
 	}
 
 	@Test
@@ -78,9 +80,9 @@ public class RetryListenerTests {
 		catch (TerminatedRetryException e) {
 			// expected
 		}
-		assertEquals(0, count);
-		assertEquals(1, list.size());
-		assertEquals("1", list.get(0));
+		assertThat(count).isEqualTo(0);
+		assertThat(list).hasSize(1);
+		assertThat(list.get(0)).isEqualTo("1");
 	}
 
 	@Test
@@ -99,10 +101,10 @@ public class RetryListenerTests {
 			}
 		} });
 		template.execute(context -> null);
-		assertEquals(2, count);
-		assertEquals(2, list.size());
+		assertThat(count).isEqualTo(2);
+		assertThat(list).hasSize(2);
 		// interceptors are called in reverse order on close...
-		assertEquals("2:1", list.get(0));
+		assertThat(list.get(0)).isEqualTo("2:1");
 	}
 
 	@Test
@@ -119,21 +121,15 @@ public class RetryListenerTests {
 				list.add("2");
 			}
 		} });
-		try {
-			template.execute(context -> {
-				count++;
-				throw new IllegalStateException("foo");
-			});
-			fail("Expected IllegalStateException");
-		}
-		catch (IllegalStateException e) {
-			assertEquals("foo", e.getMessage());
-		}
+		assertThatIllegalStateException().isThrownBy(() -> template.execute(context -> {
+			count++;
+			throw new IllegalStateException("foo");
+		})).withMessage("foo");
 		// never retry so callback is executed once
-		assertEquals(1, count);
-		assertEquals(2, list.size());
+		assertThat(count).isEqualTo(1);
+		assertThat(list).hasSize(2);
 		// interceptors are called in reverse order on error...
-		assertEquals("2", list.get(0));
+		assertThat(list.get(0)).isEqualTo("2");
 
 	}
 
@@ -152,11 +148,11 @@ public class RetryListenerTests {
 				throw new RuntimeException("Retry!");
 			return null;
 		});
-		assertEquals(2, count);
+		assertThat(count).isEqualTo(2);
 		// The close interceptor was only called once:
-		assertEquals(1, list.size());
+		assertThat(list).hasSize(1);
 		// We succeeded on the second try:
-		assertEquals("2", list.get(0));
+		assertThat(list.get(0)).isEqualTo("2");
 	}
 
 }

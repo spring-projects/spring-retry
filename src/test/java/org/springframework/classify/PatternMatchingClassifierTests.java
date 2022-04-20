@@ -15,14 +15,13 @@
  */
 package org.springframework.classify;
 
-import static org.junit.Assert.*;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.classify.PatternMatchingClassifier;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
@@ -34,7 +33,7 @@ public class PatternMatchingClassifierTests {
 
 	private Map<String, String> map;
 
-	@Before
+	@BeforeEach
 	public void createMap() {
 		map = new HashMap<>();
 		map.put("foo", "bar");
@@ -44,15 +43,15 @@ public class PatternMatchingClassifierTests {
 	@Test
 	public void testSetPatternMap() {
 		classifier.setPatternMap(map);
-		assertEquals("bar", classifier.classify("foo"));
-		assertEquals("spam", classifier.classify("bucket"));
+		assertThat(classifier.classify("foo")).isEqualTo("bar");
+		assertThat(classifier.classify("bucket")).isEqualTo("spam");
 	}
 
 	@Test
 	public void testCreateFromMap() {
 		classifier = new PatternMatchingClassifier<>(map);
-		assertEquals("bar", classifier.classify("foo"));
-		assertEquals("spam", classifier.classify("bucket"));
+		assertThat(classifier.classify("foo")).isEqualTo("bar");
+		assertThat(classifier.classify("bucket")).isEqualTo("spam");
 	}
 
 }

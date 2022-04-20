@@ -15,15 +15,17 @@
  */
 package org.springframework.classify;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.classify.annotation.Classifier;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
@@ -35,16 +37,16 @@ public class BackToBackPatternClassifierTests {
 
 	private Map<String, String> map;
 
-	@Before
+	@BeforeEach
 	public void createMap() {
 		map = new HashMap<>();
 		map.put("foo", "bar");
 		map.put("*", "spam");
 	}
 
-	@Test(expected = NullPointerException.class)
+	@Test
 	public void testNoClassifiers() {
-		classifier.classify("foo");
+		assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> classifier.classify("foo"));
 	}
 
 	@Test
@@ -52,7 +54,7 @@ public class BackToBackPatternClassifierTests {
 		classifier = new BackToBackPatternClassifier<>(
 				new PatternMatchingClassifier<>(Collections.singletonMap("oof", "bucket")),
 				new PatternMatchingClassifier<>(map));
-		assertEquals("spam", classifier.classify("oof"));
+		assertThat(classifier.classify("oof")).isEqualTo("spam");
 	}
 
 	@Test
@@ -64,7 +66,7 @@ public class BackToBackPatternClassifierTests {
 			}
 		});
 		classifier.setMatcherMap(map);
-		assertEquals("spam", classifier.classify("oof"));
+		assertThat(classifier.classify("oof")).isEqualTo("spam");
 	}
 
 	@Test
@@ -72,7 +74,7 @@ public class BackToBackPatternClassifierTests {
 		classifier = new BackToBackPatternClassifier<>();
 		classifier.setRouterDelegate(new RouterDelegate());
 		classifier.setMatcherMap(map);
-		assertEquals("spam", classifier.classify("oof"));
+		assertThat(classifier.classify("oof")).isEqualTo("spam");
 	}
 
 	@SuppressWarnings("serial")

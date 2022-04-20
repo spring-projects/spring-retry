@@ -23,10 +23,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -39,21 +37,18 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SerializationUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
-@RunWith(Parameterized.class)
 public class RetryContextSerializationTests {
 
 	private static final Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
 
-	private final RetryPolicy policy;
-
-	@Parameters(name = "{index}: {0}")
+	@SuppressWarnings("deprecation")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<>();
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
@@ -76,23 +71,25 @@ public class RetryContextSerializationTests {
 		return result;
 	}
 
-	public RetryContextSerializationTests(RetryPolicy policy) {
-		this.policy = policy;
-	}
-
-	@Test
-	public void testSerializationCycleForContext() {
+	@SuppressWarnings("deprecation")
+	@ParameterizedTest
+	@MethodSource("policies")
+	public void testSerializationCycleForContext(RetryPolicy policy) {
 		RetryContext context = policy.open(null);
-		assertEquals(0, context.getRetryCount());
+		assertThat(context.getRetryCount()).isEqualTo(0);
 		policy.registerThrowable(context, new RuntimeException());
-		assertEquals(1, context.getRetryCount());
-		assertEquals(1,
-				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount());
+		assertThat(context.getRetryCount()).isEqualTo(1);
+		assertThat(
+				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount())
+						.isEqualTo(1);
 	}
 
-	@Test
-	public void testSerializationCycleForPolicy() {
-		assertTrue(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy);
+	@ParameterizedTest
+	@MethodSource("policies")
+	@SuppressWarnings("deprecation")
+	public void testSerializationCycleForPolicy(RetryPolicy policy) {
+		assertThat(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy)
+				.isTrue();
 	}
 
 }

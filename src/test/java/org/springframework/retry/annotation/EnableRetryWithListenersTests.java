@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package org.springframework.retry.annotation;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,8 +26,11 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.listener.RetryListenerSupport;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public class EnableRetryWithListenersTests {
@@ -38,7 +40,7 @@ public class EnableRetryWithListenersTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		Service service = context.getBean(Service.class);
 		service.service();
-		assertEquals(1, context.getBean(TestConfiguration.class).count);
+		assertThat(context.getBean(TestConfiguration.class).count).isEqualTo(1);
 		context.close();
 	}
 
@@ -48,8 +50,8 @@ public class EnableRetryWithListenersTests {
 				TestConfigurationMultipleListeners.class);
 		ServiceWithOverriddenListener service = context.getBean(ServiceWithOverriddenListener.class);
 		service.service();
-		assertEquals(1, context.getBean(TestConfigurationMultipleListeners.class).count1);
-		assertEquals(0, context.getBean(TestConfigurationMultipleListeners.class).count2);
+		assertThat(context.getBean(TestConfigurationMultipleListeners.class).count1).isEqualTo(1);
+		assertThat(context.getBean(TestConfigurationMultipleListeners.class).count2).isEqualTo(0);
 		context.close();
 	}
 

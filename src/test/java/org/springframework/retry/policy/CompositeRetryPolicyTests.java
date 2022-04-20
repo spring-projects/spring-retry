@@ -16,20 +16,16 @@
 
 package org.springframework.retry.policy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class CompositeRetryPolicyTests {
 
@@ -37,8 +33,8 @@ public class CompositeRetryPolicyTests {
 	public void testEmptyPolicies() {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		assertTrue(policy.canRetry(context));
+		assertThat(context).isNotNull();
+		assertThat(policy.canRetry(context)).isTrue();
 	}
 
 	@Test
@@ -46,8 +42,8 @@ public class CompositeRetryPolicyTests {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		assertTrue(policy.canRetry(context));
+		assertThat(context).isNotNull();
+		assertThat(policy.canRetry(context)).isTrue();
 	}
 
 	@SuppressWarnings("serial")
@@ -60,8 +56,8 @@ public class CompositeRetryPolicyTests {
 			}
 		} });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		assertFalse(policy.canRetry(context));
+		assertThat(context).isNotNull();
+		assertThat(policy.canRetry(context)).isFalse();
 	}
 
 	@SuppressWarnings("serial")
@@ -80,10 +76,10 @@ public class CompositeRetryPolicyTests {
 			}
 		} });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		assertTrue(policy.canRetry(context));
+		assertThat(context).isNotNull();
+		assertThat(policy.canRetry(context)).isTrue();
 		policy.registerThrowable(context, null);
-		assertFalse("Should be still able to retry", policy.canRetry(context));
+		assertThat(policy.canRetry(context)).describedAs("Should be still able to retry").isFalse();
 	}
 
 	@SuppressWarnings("serial")
@@ -101,9 +97,9 @@ public class CompositeRetryPolicyTests {
 			}
 		} });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 		policy.close(context);
-		assertEquals(2, list.size());
+		assertThat(list).hasSize(2);
 	}
 
 	@SuppressWarnings("serial")
@@ -122,15 +118,9 @@ public class CompositeRetryPolicyTests {
 			}
 		} });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		try {
-			policy.close(context);
-			fail("Expected RuntimeException");
-		}
-		catch (RuntimeException e) {
-			assertEquals("Pah!", e.getMessage());
-		}
-		assertEquals(2, list.size());
+		assertThat(context).isNotNull();
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> policy.close(context)).withMessage("Pah!");
+		assertThat(list).hasSize(2);
 	}
 
 	@Test
@@ -138,12 +128,12 @@ public class CompositeRetryPolicyTests {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		policy.setPolicies(new RetryPolicy[] { new MockRetryPolicySupport(), new MockRetryPolicySupport() });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
+		assertThat(context).isNotNull();
 		policy.registerThrowable(context, null);
-		assertEquals(0, context.getRetryCount());
+		assertThat(context.getRetryCount()).isEqualTo(0);
 		policy.registerThrowable(context, new RuntimeException("foo"));
-		assertEquals(1, context.getRetryCount());
-		assertEquals("foo", context.getLastThrowable().getMessage());
+		assertThat(context.getRetryCount()).isEqualTo(1);
+		assertThat(context.getLastThrowable().getMessage()).isEqualTo("foo");
 	}
 
 	@Test
@@ -151,8 +141,8 @@ public class CompositeRetryPolicyTests {
 		CompositeRetryPolicy policy = new CompositeRetryPolicy();
 		RetryContext context = policy.open(null);
 		RetryContext child = policy.open(context);
-		assertNotSame(child, context);
-		assertSame(context, child.getParent());
+		assertThat(context).isNotSameAs(child);
+		assertThat(child.getParent()).isSameAs(context);
 	}
 
 	@SuppressWarnings("serial")
@@ -166,8 +156,8 @@ public class CompositeRetryPolicyTests {
 			}
 		}, new MockRetryPolicySupport() });
 		RetryContext context = policy.open(null);
-		assertNotNull(context);
-		assertTrue(policy.canRetry(context));
+		assertThat(context).isNotNull();
+		assertThat(policy.canRetry(context)).isTrue();
 	}
 
 }

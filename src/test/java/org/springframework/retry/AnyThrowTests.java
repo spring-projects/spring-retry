@@ -16,35 +16,32 @@
 
 package org.springframework.retry;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public class AnyThrowTests {
 
-	@Rule
-	public ExpectedException expected = ExpectedException.none();
-
 	@Test
 	public void testRuntimeException() {
-		expected.expect(RuntimeException.class);
-		AnyThrow.throwAny(new RuntimeException("planned"));
+		assertThatExceptionOfType(RuntimeException.class)
+				.isThrownBy(() -> AnyThrow.throwAny(new RuntimeException("planned")));
 	}
 
 	@Test
 	public void testUncheckedRuntimeException() {
-		expected.expect(RuntimeException.class);
-		AnyThrow.throwUnchecked(new RuntimeException("planned"));
+		assertThatExceptionOfType(RuntimeException.class)
+				.isThrownBy(() -> AnyThrow.throwUnchecked(new RuntimeException("planned")));
 	}
 
 	@Test
 	public void testCheckedException() {
-		expected.expect(Exception.class);
-		AnyThrow.throwAny(new Exception("planned"));
+		assertThatExceptionOfType(Exception.class).isThrownBy(() -> AnyThrow.throwAny(new Exception("planned")));
 	}
 
 	private static class AnyThrow {

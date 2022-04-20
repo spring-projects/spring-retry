@@ -16,13 +16,14 @@
 
 package org.springframework.retry.backoff;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  * @since 2.1
  */
 public class FixedBackOffPolicyTests {
@@ -36,8 +37,8 @@ public class FixedBackOffPolicyTests {
 		strategy.setSleeper(sleeper);
 		strategy.backOff(null);
 		// We should see a zero backoff if we try to set it negative
-		assertEquals(1, sleeper.getBackOffs().length);
-		assertEquals(1, sleeper.getLastBackOff());
+		assertThat(sleeper.getBackOffs().length).isEqualTo(1);
+		assertThat(sleeper.getLastBackOff()).isEqualTo(1);
 	}
 
 	@Test
@@ -47,8 +48,8 @@ public class FixedBackOffPolicyTests {
 		strategy.setBackOffPeriod(backOffPeriod);
 		strategy.setSleeper(sleeper);
 		strategy.backOff(null);
-		assertEquals(1, sleeper.getBackOffs().length);
-		assertEquals(backOffPeriod, sleeper.getLastBackOff());
+		assertThat(sleeper.getBackOffs().length).isEqualTo(1);
+		assertThat(sleeper.getLastBackOff()).isEqualTo(backOffPeriod);
 	}
 
 	@Test
@@ -59,9 +60,9 @@ public class FixedBackOffPolicyTests {
 		strategy.setSleeper(sleeper);
 		for (int x = 0; x < 10; x++) {
 			strategy.backOff(null);
-			assertEquals(backOffPeriod, sleeper.getLastBackOff());
+			assertThat(sleeper.getLastBackOff()).isEqualTo(backOffPeriod);
 		}
-		assertEquals(10, sleeper.getBackOffs().length);
+		assertThat(sleeper.getBackOffs().length).isEqualTo(10);
 	}
 
 }

@@ -16,22 +16,22 @@
 
 package org.springframework.classify;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClassifierSupportTests {
 
 	@Test
 	public void testClassifyNullIsDefault() {
 		ClassifierSupport<String, String> classifier = new ClassifierSupport<>("foo");
-		assertEquals(classifier.classify(null), "foo");
+		assertThat(classifier.classify(null)).isEqualTo("foo");
 	}
 
 	@Test
 	public void testClassifyRandomException() {
 		ClassifierSupport<Throwable, String> classifier = new ClassifierSupport<>("foo");
-		assertEquals(classifier.classify(new IllegalStateException("Foo")), classifier.classify(null));
+		assertThat(classifier.classify(new IllegalStateException("Foo"))).isEqualTo(classifier.classify(null));
 	}
 
 }

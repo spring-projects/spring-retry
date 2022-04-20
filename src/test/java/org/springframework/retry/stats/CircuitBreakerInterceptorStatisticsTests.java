@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2015-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package org.springframework.retry.stats;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +29,8 @@ import org.springframework.retry.annotation.CircuitBreaker;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.support.RetrySynchronizationManager;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
@@ -47,7 +48,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 
 	private AnnotationConfigApplicationContext context;
 
-	@Before
+	@BeforeEach
 	public void init() {
 		context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		this.callback = context.getBean(Service.class);
@@ -55,7 +56,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		this.callback.setAttemptsBeforeSuccess(1);
 	}
 
-	@After
+	@AfterEach
 	public void close() {
 		if (context != null) {
 			context.close();
@@ -67,12 +68,13 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		Object result = callback.service("one");
 		RetryStatistics stats = repository.findOne("test");
 		// System.err.println(stats);
-		assertEquals(1, stats.getStartedCount());
-		assertEquals(RECOVERED, result);
+		assertThat(stats.getStartedCount()).isEqualTo(1);
+		assertThat(result).isEqualTo(RECOVERED);
 		result = callback.service("two");
-		assertEquals(RECOVERED, result);
-		assertEquals("There should be two recoveries", 2, stats.getRecoveryCount());
-		assertEquals("There should only be one error because the circuit is now open", 1, stats.getErrorCount());
+		assertThat(result).isEqualTo(RECOVERED);
+		assertThat(stats.getRecoveryCount()).describedAs("There should be two recoveries").isEqualTo(2);
+		assertThat(stats.getErrorCount()).describedAs("There should only be one error because the circuit is now open")
+				.isEqualTo(1);
 	}
 
 	@Configuration

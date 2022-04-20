@@ -15,25 +15,20 @@
  */
 package org.springframework.retry.policy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.springframework.retry.ExhaustedRetryException;
-import org.springframework.retry.RecoveryCallback;
+import org.junit.jupiter.api.Test;
+
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryState;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.support.DefaultRetryState;
 import org.springframework.retry.support.RetryTemplate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Dave Syer
@@ -53,34 +48,21 @@ public class StatefulRetryIntegrationTests {
 		retryTemplate.setRetryContextCache(cache);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
-		try {
-			retryTemplate.execute(callback, retryState);
-			// The first failed attempt we expect to retry...
-			fail("Expected RuntimeException");
-		}
-		catch (RuntimeException e) {
-			assertEquals(null, e.getMessage());
-		}
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
+				.withMessage(null);
 
-		assertTrue(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isTrue();
 
-		try {
-			retryTemplate.execute(callback, retryState);
-			// We don't get a second attempt...
-			fail("Expected ExhaustedRetryException");
-		}
-		catch (ExhaustedRetryException e) {
-			// This is now the "exhausted" message:
-			assertNotNull(e.getMessage());
-		}
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
+				.withMessageContaining("exhausted");
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
 		// Callback is called once: the recovery path should be called in
 		// handleRetryExhausted (so not in this test)...
-		assertEquals(1, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(1);
 	}
 
 	@Test
@@ -94,27 +76,21 @@ public class StatefulRetryIntegrationTests {
 		retryTemplate.setRetryContextCache(cache);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
 		Object result = "start_foo";
-		try {
-			result = retryTemplate.execute(callback, retryState);
-			// The first failed attempt we expect to retry...
-			fail("Expected RuntimeException");
-		}
-		catch (RuntimeException e) {
-			assertNull(e.getMessage());
-		}
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
+				.withMessage(null);
 
-		assertTrue(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isTrue();
 
 		result = retryTemplate.execute(callback, retryState);
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
-		assertEquals(2, callback.attempts);
-		assertEquals(1, callback.context.getRetryCount());
-		assertEquals("bar", result);
+		assertThat(callback.attempts).isEqualTo(2);
+		assertThat(callback.context.getRetryCount()).isEqualTo(1);
+		assertThat(result).isEqualTo("bar");
 	}
 
 	@Test
@@ -128,27 +104,21 @@ public class StatefulRetryIntegrationTests {
 		retryTemplate.setRetryContextCache(cache);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
 		Object result = "start_foo";
-		try {
-			result = retryTemplate.execute(callback, retryState);
-			// The first failed attempt we expect to retry...
-			fail("Expected RuntimeException");
-		}
-		catch (RuntimeException e) {
-			assertNull(e.getMessage());
-		}
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
+				.withMessage(null);
 
-		assertTrue(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isTrue();
 
 		result = retryTemplate.execute(callback, retryState);
 
-		assertFalse(cache.containsKey("foo"));
+		assertThat(cache.containsKey("foo")).isFalse();
 
-		assertEquals(2, callback.attempts);
-		assertEquals(1, callback.context.getRetryCount());
-		assertEquals("bar", result);
+		assertThat(callback.attempts).isEqualTo(2);
+		assertThat(callback.context.getRetryCount()).isEqualTo(1);
+		assertThat(result).isEqualTo("bar");
 	}
 
 	@Test
@@ -168,12 +138,12 @@ public class StatefulRetryIntegrationTests {
 				}, context -> null, retryState);
 			}
 			catch (Exception e) {
-				assertTrue(e.getMessage().equals("Fail"));
+				assertThat(e.getMessage().equals("Fail")).isTrue();
 			}
 		}
-		assertEquals(3, times.size());
-		assertTrue(times.get(1) - times.get(0) >= 100);
-		assertTrue(times.get(2) - times.get(1) >= 150);
+		assertThat(times).hasSize(3);
+		assertThat(times.get(1) - times.get(0) >= 100).isTrue();
+		assertThat(times.get(2) - times.get(1) >= 150).isTrue();
 	}
 
 	@Test
@@ -187,21 +157,15 @@ public class StatefulRetryIntegrationTests {
 		retryTemplate.setRetryContextCache(cache);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 
-		try {
-			retryTemplate.execute(callback, retryState);
-			// The first failed attempt...
-			fail("Expected RuntimeException");
-		}
-		catch (RuntimeException e) {
-			assertEquals(null, e.getMessage());
-		}
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
+				.withMessage(null);
 
 		retryTemplate.execute(callback, retryState);
 		// The second attempt is successful by design...
 
 		// Callback is called twice because its state is null: the recovery path should
 		// not be called...
-		assertEquals(2, callback.attempts);
+		assertThat(callback.attempts).isEqualTo(2);
 	}
 
 	/**
