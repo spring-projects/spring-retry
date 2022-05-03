@@ -17,6 +17,7 @@
 package org.springframework.retry.annotation;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetrySynchronizationManager;
+import org.springframework.retry.util.test.TestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -83,6 +85,38 @@ public class CircuitBreakerTests {
 		context.close();
 	}
 
+	@Test
+	void runtimeExpressions() throws Exception {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		Service service = context.getBean(Service.class);
+		assertThat(AopUtils.isAopProxy(service)).isTrue();
+		service.expressionService3();
+		assertThat(service.getCount()).isEqualTo(1);
+		Advised advised = (Advised) service;
+		Advisor advisor = advised.getAdvisors()[0];
+		Map<?, ?> delegates = (Map<?, ?>) new DirectFieldAccessor(advisor).getPropertyValue("advice.delegates");
+		assertThat(delegates).hasSize(1);
+		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
+		MethodInterceptor interceptor = (MethodInterceptor) methodMap
+				.get(Service.class.getDeclaredMethod("expressionService3"));
+		Supplier<?> maxAttempts = TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.delegate.maxAttemptsSupplier", Supplier.class);
+		assertThat(maxAttempts).isNotNull();
+		assertThat(maxAttempts.get()).isEqualTo(10);
+		CircuitBreakerRetryPolicy policy = TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy",
+				CircuitBreakerRetryPolicy.class);
+		Supplier openTO = TestUtils.getPropertyValue(policy, "openTimeoutSupplier", Supplier.class);
+		assertThat(openTO).isNotNull();
+		assertThat(openTO.get()).isEqualTo(10000L);
+		Supplier resetTO = TestUtils.getPropertyValue(policy, "resetTimeoutSupplier", Supplier.class);
+		assertThat(resetTO).isNotNull();
+		assertThat(resetTO.get()).isEqualTo(20000L);
+		RetryContext ctx = service.getContext();
+		assertThat(TestUtils.getPropertyValue(ctx, "openWindow")).isEqualTo(10000L);
+		assertThat(TestUtils.getPropertyValue(ctx, "timeout")).isEqualTo(20000L);
+		context.close();
+	}
+
 	@Configuration
 	@EnableRetry
 	protected static class TestConfiguration {
@@ -117,6 +151,8 @@ public class CircuitBreakerTests {
 
 		void expressionService2();
 
+		void expressionService3();
+
 		int getCount();
 
 		RetryContext getContext();
@@ -125,9 +161,9 @@ public class CircuitBreakerTests {
 
 	protected static class ServiceImpl implements Service {
 
-		private int count = 0;
+		int count = 0;
 
-		private RetryContext context;
+		RetryContext context;
 
 		@Override
 		@CircuitBreaker(RuntimeException.class)
@@ -150,6 +186,14 @@ public class CircuitBreakerTests {
 		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
 				resetTimeoutExpression = "@configs.resetTimeout")
 		public void expressionService2() {
+			this.count++;
+		}
+
+		@Override
+		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
+				resetTimeoutExpression = "@configs.resetTimeout", expressionEvaluation = Evaluation.RUNTIME)
+		public void expressionService3() {
+			this.context = RetrySynchronizationManager.getContext();
 			this.count++;
 		}
 

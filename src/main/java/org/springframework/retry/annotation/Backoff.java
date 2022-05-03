@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.retry.backoff.BackOffPolicy;
 
 /**
@@ -53,6 +54,7 @@ public @interface Backoff {
 	 * element is ignored, otherwise value of this element is taken.
 	 * @return the delay in milliseconds (default 1000)
 	 */
+	@AliasFor("delay")
 	long value() default 1000;
 
 	/**
@@ -60,9 +62,10 @@ public @interface Backoff {
 	 * as a minimum value in the uniform case. When the value of this element is 0, value
 	 * of element {@link #value()} is taken, otherwise value of this element is taken and
 	 * {@link #value()} is ignored.
-	 * @return the initial or canonical backoff period in milliseconds (default 0)
+	 * @return the initial or canonical backoff period in milliseconds (default 1000)
 	 */
-	long delay() default 0;
+	@AliasFor("value")
+	long delay() default 1000;
 
 	/**
 	 * The maximum wait (in milliseconds) between retries. If less than the
@@ -124,5 +127,15 @@ public @interface Backoff {
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	String randomExpression() default "";
+
+	/**
+	 * Determine when expressions in this annotation should be evaluated. Default
+	 * {@link Evaluation#INITIALIZATION}. A side effect of setting this to
+	 * {@link Evaluation#RUNTIME} is the backoff context will not be serializable, so
+	 * can't be used in a distributed cache that requires serialization.
+	 * @return the evaluation point.
+	 * @since 2.0
+	 */
+	Evaluation expressionEvaluation() default Evaluation.INITIALIZATION;
 
 }

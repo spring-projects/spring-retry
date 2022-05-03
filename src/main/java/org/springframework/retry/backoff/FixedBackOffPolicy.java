@@ -16,6 +16,10 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.function.Supplier;
+
+import org.springframework.util.Assert;
+
 /**
  * Implementation of {@link BackOffPolicy} that pauses for a fixed period of time before
  * continuing. A pause is implemented using {@link Sleeper#sleep(long)}.
@@ -38,7 +42,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	/**
 	 * The back off period in milliseconds. Defaults to 1000ms.
 	 */
-	private volatile long backOffPeriod = DEFAULT_BACK_OFF_PERIOD;
+	private Supplier<Long> backOffPeriod = () -> DEFAULT_BACK_OFF_PERIOD;
 
 	private Sleeper sleeper = new ThreadWaitSleeper();
 
@@ -62,7 +66,18 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * @param backOffPeriod the back off period
 	 */
 	public void setBackOffPeriod(long backOffPeriod) {
-		this.backOffPeriod = (backOffPeriod > 0 ? backOffPeriod : 1);
+		this.backOffPeriod = () -> (backOffPeriod > 0 ? backOffPeriod : 1);
+	}
+
+	/**
+	 * Set a supplier for the back off period in milliseconds. Cannot be &lt; 1. Default
+	 * supplier supplies 1000ms.
+	 * @param backOffPeriodSupplier the back off period
+	 * @since 2.0
+	 */
+	public void setBackOffPeriod(Supplier<Long> backOffPeriodSupplier) {
+		Assert.notNull(backOffPeriodSupplier, "'backOffPeriodSupplier' cannot be null");
+		this.backOffPeriod = backOffPeriodSupplier;
 	}
 
 	/**
@@ -70,7 +85,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * @return the backoff period
 	 */
 	public long getBackOffPeriod() {
-		return backOffPeriod;
+		return this.backOffPeriod.get();
 	}
 
 	/**
@@ -79,7 +94,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 */
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
-			sleeper.sleep(backOffPeriod);
+			sleeper.sleep(this.backOffPeriod.get());
 		}
 		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
@@ -87,7 +102,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	}
 
 	public String toString() {
-		return "FixedBackOffPolicy[backOffPeriod=" + backOffPeriod + "]";
+		return "FixedBackOffPolicy[backOffPeriod=" + this.backOffPeriod.get() + "]";
 	}
 
 }

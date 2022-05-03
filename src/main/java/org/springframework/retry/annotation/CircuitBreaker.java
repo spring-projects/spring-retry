@@ -133,4 +133,14 @@ public @interface CircuitBreaker {
 	 */
 	String exceptionExpression() default "";
 
+	/**
+	 * Determine when expressions in this annotation should be evaluated. Default
+	 * {@link Evaluation#INITIALIZATION}. A side effect of setting this to
+	 * {@link Evaluation#RUNTIME} is the retry policy will not be serializable, so can't
+	 * be used in a distributed cache that requires serialization.
+	 * @return the evaluation point.
+	 * @since 2.0
+	 */
+	Evaluation expressionEvaluation() default Evaluation.INITIALIZATION;
+
 }

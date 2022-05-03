@@ -45,8 +45,13 @@ import org.springframework.retry.support.RetryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Dave Syer
@@ -81,6 +86,11 @@ public class EnableRetryTests {
 		assertThat(service.getCount()).isEqualTo(3);
 		service.other();
 		assertThat(service.getCount()).isEqualTo(4);
+		setMaxStackTraceElementsDisplayed(100);
+		assertThatIllegalArgumentException().isThrownBy(() -> service.conditional("foo"));
+		assertThat(service.getCount()).isEqualTo(7);
+		assertThatIllegalArgumentException().isThrownBy(() -> service.conditional("bar"));
+		assertThat(service.getCount()).isEqualTo(8);
 		context.close();
 	}
 
@@ -234,6 +244,38 @@ public class EnableRetryTests {
 		assertThat(service.getCount()).isEqualTo(11);
 		service.service5();
 		assertThat(service.getCount()).isEqualTo(12);
+		context.close();
+	}
+
+	@Test
+	void runtimeExpressions() throws Exception {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+		ExpressionService service = context.getBean(ExpressionService.class);
+		service.service6();
+		RuntimeConfigs runtime = context.getBean(RuntimeConfigs.class);
+		verify(runtime, times(5)).getMaxAttempts();
+		verify(runtime, times(2)).getInitial();
+		verify(runtime, times(2)).getMax();
+		verify(runtime, times(2)).getMult();
+
+		RetryConfiguration config = context.getBean(RetryConfiguration.class);
+		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
+				config).getPropertyValue("advice");
+		@SuppressWarnings("unchecked")
+		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
+				advice).getPropertyValue("delegates");
+		MethodInterceptor interceptor = delegates.get(target(service))
+				.get(ExpressionService.class.getDeclaredMethod("service6"));
+		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
+				.getPropertyValue("retryOperations");
+		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
+		ExponentialBackOffPolicy backOff = (ExponentialBackOffPolicy) templateAccessor
+				.getPropertyValue("backOffPolicy");
+		assertThat(backOff.getInitialInterval()).isEqualTo(1000);
+		assertThat(backOff.getMaxInterval()).isEqualTo(2000);
+		assertThat(backOff.getMultiplier()).isEqualTo(1.2);
+		SimpleRetryPolicy retryPolicy = (SimpleRetryPolicy) templateAccessor.getPropertyValue("retryPolicy");
+		assertThat(retryPolicy.getMaxAttempts()).isEqualTo(3);
 		context.close();
 	}
 
@@ -452,6 +494,37 @@ public class EnableRetryTests {
 			return new RetryableImplementation();
 		}
 
+		@Bean
+		RuntimeConfigs runtimeConfigs() {
+			return spy(new RuntimeConfigs());
+		}
+
+	}
+
+	public static class RuntimeConfigs {
+
+		int count = 0;
+
+		public int getMaxAttempts() {
+			count++;
+			return 3;
+		}
+
+		public long getInitial() {
+			count++;
+			return 1000;
+		}
+
+		public long getMax() {
+			count++;
+			return 2000;
+		}
+
+		public double getMult() {
+			count++;
+			return 1.2;
+		}
+
 	}
 
 	protected static class Service {
@@ -487,6 +560,12 @@ public class EnableRetryTests {
 			if (this.count++ < 3) {
 				throw new RuntimeException("Other");
 			}
+		}
+
+		@Retryable(maxAttemptsExpression = "args[0] == 'foo' ? 3 : 1", expressionEvaluation = Evaluation.RUNTIME)
+		public void conditional(String string) {
+			this.count++;
+			throw new IllegalArgumentException("conditional");
 		}
 
 		public int getCount() {
@@ -660,6 +739,16 @@ public class EnableRetryTests {
 		public void service5() {
 			if (this.count++ < 11) {
 				throw new RuntimeException("this can be retried");
+			}
+		}
+
+		@Retryable(maxAttemptsExpression = "@runtimeConfigs.maxAttempts", expressionEvaluation = Evaluation.RUNTIME,
+				backoff = @Backoff(delayExpression = "@runtimeConfigs.initial",
+						maxDelayExpression = "@runtimeConfigs.max", multiplierExpression = "@runtimeConfigs.mult",
+						expressionEvaluation = Evaluation.RUNTIME))
+		public void service6() {
+			if (this.count++ < 2) {
+				throw new RuntimeException("retry");
 			}
 		}
 
