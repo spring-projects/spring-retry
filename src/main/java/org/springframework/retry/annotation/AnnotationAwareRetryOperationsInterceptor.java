@@ -215,8 +215,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
 		RetryTemplate template = createTemplate(retryable.listeners());
-		template.setRetryPolicy(getRetryPolicy(retryable));
-		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
+		template.setRetryPolicy(getRetryPolicy(retryable, true));
+		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff(), true));
 		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
 				.recoverer(getRecoverer(target, method)).build();
 	}
@@ -230,7 +230,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			circuit = findAnnotationOnTarget(target, method, CircuitBreaker.class);
 		}
 		if (circuit != null) {
-			RetryPolicy policy = getRetryPolicy(circuit);
+			RetryPolicy policy = getRetryPolicy(circuit, false);
 			CircuitBreakerRetryPolicy breaker = new CircuitBreakerRetryPolicy(policy);
 			openTimeout(breaker, circuit);
 			resetTimeout(breaker, circuit);
@@ -243,9 +243,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			return RetryInterceptorBuilder.circuitBreaker().keyGenerator(new FixedKeyGenerator("circuit"))
 					.retryOperations(template).recoverer(getRecoverer(target, method)).label(label).build();
 		}
-		RetryPolicy policy = getRetryPolicy(retryable);
+		RetryPolicy policy = getRetryPolicy(retryable, false);
 		template.setRetryPolicy(policy);
-		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff()));
+		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff(), false));
 		String label = retryable.label();
 		return RetryInterceptorBuilder.stateful().keyGenerator(this.methodArgumentsKeyGenerator)
 				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier).retryOperations(template).label(label)
@@ -264,7 +264,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.setOpenTimeout(() -> evaluate(parsed, Long.class));
+				breaker.setOpenTimeout(() -> evaluate(parsed, Long.class, false));
 				return;
 			}
 		}
@@ -283,7 +283,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.setResetTimeout(() -> evaluate(parsed, Long.class));
+				breaker.setResetTimeout(() -> evaluate(parsed, Long.class, false));
 			}
 		}
 		breaker.setResetTimeout(circuit.resetTimeout());
@@ -325,7 +325,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		return new RecoverAnnotationRecoveryHandler<>(target, method);
 	}
 
-	private RetryPolicy getRetryPolicy(Annotation retryable) {
+	private RetryPolicy getRetryPolicy(Annotation retryable, boolean stateless) {
 		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(retryable);
 		@SuppressWarnings("unchecked")
 		Class<? extends Throwable>[] includes = (Class<? extends Throwable>[]) attrs.get("value");
@@ -354,7 +354,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
 			if (expression != null) {
-				simple.setMaxAttempts(() -> evaluate(expression, Integer.class));
+				simple.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
 			}
 			else {
 				simple.setMaxAttempts(maxAttempts);
@@ -376,13 +376,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		else {
 			SimpleRetryPolicy policy = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
 			if (expression != null) {
-				policy.setMaxAttempts(() -> evaluate(expression, Integer.class));
+				policy.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
 			}
 			return policy;
 		}
 	}
 
-	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
+	private BackOffPolicy getBackoffPolicy(Backoff backoff, boolean stateless) {
 		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(backoff);
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
 		String delayExpression = (String) attrs.get("delayExpression");
@@ -427,33 +427,34 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 		}
-		return buildBackOff(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp, isRandom, parsedRandomExp);
+		return buildBackOff(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp, isRandom, parsedRandomExp,
+				stateless);
 	}
 
 	private BackOffPolicy buildBackOff(long min, Expression minExp, long max, Expression maxExp, double multiplier,
-			Expression multExp, boolean isRandom, Expression randomExp) {
+			Expression multExp, boolean isRandom, Expression randomExp, boolean stateless) {
 
 		BackOffPolicyBuilder builder = BackOffPolicyBuilder.newBuilder();
 		if (minExp != null) {
-			builder.delaySupplier(() -> evaluate(minExp, Long.class));
+			builder.delaySupplier(() -> evaluate(minExp, Long.class, stateless));
 		}
 		else {
 			builder.delay(min);
 		}
 		if (maxExp != null) {
-			builder.maxDelaySupplier(() -> evaluate(maxExp, Long.class));
+			builder.maxDelaySupplier(() -> evaluate(maxExp, Long.class, stateless));
 		}
 		else {
 			builder.maxDelay(max);
 		}
 		if (multExp != null) {
-			builder.multiplierSupplier(() -> evaluate(multExp, Double.class));
+			builder.multiplierSupplier(() -> evaluate(multExp, Double.class, stateless));
 		}
 		else {
 			builder.multiplier(multiplier);
 		}
 		if (randomExp != null) {
-			builder.randomSupplier(() -> evaluate(randomExp, Boolean.class));
+			builder.randomSupplier(() -> evaluate(randomExp, Boolean.class, stateless));
 		}
 		else {
 			builder.random(isRandom);
@@ -476,14 +477,16 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				&& expression.contains(PARSER_CONTEXT.getExpressionSuffix());
 	}
 
-	private <T> T evaluate(Expression expression, Class<T> type) {
-		RetryContext context = RetrySynchronizationManager.getContext();
+	private <T> T evaluate(Expression expression, Class<T> type, boolean stateless) {
 		Args args = null;
-		if (context != null) {
-			args = (Args) context.getAttribute("ARGS");
-		}
-		if (args == null) {
-			args = Args.NO_ARGS;
+		if (stateless) {
+			RetryContext context = RetrySynchronizationManager.getContext();
+			if (context != null) {
+				args = (Args) context.getAttribute("ARGS");
+			}
+			if (args == null) {
+				args = Args.NO_ARGS;
+			}
 		}
 		return expression.getValue(this.evaluationContext, args, type);
 	}
