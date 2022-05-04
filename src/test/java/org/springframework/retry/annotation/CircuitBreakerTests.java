@@ -183,15 +183,15 @@ public class CircuitBreakerTests {
 		}
 
 		@Override
-		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
-				resetTimeoutExpression = "@configs.resetTimeout")
+		@CircuitBreaker(maxAttemptsExpression = "#{@configs.maxAttempts}",
+				openTimeoutExpression = "#{@configs.openTimeout}", resetTimeoutExpression = "#{@configs.resetTimeout}")
 		public void expressionService2() {
 			this.count++;
 		}
 
 		@Override
 		@CircuitBreaker(maxAttemptsExpression = "@configs.maxAttempts", openTimeoutExpression = "@configs.openTimeout",
-				resetTimeoutExpression = "@configs.resetTimeout", expressionEvaluation = Evaluation.RUNTIME)
+				resetTimeoutExpression = "@configs.resetTimeout")
 		public void expressionService3() {
 			this.context = RetrySynchronizationManager.getContext();
 			this.count++;

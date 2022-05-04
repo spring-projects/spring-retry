@@ -588,7 +588,33 @@ Expressions can contain property placeholders, such as `#{${max.delay}}` or
 - `exceptionExpression` is evaluated against the thrown exception as the `#root` object.
 - `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once,
 during initialization. There is no root object for the evaluation but they can reference
-other beans in the context.
+other beans in the context
+
+Starting with version 2.0, expressions in `@Retryable`, `@CircuitBreaker`, and `BackOff` can be evaluated once, during application initialization, or at runtime.
+With earlier versions, evaluation was always performed during initialization (except for `Retryable.exceptionExpression` which is always evaluated at runtime).
+When evaluating at runtime, a root object containing the method arguments is passed to the evaluation context.
+
+**Note:** The arguments are not available until the method has been called at least once; they will be null initially, which means, for example, you can't set the initial `maxAttempts` using an argument value, you can, however, change the `maxAttempts` after the first failure and before any retries are performed.
+
+##### Examples
+
+```java
+@Retryable(maxAttemptsExpression = "@runtimeConfigs.maxAttempts",
+        backoff = @Backoff(delayExpression = "@runtimeConfigs.initial",
+                maxDelayExpression = "@runtimeConfigs.max", multiplierExpression = "@runtimeConfigs.mult"))
+public void service() {
+    ...
+}
+```
+
+Where `runtimeConfigs` is a bean with those properties.
+
+```java
+@Retryable(maxAttemptsExpression = "args[0] == 'foo' ? 3 : 1")
+public void conditional(String string) {
+    ...
+}
+```
 
 #### <a name="Additional_Dependencies"></a> Additional Dependencies
 

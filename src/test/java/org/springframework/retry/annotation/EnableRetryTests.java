@@ -562,7 +562,7 @@ public class EnableRetryTests {
 			}
 		}
 
-		@Retryable(maxAttemptsExpression = "args[0] == 'foo' ? 3 : 1", expressionEvaluation = Evaluation.RUNTIME)
+		@Retryable(maxAttemptsExpression = "args[0] == 'foo' ? 3 : 1")
 		public void conditional(String string) {
 			this.count++;
 			throw new IllegalArgumentException("conditional");
@@ -742,10 +742,9 @@ public class EnableRetryTests {
 			}
 		}
 
-		@Retryable(maxAttemptsExpression = "@runtimeConfigs.maxAttempts", expressionEvaluation = Evaluation.RUNTIME,
+		@Retryable(maxAttemptsExpression = "@runtimeConfigs.maxAttempts",
 				backoff = @Backoff(delayExpression = "@runtimeConfigs.initial",
-						maxDelayExpression = "@runtimeConfigs.max", multiplierExpression = "@runtimeConfigs.mult",
-						expressionEvaluation = Evaluation.RUNTIME))
+						maxDelayExpression = "@runtimeConfigs.max", multiplierExpression = "@runtimeConfigs.mult"))
 		public void service6() {
 			if (this.count++ < 2) {
 				throw new RuntimeException("retry");

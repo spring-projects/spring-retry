@@ -86,7 +86,8 @@ public @interface Backoff {
 	/**
 	 * An expression evaluating to the canonical backoff period. Used as an initial value
 	 * in the exponential case, and as a minimum value in the uniform case. Overrides
-	 * {@link #delay()}.
+	 * {@link #delay()}. Use {@code #{...}} for one-time evaluation during initialization,
+	 * omit the delimiters for evaluation at runtime.
 	 * @return the initial or canonical backoff period in milliseconds.
 	 * @since 1.2
 	 */
@@ -96,7 +97,8 @@ public @interface Backoff {
 	 * An expression evaluating to the maximum wait (in milliseconds) between retries. If
 	 * less than the {@link #delay()} then the default of
 	 * {@value org.springframework.retry.backoff.ExponentialBackOffPolicy#DEFAULT_MAX_INTERVAL}
-	 * is applied. Overrides {@link #maxDelay()}
+	 * is applied. Overrides {@link #maxDelay()}. Use {@code #{...}} for one-time
+	 * evaluation during initialization, omit the delimiters for evaluation at runtime.
 	 * @return the maximum delay between retries (default 0 = ignored)
 	 * @since 1.2
 	 */
@@ -104,7 +106,8 @@ public @interface Backoff {
 
 	/**
 	 * Evaluates to a value used as a multiplier for generating the next delay for
-	 * backoff. Overrides {@link #multiplier()}.
+	 * backoff. Overrides {@link #multiplier()}. Use {@code #{...}} for one-time
+	 * evaluation during initialization, omit the delimiters for evaluation at runtime.
 	 * @return a multiplier expression to use to calculate the next backoff delay (default
 	 * 0 = ignored)
 	 * @since 1.2
@@ -123,19 +126,10 @@ public @interface Backoff {
 	 * Evaluates to a value. In the exponential case ({@link #multiplier()} &gt; 0) set
 	 * this to true to have the backoff delays randomized, so that the maximum delay is
 	 * multiplier times the previous delay and the distribution is uniform between the two
-	 * values.
+	 * values. Use {@code #{...}} for one-time evaluation during initialization, omit the
+	 * delimiters for evaluation at runtime.
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	String randomExpression() default "";
-
-	/**
-	 * Determine when expressions in this annotation should be evaluated. Default
-	 * {@link Evaluation#INITIALIZATION}. A side effect of setting this to
-	 * {@link Evaluation#RUNTIME} is the backoff context will not be serializable, so
-	 * can't be used in a distributed cache that requires serialization.
-	 * @return the evaluation point.
-	 * @since 2.0
-	 */
-	Evaluation expressionEvaluation() default Evaluation.INITIALIZATION;
 
 }

@@ -253,9 +253,10 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private void openTimeout(CircuitBreakerRetryPolicy breaker, CircuitBreaker circuit) {
-		if (StringUtils.hasText(circuit.openTimeoutExpression())) {
-			Expression parsed = parse(circuit.openTimeoutExpression());
-			if (Evaluation.INITIALIZATION.equals(circuit.expressionEvaluation())) {
+		String expression = circuit.openTimeoutExpression();
+		if (StringUtils.hasText(expression)) {
+			Expression parsed = parse(expression);
+			if (isTemplate(expression)) {
 				Long value = parsed.getValue(this.evaluationContext, Long.class);
 				if (value != null) {
 					breaker.setOpenTimeout(value);
@@ -271,9 +272,10 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private void resetTimeout(CircuitBreakerRetryPolicy breaker, CircuitBreaker circuit) {
-		if (StringUtils.hasText(circuit.resetTimeoutExpression())) {
-			Expression parsed = parse(circuit.resetTimeoutExpression());
-			if (Evaluation.INITIALIZATION.equals(circuit.expressionEvaluation())) {
+		String expression = circuit.resetTimeoutExpression();
+		if (StringUtils.hasText(expression)) {
+			Expression parsed = parse(expression);
+			if (isTemplate(expression)) {
 				Long value = parsed.getValue(this.evaluationContext, Long.class);
 				if (value != null) {
 					breaker.setResetTimeout(value);
@@ -341,8 +343,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Expression parsedExpression = null;
 		if (StringUtils.hasText(maxAttemptsExpression)) {
 			parsedExpression = parse(maxAttemptsExpression);
-			if (Evaluation.INITIALIZATION.equals(attrs.get("expressionEvaluation"))) {
+			if (isTemplate(maxAttemptsExpression)) {
 				maxAttempts = parsedExpression.getValue(this.evaluationContext, Integer.class);
+				parsedExpression = null;
 			}
 		}
 		final Expression expression = parsedExpression;
@@ -350,7 +353,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			SimpleRetryPolicy simple = hasExpression
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
-			if (Evaluation.RUNTIME.equals(attrs.get("expressionEvaluation"))) {
+			if (expression != null) {
 				simple.setMaxAttempts(() -> evaluate(expression, Integer.class));
 			}
 			else {
@@ -372,7 +375,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 		else {
 			SimpleRetryPolicy policy = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
-			if (Evaluation.RUNTIME.equals(attrs.get("expressionEvaluation"))) {
+			if (expression != null) {
 				policy.setMaxAttempts(() -> evaluate(expression, Integer.class));
 			}
 			return policy;
@@ -382,13 +385,13 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	private BackOffPolicy getBackoffPolicy(Backoff backoff) {
 		Map<String, Object> attrs = AnnotationUtils.getAnnotationAttributes(backoff);
 		long min = backoff.delay() == 0 ? backoff.value() : backoff.delay();
-		boolean evalInit = Evaluation.INITIALIZATION.equals(attrs.get("expressionEvaluation"));
 		String delayExpression = (String) attrs.get("delayExpression");
 		Expression parsedMinExp = null;
 		if (StringUtils.hasText(delayExpression)) {
 			parsedMinExp = parse(delayExpression);
-			if (evalInit) {
+			if (isTemplate(delayExpression)) {
 				min = parsedMinExp.getValue(this.evaluationContext, Long.class);
+				parsedMinExp = null;
 			}
 		}
 		long max = backoff.maxDelay();
@@ -396,8 +399,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Expression parsedMaxExp = null;
 		if (StringUtils.hasText(maxDelayExpression)) {
 			parsedMaxExp = parse(maxDelayExpression);
-			if (evalInit) {
+			if (isTemplate(maxDelayExpression)) {
 				max = parsedMaxExp.getValue(this.evaluationContext, Long.class);
+				parsedMaxExp = null;
 			}
 		}
 		double multiplier = backoff.multiplier();
@@ -405,8 +409,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		Expression parsedMultExp = null;
 		if (StringUtils.hasText(multiplierExpression)) {
 			parsedMultExp = parse(multiplierExpression);
-			if (evalInit) {
+			if (isTemplate(multiplierExpression)) {
 				multiplier = parsedMultExp.getValue(this.evaluationContext, Double.class);
+				parsedMultExp = null;
 			}
 		}
 		boolean isRandom = false;
@@ -416,54 +421,44 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			isRandom = backoff.random();
 			if (StringUtils.hasText(randomExpression)) {
 				parsedRandomExp = parse(randomExpression);
-				if (evalInit) {
+				if (isTemplate(randomExpression)) {
 					isRandom = parsedRandomExp.getValue(this.evaluationContext, Boolean.class);
+					parsedRandomExp = null;
 				}
 			}
 		}
-		if (!evalInit) {
-			return buildWithRuntimeExpressions(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp,
-					isRandom, parsedRandomExp);
-		}
-		else {
-			return BackOffPolicyBuilder.newBuilder().delay(min).maxDelay(max).multiplier(multiplier).random(isRandom)
-					.sleeper(this.sleeper).build();
-		}
+		return buildBackOff(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp, isRandom, parsedRandomExp);
 	}
 
-	private BackOffPolicy buildWithRuntimeExpressions(long min, Expression parsedMinExp, long max,
-			Expression parsedMaxExp, double multiplier, Expression parsedMultExp, boolean isRandom,
-			Expression parsedRandomExp) {
+	private BackOffPolicy buildBackOff(long min, Expression minExp, long max, Expression maxExp, double multiplier,
+			Expression multExp, boolean isRandom, Expression randomExp) {
 
 		BackOffPolicyBuilder builder = BackOffPolicyBuilder.newBuilder();
-		if (parsedMinExp != null) {
-			Expression expression = parsedMinExp;
-			builder.delaySupplier(() -> evaluate(expression, Long.class));
+		if (minExp != null) {
+			builder.delaySupplier(() -> evaluate(minExp, Long.class));
 		}
 		else {
 			builder.delay(min);
 		}
-		if (parsedMaxExp != null) {
-			Expression expression = parsedMaxExp;
-			builder.maxDelaySupplier(() -> evaluate(expression, Long.class));
+		if (maxExp != null) {
+			builder.maxDelaySupplier(() -> evaluate(maxExp, Long.class));
 		}
 		else {
 			builder.maxDelay(max);
 		}
-		if (parsedMultExp != null) {
-			Expression expression = parsedMultExp;
-			builder.multiplierSupplier(() -> evaluate(expression, Double.class));
+		if (multExp != null) {
+			builder.multiplierSupplier(() -> evaluate(multExp, Double.class));
 		}
 		else {
 			builder.multiplier(multiplier);
 		}
-		if (parsedRandomExp != null) {
-			Expression expression = parsedRandomExp;
-			builder.randomSupplier(() -> evaluate(expression, Boolean.class));
+		if (randomExp != null) {
+			builder.randomSupplier(() -> evaluate(randomExp, Boolean.class));
 		}
 		else {
 			builder.random(isRandom);
 		}
+		builder.sleeper(this.sleeper);
 		return builder.build();
 	}
 
