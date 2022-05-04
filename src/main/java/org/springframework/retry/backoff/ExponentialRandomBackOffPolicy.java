@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2012 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package org.springframework.retry.backoff;
 
-import org.springframework.retry.RetryContext;
-
 import java.util.Random;
+import java.util.function.Supplier;
+
+import org.springframework.retry.RetryContext;
 
 /**
  * Implementation of {@link org.springframework.retry.backoff.ExponentialBackOffPolicy}
@@ -52,7 +53,8 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 	 * seeded with this policies settings.
 	 */
 	public BackOffContext start(RetryContext context) {
-		return new ExponentialRandomBackOffContext(getInitialInterval(), getMultiplier(), getMaxInterval());
+		return new ExponentialRandomBackOffContext(getInitialInterval(), getMultiplier(), getMaxInterval(),
+				getInitialIntervalSupplier(), getMultiplierSupplier(), getMaxIntervalSupplier());
 	}
 
 	protected ExponentialBackOffPolicy newInstance() {
@@ -63,8 +65,11 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 
 		private final Random r = new Random();
 
-		public ExponentialRandomBackOffContext(long expSeed, double multiplier, long maxInterval) {
-			super(expSeed, multiplier, maxInterval);
+		public ExponentialRandomBackOffContext(long expSeed, double multiplier, long maxInterval,
+				Supplier<Long> expSeedSupplier, Supplier<Double> multiplierSupplier,
+				Supplier<Long> maxIntervalSupplier) {
+
+			super(expSeed, multiplier, maxInterval, expSeedSupplier, multiplierSupplier, maxIntervalSupplier);
 		}
 
 		@Override

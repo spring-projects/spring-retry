@@ -17,6 +17,7 @@
 package org.springframework.retry.policy;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,10 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 	private long openTimeout = 5000;
 
+	private Supplier<Long> resetTimeoutSupplier;
+
+	private Supplier<Long> openTimeoutSupplier;
+
 	public CircuitBreakerRetryPolicy() {
 		this(new SimpleRetryPolicy());
 	}
@@ -62,6 +67,17 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	}
 
 	/**
+	 * A supplier for the timeout for resetting circuit in milliseconds. After the circuit
+	 * opens it will re-close after this time has elapsed and the context will be
+	 * restarted.
+	 * @param timeoutSupplier a supplier for the timeout to set in milliseconds
+	 * @since 2.0
+	 */
+	public void setResetTimeout(Supplier<Long> timeoutSupplier) {
+		this.resetTimeoutSupplier = timeoutSupplier;
+	}
+
+	/**
 	 * Timeout for tripping the open circuit. If the delegate policy cannot retry and the
 	 * time elapsed since the context was started is less than this window, then the
 	 * circuit is opened.
@@ -69,6 +85,17 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	 */
 	public void setOpenTimeout(long timeout) {
 		this.openTimeout = timeout;
+	}
+
+	/**
+	 * A supplier for the Timeout for tripping the open circuit. If the delegate policy
+	 * cannot retry and the time elapsed since the context was started is less than this
+	 * window, then the circuit is opened.
+	 * @param timeoutSupplier a supplier for the timeout to set in milliseconds
+	 * @since 2.0
+	 */
+	public void setOpenTimeout(Supplier<Long> timeoutSupplier) {
+		this.openTimeoutSupplier = timeoutSupplier;
 	}
 
 	@Override
@@ -86,7 +113,15 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 
 	@Override
 	public RetryContext open(RetryContext parent) {
-		return new CircuitBreakerRetryContext(parent, this.delegate, this.resetTimeout, this.openTimeout);
+		long resetTimeout = this.resetTimeout;
+		if (this.resetTimeoutSupplier != null) {
+			resetTimeout = this.resetTimeoutSupplier.get();
+		}
+		long openTimeout = this.openTimeout;
+		if (this.resetTimeoutSupplier != null) {
+			openTimeout = this.openTimeoutSupplier.get();
+		}
+		return new CircuitBreakerRetryContext(parent, this.delegate, resetTimeout, openTimeout);
 	}
 
 	@Override

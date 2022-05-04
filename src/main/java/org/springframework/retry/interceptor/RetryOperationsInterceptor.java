@@ -26,6 +26,7 @@ import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
+import org.springframework.retry.support.Args;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
@@ -87,6 +88,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			public Object doWithRetry(RetryContext context) throws Exception {
 
 				context.setAttribute(RetryContext.NAME, this.label);
+				context.setAttribute("ARGS", new Args(invocation.getArguments()));
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to

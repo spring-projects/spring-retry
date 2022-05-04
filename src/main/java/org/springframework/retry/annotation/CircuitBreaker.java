@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2018 the original author or authors.
+ * Copyright 2016-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,9 @@ public @interface CircuitBreaker {
 
 	/**
 	 * @return an expression evaluated to the maximum number of attempts (including the
-	 * first failure), defaults to 3 Overrides {@link #maxAttempts()}.
+	 * first failure), defaults to 3 Overrides {@link #maxAttempts()}. Use {@code #{...}}
+	 * for one-time evaluation during initialization, omit the delimiters for evaluation
+	 * at runtime.
 	 * @since 1.2.3
 	 */
 	String maxAttemptsExpression() default "";
@@ -89,7 +91,8 @@ public @interface CircuitBreaker {
 	/**
 	 * If the circuit is open for longer than this timeout then it resets on the next call
 	 * to give the downstream component a chance to respond again. Overrides
-	 * {@link #resetTimeout()}.
+	 * {@link #resetTimeout()}. Use {@code #{...}} for one-time evaluation during
+	 * initialization, omit the delimiters for evaluation at runtime.
 	 * @return the timeout before an open circuit is reset in milliseconds, no default.
 	 * @since 1.2.3
 	 */
@@ -106,7 +109,8 @@ public @interface CircuitBreaker {
 	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component. Overrides
-	 * {@link #openTimeout()}.
+	 * {@link #openTimeout()}. Use {@code #{...}} for one-time evaluation during
+	 * initialization, omit the delimiters for evaluation at runtime.
 	 * @return the timeout before an closed circuit is opened in milliseconds, no default.
 	 * @since 1.2.3
 	 */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,9 @@ public @interface Retryable {
 
 	/**
 	 * @return an expression evaluated to the maximum number of attempts (including the
-	 * first failure), defaults to 3 Overrides {@link #maxAttempts()}.
+	 * first failure), defaults to 3 Overrides {@link #maxAttempts()}. Use {@code #{...}}
+	 * for one-time evaluation during initialization, omit the delimiters for evaluation
+	 * at runtime.
 	 * @since 1.2
 	 */
 	String maxAttemptsExpression() default "";

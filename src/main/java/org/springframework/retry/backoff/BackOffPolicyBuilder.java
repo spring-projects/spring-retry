@@ -16,6 +16,8 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.function.Supplier;
+
 /**
  * Fluent API for creating a {@link BackOffPolicy} based on given attributes. The delay
  * values are expressed in milliseconds. If any provided value is less than one, the
@@ -72,15 +74,23 @@ public class BackOffPolicyBuilder {
 
 	private static final long DEFAULT_INITIAL_DELAY = 1000L;
 
-	private long delay = DEFAULT_INITIAL_DELAY;
+	private Long delay = DEFAULT_INITIAL_DELAY;
 
-	private long maxDelay;
+	private Long maxDelay;
 
-	private double multiplier;
+	private Double multiplier;
 
-	private boolean random;
+	private Boolean random;
 
 	private Sleeper sleeper;
+
+	private Supplier<Long> delaySupplier;
+
+	private Supplier<Long> maxDelaySupplier;
+
+	private Supplier<Double> multiplierSupplier;
+
+	private Supplier<Boolean> randomSupplier;
 
 	private BackOffPolicyBuilder() {
 	}
@@ -157,35 +167,109 @@ public class BackOffPolicyBuilder {
 	}
 
 	/**
+	 * Set a supplier for the delay.
+	 * @param delaySupplier the supplier.
+	 * @return this
+	 * @since 2.0
+	 */
+	public BackOffPolicyBuilder delaySupplier(Supplier<Long> delaySupplier) {
+		this.delaySupplier = delaySupplier;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the max delay.
+	 * @param maxDelaySupplier the supplier.
+	 * @return this
+	 * @since 2.0
+	 */
+	public BackOffPolicyBuilder maxDelaySupplier(Supplier<Long> maxDelaySupplier) {
+		this.maxDelaySupplier = maxDelaySupplier;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the multiplier.
+	 * @param multiplierSupplier the supplier.
+	 * @return this
+	 * @since 2.0
+	 */
+	public BackOffPolicyBuilder multiplierSupplier(Supplier<Double> multiplierSupplier) {
+		this.multiplierSupplier = multiplierSupplier;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the random.
+	 * @param randomSupplier the supplier.
+	 * @return this
+	 * @since 2.0
+	 */
+	public BackOffPolicyBuilder randomSupplier(Supplier<Boolean> randomSupplier) {
+		this.randomSupplier = randomSupplier;
+		return this;
+	}
+
+	/**
 	 * Builds the {@link BackOffPolicy} with the given parameters.
 	 * @return the {@link BackOffPolicy} instance
 	 */
 	public BackOffPolicy build() {
-		if (this.multiplier > 0) {
-			ExponentialBackOffPolicy policy = new ExponentialBackOffPolicy();
-			if (this.random) {
+		if (this.multiplier != null && this.multiplier > 0 || this.multiplierSupplier != null) {
+			ExponentialBackOffPolicy policy;
+			if (Boolean.TRUE.equals(this.random)) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
-			policy.setInitialInterval(this.delay);
-			policy.setMultiplier(this.multiplier);
-			policy.setMaxInterval(
-					this.maxDelay > this.delay ? this.maxDelay : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
+			else {
+				policy = new ExponentialBackOffPolicy();
+			}
+			if (this.delay != null) {
+				policy.setInitialInterval(this.delay);
+			}
+			if (this.delaySupplier != null) {
+				policy.setInitialInterval(this.delaySupplier);
+			}
+			if (this.multiplier != null) {
+				policy.setMultiplier(this.multiplier);
+			}
+			if (this.multiplierSupplier != null) {
+				policy.setMultiplier(this.multiplierSupplier);
+			}
+			if (this.maxDelay != null && this.delay != null) {
+				policy.setMaxInterval(
+						this.maxDelay > this.delay ? this.maxDelay : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
+			}
+			if (this.maxDelaySupplier != null) {
+				policy.setMaxInterval(this.maxDelaySupplier);
+			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);
 			}
 			return policy;
 		}
-		if (this.maxDelay > this.delay) {
+		if (this.maxDelay != null && this.delay != null && this.maxDelay > this.delay) {
 			UniformRandomBackOffPolicy policy = new UniformRandomBackOffPolicy();
-			policy.setMinBackOffPeriod(this.delay);
-			policy.setMaxBackOffPeriod(this.maxDelay);
+			if (this.delay != null) {
+				policy.setMinBackOffPeriod(this.delay);
+			}
+			if (this.delaySupplier != null) {
+				policy.setMinBackOffPeriod(this.delaySupplier);
+			}
+			if (this.maxDelay != null) {
+				policy.setMaxBackOffPeriod(this.maxDelay);
+			}
+			if (this.maxDelaySupplier != null) {
+				policy.setMaxBackOffPeriod(this.maxDelaySupplier);
+			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);
 			}
 			return policy;
 		}
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
-		policy.setBackOffPeriod(this.delay);
+		if (this.delay != null) {
+			policy.setBackOffPeriod(this.delay);
+		}
 		if (this.sleeper != null) {
 			policy.setSleeper(this.sleeper);
 		}

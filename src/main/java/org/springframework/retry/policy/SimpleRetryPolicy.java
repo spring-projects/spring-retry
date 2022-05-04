@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2019 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@
 package org.springframework.retry.policy;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -62,7 +64,9 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 */
 	public final static int DEFAULT_MAX_ATTEMPTS = 3;
 
-	private volatile int maxAttempts;
+	private int maxAttempts;
+
+	private Supplier<Integer> maxAttemptsSupplier;
 
 	private BinaryExceptionClassifier retryableClassifier = new BinaryExceptionClassifier(false);
 
@@ -150,10 +154,29 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	}
 
 	/**
+	 * Set a supplier for the number of attempts before retries are exhausted. Includes
+	 * the initial attempt before the retries begin so, generally, will be {@code >= 1}.
+	 * For example setting this property to 3 means 3 attempts total (initial + 2
+	 * retries). IMPORTANT: This policy cannot be serialized when a max attempts supplier
+	 * is provided. Serialization might be used by a distributed cache when using this
+	 * policy in a {@code CircuitBreaker} context.
+	 * @param maxAttemptsSupplier the maximum number of attempts including the initial
+	 * attempt.
+	 * @since 2.0
+	 */
+	public void setMaxAttempts(Supplier<Integer> maxAttemptsSupplier) {
+		Assert.notNull(maxAttemptsSupplier, "'maxAttemptsSupplier' cannot be null");
+		this.maxAttemptsSupplier = maxAttemptsSupplier;
+	}
+
+	/**
 	 * The maximum number of attempts before failure.
 	 * @return the maximum number of attempts
 	 */
 	public int getMaxAttempts() {
+		if (this.maxAttemptsSupplier != null) {
+			return this.maxAttemptsSupplier.get();
+		}
 		return this.maxAttempts;
 	}
 
@@ -218,7 +241,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	@Override
 	public String toString() {
-		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + this.maxAttempts + "]";
+		return ClassUtils.getShortName(getClass()) + "[maxAttempts=" + getMaxAttempts() + "]";
 	}
 
 }
