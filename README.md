@@ -595,6 +595,7 @@ With earlier versions, evaluation was always performed during initialization (ex
 When evaluating at runtime, a root object containing the method arguments is passed to the evaluation context.
 
 **Note:** The arguments are not available until the method has been called at least once; they will be null initially, which means, for example, you can't set the initial `maxAttempts` using an argument value, you can, however, change the `maxAttempts` after the first failure and before any retries are performed.
+Also, the arguments are only available when using stateless retry (which includes the `@CircuitBreaker`).
 
 ##### Examples
 
