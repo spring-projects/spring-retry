@@ -173,7 +173,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			MethodInterceptor interceptor = NULL_INTERCEPTOR;
 			Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
 			if (retryable == null) {
-				retryable = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), Retryable.class);
+				retryable = classLevelAnnotation(method, Retryable.class);
 			}
 			if (retryable == null) {
 				retryable = findAnnotationOnTarget(target, method, Retryable.class);
@@ -202,7 +202,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
 			A retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod, annotation);
 			if (retryable == null) {
-				retryable = AnnotatedElementUtils.findMergedAnnotation(targetMethod.getDeclaringClass(), annotation);
+				retryable = classLevelAnnotation(targetMethod, annotation);
 			}
 
 			return retryable;
@@ -210,6 +210,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		catch (Exception e) {
 			return null;
 		}
+	}
+
+	/*
+	 * With a class level annotation, exclude @Recover methods.
+	 */
+	private <A extends Annotation> A classLevelAnnotation(Method method, Class<A> annotation) {
+		A ann = AnnotatedElementUtils.findMergedAnnotation(method.getDeclaringClass(), annotation);
+		if (ann != null && AnnotatedElementUtils.findMergedAnnotation(method, Recover.class) != null) {
+			ann = null;
+		}
+		return ann;
 	}
 
 	private MethodInterceptor getStatelessInterceptor(Object target, Method method, Retryable retryable) {
@@ -316,9 +327,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			return (MethodInvocationRecoverer<?>) target;
 		}
 		final AtomicBoolean foundRecoverable = new AtomicBoolean(false);
-		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
+		ReflectionUtils.doWithMethods(target.getClass(), new ReflectionUtils.MethodCallback() {
 			@Override
-			public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+			public void doWith(Method method) throws IllegalArgumentException {
 				if (AnnotatedElementUtils.findMergedAnnotation(method, Recover.class) != null) {
 					foundRecoverable.set(true);
 				}
