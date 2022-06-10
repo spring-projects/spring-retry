@@ -43,7 +43,7 @@ import org.springframework.util.ClassUtils;
  * that is actually performed by:
  *
  * <pre>
- * RetryTemplate.newBuilder()
+ * RetryTemplate.builder()
  *                  .maxAttempts(3)
  *                  .retryOn(Exception.class)
  *                  .build();
