@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
  * Annotation for a method invocation that is retryable.
  *
@@ -52,26 +54,62 @@ public @interface Retryable {
 	String interceptor() default "";
 
 	/**
-	 * Exception types that are retryable. Synonym for includes(). Defaults to empty (and
+	 * Exception types that are retryable. Synonym for include(). Defaults to empty (and
 	 * if excludes is also empty all exceptions are retried).
 	 * @return exception types to retry
+	 * @deprecated in favor of {@link #retryFor()}
 	 */
+	@Deprecated
 	Class<? extends Throwable>[] value() default {};
 
 	/**
-	 * Exception types that are retryable. Defaults to empty (and if excludes is also
-	 * empty all exceptions are retried).
+	 * Exception types that are retryable. Defaults to empty (and, if exclude is also
+	 * empty, all exceptions are retried).
 	 * @return exception types to retry
+	 * @deprecated in favor of {@link #retryFor()}.
 	 */
+	@AliasFor("retryFor")
+	@Deprecated
 	Class<? extends Throwable>[] include() default {};
 
 	/**
-	 * Exception types that are not retryable. Defaults to empty (and if includes is also
+	 * Exception types that are retryable. Defaults to empty (and, if noRetryFor is also
+	 * empty, all exceptions are retried).
+	 * @return exception types to retry
+	 * @since 2.0
+	 */
+	@AliasFor("include")
+	Class<? extends Throwable>[] retryFor() default {};
+
+	/**
+	 * Exception types that are not retryable. Defaults to empty (and if include is also
 	 * empty all exceptions are retried). If includes is empty but excludes is not, all
 	 * not excluded exceptions are retried
 	 * @return exception types not to retry
+	 * @deprecated in favor of {@link #noRetryFor()}.
 	 */
+	@Deprecated
+	@AliasFor("noRetryFor")
 	Class<? extends Throwable>[] exclude() default {};
+
+	/**
+	 * Exception types that are not retryable. Defaults to empty (and, if retryFor is also
+	 * empty, all exceptions are retried). If retryFor is empty but excludes is not, all
+	 * other exceptions are retried
+	 * @return exception types not to retry
+	 * @since 2.0
+	 */
+	@AliasFor("exclude")
+	Class<? extends Throwable>[] noRetryFor() default {};
+
+	/**
+	 * Exception types that are not recoverable; these exceptions are thrown to the caller
+	 * without calling any recoverer (immediately if also in {@link #noRetryFor()}).
+	 * Defaults to empty.
+	 * @return exception types not to retry
+	 * @since 2.0
+	 */
+	Class<? extends Throwable>[] notRecoverable() default {};
 
 	/**
 	 * A unique label for statistics reporting. If not provided the caller may choose to

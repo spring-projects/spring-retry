@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
  * Annotation for a method invocation that is retryable.
  *
@@ -48,16 +50,50 @@ public @interface CircuitBreaker {
 	 * Exception types that are retryable. Defaults to empty (and if excludes is also
 	 * empty all exceptions are retried).
 	 * @return exception types to retry
+	 * @deprecated in favor of {@link #retryFor()}.
 	 */
+	@AliasFor("retryFor")
+	@Deprecated
 	Class<? extends Throwable>[] include() default {};
+
+	/**
+	 * Exception types that are retryable. Defaults to empty (and, if noRetryFor is also
+	 * empty, all exceptions are retried).
+	 * @return exception types to retry
+	 * @since 2.0
+	 */
+	@AliasFor("include")
+	Class<? extends Throwable>[] retryFor() default {};
 
 	/**
 	 * Exception types that are not retryable. Defaults to empty (and if includes is also
 	 * empty all exceptions are retried). If includes is empty but excludes is not, all
 	 * not excluded exceptions are retried
 	 * @return exception types not to retry
+	 * @deprecated in favor of {@link #noRetryFor()}.
 	 */
+	@Deprecated
+	@AliasFor("noRetryFor")
 	Class<? extends Throwable>[] exclude() default {};
+
+	/**
+	 * Exception types that are not retryable. Defaults to empty (and, if retryFor is also
+	 * empty, all exceptions are retried). If retryFor is empty but excludes is not, all
+	 * other exceptions are retried
+	 * @return exception types not to retry
+	 * @since 2.0
+	 */
+	@AliasFor("exclude")
+	Class<? extends Throwable>[] noRetryFor() default {};
+
+	/**
+	 * Exception types that are not recoverable; these exceptions are thrown to the caller
+	 * without calling any recoverer (immediately if also in {@link #noRetryFor()}).
+	 * Defaults to empty.
+	 * @return exception types not to retry
+	 * @since 2.0
+	 */
+	Class<? extends Throwable>[] notRecoverable() default {};
 
 	/**
 	 * @return the maximum number of attempts (including the first failure), defaults to 3

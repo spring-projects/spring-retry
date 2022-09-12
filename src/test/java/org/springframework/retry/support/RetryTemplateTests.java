@@ -261,7 +261,7 @@ public class RetryTemplateTests {
 		});
 		assertThatExceptionOfType(TerminatedRetryException.class).isThrownBy(() -> retryTemplate.execute(context -> {
 			throw new RuntimeException("Realllly bad!");
-		})).withCauseInstanceOf(RuntimeException.class).withMessageContaining("Planned");
+		})).withCauseInstanceOf(RuntimeException.class).withStackTraceContaining("Planned");
 	}
 
 	@Test

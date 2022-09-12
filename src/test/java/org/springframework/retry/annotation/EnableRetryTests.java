@@ -48,7 +48,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -121,7 +120,13 @@ public class EnableRetryTests {
 		RecoverableService service = context.getBean(RecoverableService.class);
 		service.service();
 		assertThat(service.getCount()).isEqualTo(3);
-		assertNotNull(service.getCause());
+		assertThat(service.getCause()).isExactlyInstanceOf(RuntimeException.class);
+		assertThatIllegalArgumentException().isThrownBy(() -> service.service());
+		assertThat(service.getCount()).isEqualTo(6);
+		assertThat(service.getCause()).isExactlyInstanceOf(RuntimeException.class);
+		assertThatIllegalStateException().isThrownBy(() -> service.service());
+		assertThat(service.getCount()).isEqualTo(7);
+		assertThat(service.getCause()).isExactlyInstanceOf(RuntimeException.class);
 		context.close();
 	}
 
@@ -582,10 +587,18 @@ public class EnableRetryTests {
 
 		boolean otherAdviceCalled;
 
-		@Retryable(RuntimeException.class)
+		@Retryable(retryFor = RuntimeException.class, noRetryFor = IllegalStateException.class,
+				notRecoverable = { IllegalArgumentException.class, IllegalStateException.class })
 		public void service() {
-			this.count++;
-			throw new RuntimeException("Planned");
+			if (this.count++ >= 3 && count < 7) {
+				throw new IllegalArgumentException("Planned");
+			}
+			else if (count > 6) {
+				throw new IllegalStateException("Planned");
+			}
+			else {
+				throw new RuntimeException("Planned");
+			}
 		}
 
 		@Recover
@@ -632,7 +645,7 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(include = RuntimeException.class, exclude = IllegalStateException.class)
+		@Retryable(retryFor = RuntimeException.class, noRetryFor = IllegalStateException.class)
 		public void service() {
 			if (this.count++ < 2) {
 				throw new IllegalStateException("Planned");
@@ -651,7 +664,7 @@ public class EnableRetryTests {
 
 		private RuntimeException exceptionToThrow;
 
-		@Retryable(exclude = IllegalStateException.class)
+		@Retryable(noRetryFor = IllegalStateException.class)
 		public void service() {
 			if (this.count++ < 2) {
 				throw this.exceptionToThrow;
