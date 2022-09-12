@@ -597,6 +597,24 @@ When evaluating at runtime, a root object containing the method arguments is pas
 **Note:** The arguments are not available until the method has been called at least once; they will be null initially, which means, for example, you can't set the initial `maxAttempts` using an argument value, you can, however, change the `maxAttempts` after the first failure and before any retries are performed.
 Also, the arguments are only available when using stateless retry (which includes the `@CircuitBreaker`).
 
+Version 2.0 adds more flexibility to exception classification.
+
+```java
+@Retryable(retryFor = RuntimeException.class, noRetryFor = IllegalStateException.class, notRecoverable = {
+        IllegalArgumentException.class, IllegalStateException.class })
+public void service() {
+    ...
+}
+
+@Recover
+public void recover(Throwable cause) {
+    ...
+}
+```
+
+`retryFor` and `noRetryFor` are replacements of `include` and `exclude` properties, which are now deprecated.
+The new `notRecoverable` property allows the recovery method(s) to be skipped, even if one matches the exception type; the exception is thrown to the caller either after retries are exhausted, or immediately, if the exception is not retryable.
+
 ##### Examples
 
 ```java

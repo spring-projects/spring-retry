@@ -344,11 +344,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		boolean hasExpression = StringUtils.hasText(exceptionExpression);
 		if (includes.length == 0) {
 			@SuppressWarnings("unchecked")
-			Class<? extends Throwable>[] value = (Class<? extends Throwable>[]) attrs.get("include");
+			Class<? extends Throwable>[] value = (Class<? extends Throwable>[]) attrs.get("retryFor");
 			includes = value;
 		}
 		@SuppressWarnings("unchecked")
-		Class<? extends Throwable>[] excludes = (Class<? extends Throwable>[]) attrs.get("exclude");
+		Class<? extends Throwable>[] excludes = (Class<? extends Throwable>[]) attrs.get("noRetryFor");
 		Integer maxAttempts = (Integer) attrs.get("maxAttempts");
 		String maxAttemptsExpression = (String) attrs.get("maxAttemptsExpression");
 		Expression parsedExpression = null;
@@ -360,8 +360,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			}
 		}
 		final Expression expression = parsedExpression;
+		SimpleRetryPolicy simple = null;
 		if (includes.length == 0 && excludes.length == 0) {
-			SimpleRetryPolicy simple = hasExpression
+			simple = hasExpression
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
 			if (expression != null) {
@@ -370,7 +371,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			else {
 				simple.setMaxAttempts(maxAttempts);
 			}
-			return simple;
 		}
 		Map<Class<? extends Throwable>, Boolean> policyMap = new HashMap<>();
 		for (Class<? extends Throwable> type : includes) {
@@ -380,17 +380,24 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			policyMap.put(type, false);
 		}
 		boolean retryNotExcluded = includes.length == 0;
-		if (hasExpression) {
-			return new ExpressionRetryPolicy(maxAttempts, policyMap, true, exceptionExpression, retryNotExcluded)
-					.withBeanFactory(this.beanFactory);
-		}
-		else {
-			SimpleRetryPolicy policy = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
-			if (expression != null) {
-				policy.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
+		if (simple == null) {
+			if (hasExpression) {
+				simple = new ExpressionRetryPolicy(maxAttempts, policyMap, true, resolve(exceptionExpression),
+						retryNotExcluded).withBeanFactory(this.beanFactory);
 			}
-			return policy;
+			else {
+				simple = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
+				if (expression != null) {
+					simple.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
+				}
+			}
 		}
+		@SuppressWarnings("unchecked")
+		Class<? extends Throwable>[] noRecovery = (Class<? extends Throwable>[]) attrs.get("notRecoverable");
+		if (noRecovery != null && noRecovery.length > 0) {
+			simple.setNotRecoverable(noRecovery);
+		}
+		return simple;
 	}
 
 	private BackOffPolicy getBackoffPolicy(Backoff backoff, boolean stateless) {

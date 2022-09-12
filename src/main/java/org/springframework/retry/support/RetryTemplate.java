@@ -537,20 +537,27 @@ public class RetryTemplate implements RetryOperations {
 		if (state != null && !context.hasAttribute(GLOBAL_STATE)) {
 			this.retryContextCache.remove(state.getKey());
 		}
+		boolean doRecover = !Boolean.TRUE.equals(context.getAttribute(RetryContext.NO_RECOVERY));
 		if (recoveryCallback != null) {
-			T recovered = recoveryCallback.recover(context);
-			context.setAttribute(RetryContext.RECOVERED, true);
-			return recovered;
+			if (doRecover) {
+				T recovered = recoveryCallback.recover(context);
+				context.setAttribute(RetryContext.RECOVERED, true);
+				return recovered;
+			}
+			else {
+				logger.debug("Retry exhausted and recovery disabled for this throwable");
+			}
 		}
 		if (state != null) {
 			this.logger.debug("Retry exhausted after last attempt with no recovery path.");
-			rethrow(context, "Retry exhausted after last attempt with no recovery path");
+			rethrow(context, "Retry exhausted after last attempt with no recovery path",
+					this.throwLastExceptionOnExhausted || !doRecover);
 		}
 		throw wrapIfNecessary(context.getLastThrowable());
 	}
 
-	protected <E extends Throwable> void rethrow(RetryContext context, String message) throws E {
-		if (this.throwLastExceptionOnExhausted) {
+	protected <E extends Throwable> void rethrow(RetryContext context, String message, boolean wrap) throws E {
+		if (wrap) {
 			@SuppressWarnings("unchecked")
 			E rethrow = (E) context.getLastThrowable();
 			throw rethrow;
