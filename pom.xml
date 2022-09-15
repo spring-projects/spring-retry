@@ -26,7 +26,7 @@
 		</license>
 	</licenses>
 	<properties>
-		<revision>2.0.0-SNAPSHOT</revision>
+		<revision>2.0.0-M1</revision>
 		<disable.checks>false</disable.checks>
 		<java.version>17</java.version>
 		<maven.test.failure.ignore>true</maven.test.failure.ignore>
