@@ -224,6 +224,8 @@ jobs:
       RELEASE_TYPE: M
       GITHUB_USERNAME: ((github-username))
       GITHUB_TOKEN: ((github-ci-release-token))
+    vars:
+      <<: *registry-mirror-vars
   - put: github-pre-release
     params:
       name: generated-changelog/tag
@@ -271,6 +273,8 @@ jobs:
       RELEASE_TYPE: RC
       GITHUB_USERNAME: ((github-username))
       GITHUB_TOKEN: ((github-ci-release-token))
+    vars:
+      <<: *registry-mirror-vars
   - put: github-pre-release
     params:
       name: generated-changelog/tag
