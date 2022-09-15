@@ -13,8 +13,19 @@ git clone git-repo stage-git-repo > /dev/null
 pushd stage-git-repo > /dev/null
 
 snapshotVersion=$( get_revision_from_pom )
-stageVersion=$( get_next_release $snapshotVersion)
-nextVersion=$( bump_version_number $snapshotVersion)
+if [[ $RELEASE_TYPE = "M" ]]; then
+	stageVersion=$( get_next_milestone_release $snapshotVersion)
+	nextVersion=$snapshotVersion
+elif [[ $RELEASE_TYPE = "RC" ]]; then
+	stageVersion=$( get_next_rc_release $snapshotVersion)
+	nextVersion=$snapshotVersion
+elif [[ $RELEASE_TYPE = "RELEASE" ]]; then
+	stageVersion=$( get_next_release $snapshotVersion)
+	nextVersion=$( bump_version_number $snapshotVersion)
+else
+	echo "Unknown release type $RELEASE_TYPE" >&2; exit 1;
+fi
+
 echo "Staging $stageVersion (next version will be $nextVersion)"
 
 set_revision_to_pom "$stageVersion"
