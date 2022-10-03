@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.classify.SubclassClassifier;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
@@ -196,12 +196,12 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private void init(final Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<>();
 		final Method failingMethod = method;
-		Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
+		Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
 		if (retryable != null) {
 			this.recoverMethodName = retryable.recover();
 		}
 		ReflectionUtils.doWithMethods(target.getClass(), candidate -> {
-			Recover recover = AnnotationUtils.findAnnotation(candidate, Recover.class);
+			Recover recover = AnnotatedElementUtils.findMergedAnnotation(candidate, Recover.class);
 			if (recover == null) {
 				recover = findAnnotationOnTarget(target, candidate);
 			}
@@ -270,7 +270,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Recover findAnnotationOnTarget(Object target, Method method) {
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			return AnnotationUtils.findAnnotation(targetMethod, Recover.class);
+			return AnnotatedElementUtils.findMergedAnnotation(targetMethod, Recover.class);
 		}
 		catch (Exception e) {
 			return null;
