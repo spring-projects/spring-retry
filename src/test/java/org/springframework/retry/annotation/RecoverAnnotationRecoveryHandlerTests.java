@@ -43,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Randell Callahan
  * @author Nathanaël Roberts
  * @author Maksim Kita
- * @Author Gianluca Medici
+ * @author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -661,7 +661,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		}
 
 		public int barRecover(Throwable throwable, String name) {
-			return 2;
+			return 4;
 		}
 
 	}

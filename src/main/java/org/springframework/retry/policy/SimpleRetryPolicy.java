@@ -210,7 +210,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
 		boolean can = (t == null || retryForException(t)) && context.getRetryCount() < getMaxAttempts();
-		if (!can && !this.recoverableClassifier.classify(t)) {
+		if (!can && t != null && !this.recoverableClassifier.classify(t)) {
 			context.setAttribute(RetryContext.NO_RECOVERY, true);
 		}
 		else {
