@@ -660,7 +660,7 @@ Starting from version 1.3.2 and later `@Retryable` annotation can be used in cus
 For example if you discover you need two kinds of retry strategy, one for local services calls, and one for remote services calls, you could decide
 to create two custom annotations `@LocalRetryable` and `@RemoteRetryable` that differs in the retry strategy as well in the maximum number of retries.
 
-With version 2.0 and later it is also possible to use `@AliasFor` annotation on the `recover` method also, so that you can further extend the versatility of your custom annotations and allow the `recover` argument value
+To make custom annotation composition work properly you can use `@AliasFor` annotation, for example on the `recover` method, so that you can further extend the versatility of your custom annotations and allow the `recover` argument value
 to be picked up as if it was set on the `recover` method of the base `@Retryable` annotation.
 
 Usage Example:
