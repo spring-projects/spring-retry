@@ -30,7 +30,6 @@ import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
 
 /**
@@ -53,6 +52,7 @@ import org.springframework.util.StringUtils;
  * @author Maksim Kita
  * @author Gary Russell
  * @author Artem Bilan
+ * @author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
