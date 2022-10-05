@@ -16,6 +16,11 @@
 
 package org.springframework.retry.annotation;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
@@ -40,6 +46,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Randell Callahan
  * @author Nathanaël Roberts
  * @author Maksim Kita
+ * @Author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -281,6 +288,14 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new RecoverByRetryableNameWithPrimitiveArgs(), foo);
 		assertEquals(2, handler.recover(new Object[] { 2 }, new RuntimeException("Planned")));
+	}
+
+	@Test
+	public void recoverByComposedRetryableAnnotationName() {
+		Method foo = ReflectionUtils.findMethod(RecoverByComposedRetryableAnnotationName.class, "foo", String.class);
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new RecoverByComposedRetryableAnnotationName(), foo);
+		assertThat(handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned"))).isEqualTo(4);
 	}
 
 	private static class InAccessibleRecover {
@@ -639,6 +654,23 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	}
 
+	protected static class RecoverByComposedRetryableAnnotationName
+			implements RecoverByComposedRetryableAnnotationNameInterface {
+
+		public int foo(String name) {
+			return 0;
+		}
+
+		public int fooRecover(Throwable throwable, String name) {
+			return 1;
+		}
+
+		public int barRecover(Throwable throwable, String name) {
+			return 2;
+		}
+
+	}
+
 	protected interface RecoverByRetryableNameInterface {
 
 		@Retryable(recover = "barRecover")
@@ -679,6 +711,30 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		@Recover
 		public int barRecover(Throwable throwable, int number);
+
+	}
+
+	protected interface RecoverByComposedRetryableAnnotationNameInterface {
+
+		@ComposedRetryable(recover = "barRecover")
+		public int foo(String name);
+
+		@Recover
+		public int fooRecover(Throwable throwable, String name);
+
+		@Recover
+		public int barRecover(Throwable throwable, String name);
+
+	}
+
+	@Target({ ElementType.METHOD, ElementType.TYPE })
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	@Retryable(maxAttempts = 4)
+	public @interface ComposedRetryable {
+
+		@AliasFor(annotation = Retryable.class, attribute = "recover")
+		String recover() default "";
 
 	}
 

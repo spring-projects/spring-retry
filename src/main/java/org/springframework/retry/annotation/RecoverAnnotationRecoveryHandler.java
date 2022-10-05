@@ -23,14 +23,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.classify.SubclassClassifier;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
 
 /**
@@ -53,6 +52,7 @@ import org.springframework.util.StringUtils;
  * @author Maksim Kita
  * @author Gary Russell
  * @author Artem Bilan
+ * @author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -199,14 +199,14 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private void init(final Object target, Method method) {
 		final Map<Class<? extends Throwable>, Method> types = new HashMap<Class<? extends Throwable>, Method>();
 		final Method failingMethod = method;
-		Retryable retryable = AnnotationUtils.findAnnotation(method, Retryable.class);
+		Retryable retryable = AnnotatedElementUtils.findMergedAnnotation(method, Retryable.class);
 		if (retryable != null) {
 			this.recoverMethodName = retryable.recover();
 		}
 		ReflectionUtils.doWithMethods(target.getClass(), new MethodCallback() {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException {
-				Recover recover = AnnotationUtils.findAnnotation(method, Recover.class);
+				Recover recover = AnnotatedElementUtils.findMergedAnnotation(method, Recover.class);
 				if (recover == null) {
 					recover = findAnnotationOnTarget(target, method);
 				}
@@ -276,7 +276,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Recover findAnnotationOnTarget(Object target, Method method) {
 		try {
 			Method targetMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
-			return AnnotationUtils.findAnnotation(targetMethod, Recover.class);
+			return AnnotatedElementUtils.findMergedAnnotation(targetMethod, Recover.class);
 		}
 		catch (Exception e) {
 			return null;
