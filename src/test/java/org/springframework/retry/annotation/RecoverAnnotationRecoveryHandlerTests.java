@@ -295,7 +295,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		Method foo = ReflectionUtils.findMethod(RecoverByComposedRetryableAnnotationName.class, "foo", String.class);
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new RecoverByComposedRetryableAnnotationName(), foo);
-		assertThat(handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned"))).isEqualTo(4);
+		assertEquals(4, handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned")));
 	}
 
 	private static class InAccessibleRecover {

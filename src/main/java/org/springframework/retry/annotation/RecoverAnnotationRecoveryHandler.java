@@ -30,6 +30,7 @@ import org.springframework.retry.interceptor.MethodInvocationRecoverer;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.util.StringUtils;
 
 /**
