@@ -46,7 +46,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Randell Callahan
  * @author Nathanaël Roberts
  * @author Maksim Kita
- * @Author Gianluca Medici
+ * @author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandlerTests {
 
@@ -666,7 +666,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		}
 
 		public int barRecover(Throwable throwable, String name) {
-			return 2;
+			return 4;
 		}
 
 	}
