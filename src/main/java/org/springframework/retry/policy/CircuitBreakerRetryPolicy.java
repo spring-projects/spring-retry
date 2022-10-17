@@ -73,7 +73,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	 * @param timeoutSupplier a supplier for the timeout to set in milliseconds
 	 * @since 2.0
 	 */
-	public void setResetTimeout(Supplier<Long> timeoutSupplier) {
+	public void resetTimeoutSupplier(Supplier<Long> timeoutSupplier) {
 		this.resetTimeoutSupplier = timeoutSupplier;
 	}
 
@@ -94,7 +94,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 	 * @param timeoutSupplier a supplier for the timeout to set in milliseconds
 	 * @since 2.0
 	 */
-	public void setOpenTimeout(Supplier<Long> timeoutSupplier) {
+	public void openTimeoutSupplier(Supplier<Long> timeoutSupplier) {
 		this.openTimeoutSupplier = timeoutSupplier;
 	}
 

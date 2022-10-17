@@ -275,7 +275,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.setOpenTimeout(() -> evaluate(parsed, Long.class, false));
+				breaker.openTimeoutSupplier(() -> evaluate(parsed, Long.class, false));
 				return;
 			}
 		}
@@ -294,7 +294,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.setResetTimeout(() -> evaluate(parsed, Long.class, false));
+				breaker.resetTimeoutSupplier(() -> evaluate(parsed, Long.class, false));
 			}
 		}
 		breaker.setResetTimeout(circuit.resetTimeout());
@@ -366,7 +366,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
 			if (expression != null) {
-				simple.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
+				simple.maxAttemptsSupplier(() -> evaluate(expression, Integer.class, stateless));
 			}
 			else {
 				simple.setMaxAttempts(maxAttempts);
@@ -388,7 +388,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			else {
 				simple = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
 				if (expression != null) {
-					simple.setMaxAttempts(() -> evaluate(expression, Integer.class, stateless));
+					simple.maxAttemptsSupplier(() -> evaluate(expression, Integer.class, stateless));
 				}
 			}
 		}

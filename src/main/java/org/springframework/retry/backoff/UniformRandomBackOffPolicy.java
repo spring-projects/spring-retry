@@ -56,8 +56,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 
 	public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
 		UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
-		res.setMinBackOffPeriod(minBackOffPeriod);
-		res.setMaxBackOffPeriod(maxBackOffPeriod);
+		res.minBackOffPeriodSupplier(minBackOffPeriod);
+		res.maxBackOffPeriodSupplier(maxBackOffPeriod);
 		res.setSleeper(sleeper);
 		return res;
 	}
@@ -85,7 +85,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 	 * @param backOffPeriodSupplier the backoff period
 	 * @since 2.0
 	 */
-	public void setMinBackOffPeriod(Supplier<Long> backOffPeriodSupplier) {
+	public void minBackOffPeriodSupplier(Supplier<Long> backOffPeriodSupplier) {
 		Assert.notNull(backOffPeriodSupplier, "'backOffPeriodSupplier' cannot be null");
 		this.minBackOffPeriod = backOffPeriodSupplier;
 	}
@@ -113,7 +113,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 	 * @param backOffPeriodSupplier the back off period
 	 * @since 2.0
 	 */
-	public void setMaxBackOffPeriod(Supplier<Long> backOffPeriodSupplier) {
+	public void maxBackOffPeriodSupplier(Supplier<Long> backOffPeriodSupplier) {
 		Assert.notNull(backOffPeriodSupplier, "'backOffPeriodSupplier' cannot be null");
 		this.maxBackOffPeriod = backOffPeriodSupplier;
 	}

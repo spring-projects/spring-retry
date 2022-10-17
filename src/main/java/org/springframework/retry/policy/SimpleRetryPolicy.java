@@ -183,7 +183,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * attempt.
 	 * @since 2.0
 	 */
-	public void setMaxAttempts(Supplier<Integer> maxAttemptsSupplier) {
+	public void maxAttemptsSupplier(Supplier<Integer> maxAttemptsSupplier) {
 		Assert.notNull(maxAttemptsSupplier, "'maxAttemptsSupplier' cannot be null");
 		this.maxAttemptsSupplier = maxAttemptsSupplier;
 	}

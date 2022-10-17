@@ -227,20 +227,20 @@ public class BackOffPolicyBuilder {
 				policy.setInitialInterval(this.delay);
 			}
 			if (this.delaySupplier != null) {
-				policy.setInitialInterval(this.delaySupplier);
+				policy.initialIntervalSupplier(this.delaySupplier);
 			}
 			if (this.multiplier != null) {
 				policy.setMultiplier(this.multiplier);
 			}
 			if (this.multiplierSupplier != null) {
-				policy.setMultiplier(this.multiplierSupplier);
+				policy.multiplierSupplier(this.multiplierSupplier);
 			}
 			if (this.maxDelay != null && this.delay != null) {
 				policy.setMaxInterval(
 						this.maxDelay > this.delay ? this.maxDelay : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
 			}
 			if (this.maxDelaySupplier != null) {
-				policy.setMaxInterval(this.maxDelaySupplier);
+				policy.maxIntervalSupplier(this.maxDelaySupplier);
 			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);
@@ -253,13 +253,13 @@ public class BackOffPolicyBuilder {
 				policy.setMinBackOffPeriod(this.delay);
 			}
 			if (this.delaySupplier != null) {
-				policy.setMinBackOffPeriod(this.delaySupplier);
+				policy.minBackOffPeriodSupplier(this.delaySupplier);
 			}
 			if (this.maxDelay != null) {
 				policy.setMaxBackOffPeriod(this.maxDelay);
 			}
 			if (this.maxDelaySupplier != null) {
-				policy.setMaxBackOffPeriod(this.maxDelaySupplier);
+				policy.maxBackOffPeriodSupplier(this.maxDelaySupplier);
 			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);

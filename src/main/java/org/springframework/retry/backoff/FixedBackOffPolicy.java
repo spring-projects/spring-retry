@@ -48,7 +48,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 
 	public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
 		FixedBackOffPolicy res = new FixedBackOffPolicy();
-		res.setBackOffPeriod(backOffPeriod);
+		res.backOffPeriodSupplier(backOffPeriod);
 		res.setSleeper(sleeper);
 		return res;
 	}
@@ -75,7 +75,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * @param backOffPeriodSupplier the back off period
 	 * @since 2.0
 	 */
-	public void setBackOffPeriod(Supplier<Long> backOffPeriodSupplier) {
+	public void backOffPeriodSupplier(Supplier<Long> backOffPeriodSupplier) {
 		Assert.notNull(backOffPeriodSupplier, "'backOffPeriodSupplier' cannot be null");
 		this.backOffPeriod = backOffPeriodSupplier;
 	}
