@@ -157,7 +157,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param initialIntervalSupplier the initial interval
 	 * @since 2.0
 	 */
-	public void setInitialInterval(Supplier<Long> initialIntervalSupplier) {
+	public void initialIntervalSupplier(Supplier<Long> initialIntervalSupplier) {
 		Assert.notNull(initialIntervalSupplier, "'initialIntervalSupplier' cannot be null");
 		this.initialIntervalSupplier = initialIntervalSupplier;
 	}
@@ -168,7 +168,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param multiplierSupplier the multiplier
 	 * @since 2.0
 	 */
-	public void setMultiplier(Supplier<Double> multiplierSupplier) {
+	public void multiplierSupplier(Supplier<Double> multiplierSupplier) {
 		Assert.notNull(multiplierSupplier, "'multiplierSupplier' cannot be null");
 		this.multiplierSupplier = multiplierSupplier;
 	}
@@ -181,7 +181,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param maxIntervalSupplier in milliseconds.
 	 * @since 2.0
 	 */
-	public void setMaxInterval(Supplier<Long> maxIntervalSupplier) {
+	public void maxIntervalSupplier(Supplier<Long> maxIntervalSupplier) {
 		Assert.notNull(maxIntervalSupplier, "'maxIntervalSupplier' cannot be null");
 		this.maxIntervalSupplier = maxIntervalSupplier;
 	}
