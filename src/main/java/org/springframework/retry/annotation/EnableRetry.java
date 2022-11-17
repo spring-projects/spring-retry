@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2013 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.annotation.AliasFor;
 
 /**
  * Global enabler for <code>@Retryable</code> annotations in Spring beans. If this is
@@ -47,6 +48,7 @@ public @interface EnableRetry {
 	 * standard Java interface-based proxies. The default is {@code false}.
 	 * @return whether to proxy or not to proxy the class
 	 */
+	@AliasFor(annotation = EnableAspectJAutoProxy.class)
 	boolean proxyTargetClass() default false;
 
 }
