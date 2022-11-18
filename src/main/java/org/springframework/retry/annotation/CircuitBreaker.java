@@ -40,10 +40,13 @@ import org.springframework.core.annotation.AliasFor;
 public @interface CircuitBreaker {
 
 	/**
-	 * Exception types that are retryable. Synonym for includes(). Defaults to empty (and
-	 * if excludes is also empty all exceptions are retried).
+	 * Exception types that are retryable. Defaults to empty (and if excludes is also
+	 * empty all exceptions are retried).
 	 * @return exception types to retry
+	 * @deprecated in favor of {@link #retryFor()}
 	 */
+	@AliasFor(annotation = Retryable.class)
+	@Deprecated
 	Class<? extends Throwable>[] value() default {};
 
 	/**
@@ -52,7 +55,7 @@ public @interface CircuitBreaker {
 	 * @return exception types to retry
 	 * @deprecated in favor of {@link #retryFor()}.
 	 */
-	@AliasFor("retryFor")
+	@AliasFor(annotation = Retryable.class)
 	@Deprecated
 	Class<? extends Throwable>[] include() default {};
 
@@ -62,7 +65,7 @@ public @interface CircuitBreaker {
 	 * @return exception types to retry
 	 * @since 2.0
 	 */
-	@AliasFor("include")
+	@AliasFor(annotation = Retryable.class)
 	Class<? extends Throwable>[] retryFor() default {};
 
 	/**
@@ -73,7 +76,7 @@ public @interface CircuitBreaker {
 	 * @deprecated in favor of {@link #noRetryFor()}.
 	 */
 	@Deprecated
-	@AliasFor("noRetryFor")
+	@AliasFor(annotation = Retryable.class)
 	Class<? extends Throwable>[] exclude() default {};
 
 	/**
@@ -83,7 +86,7 @@ public @interface CircuitBreaker {
 	 * @return exception types not to retry
 	 * @since 2.0
 	 */
-	@AliasFor("exclude")
+	@AliasFor(annotation = Retryable.class)
 	Class<? extends Throwable>[] noRetryFor() default {};
 
 	/**
@@ -93,11 +96,13 @@ public @interface CircuitBreaker {
 	 * @return exception types not to retry
 	 * @since 2.0
 	 */
+	@AliasFor(annotation = Retryable.class)
 	Class<? extends Throwable>[] notRecoverable() default {};
 
 	/**
 	 * @return the maximum number of attempts (including the first failure), defaults to 3
 	 */
+	@AliasFor(annotation = Retryable.class)
 	int maxAttempts() default 3;
 
 	/**
@@ -107,6 +112,7 @@ public @interface CircuitBreaker {
 	 * at runtime.
 	 * @since 1.2.3
 	 */
+	@AliasFor(annotation = Retryable.class)
 	String maxAttemptsExpression() default "";
 
 	/**
@@ -114,6 +120,7 @@ public @interface CircuitBreaker {
 	 * method signature where the annotation is declared.
 	 * @return the label for the circuit
 	 */
+	@AliasFor(annotation = Retryable.class)
 	String label() default "";
 
 	/**
@@ -137,7 +144,7 @@ public @interface CircuitBreaker {
 	/**
 	 * When {@link #maxAttempts()} failures are reached within this timeout, the circuit
 	 * is opened automatically, preventing access to the downstream component.
-	 * @return the timeout before an closed circuit is opened in milliseconds, defaults to
+	 * @return the timeout before a closed circuit is opened in milliseconds, defaults to
 	 * 5000
 	 */
 	long openTimeout() default 5000;
@@ -147,7 +154,7 @@ public @interface CircuitBreaker {
 	 * is opened automatically, preventing access to the downstream component. Overrides
 	 * {@link #openTimeout()}. Use {@code #{...}} for one-time evaluation during
 	 * initialization, omit the delimiters for evaluation at runtime.
-	 * @return the timeout before an closed circuit is opened in milliseconds, no default.
+	 * @return the timeout before a closed circuit is opened in milliseconds, no default.
 	 * @since 1.2.3
 	 */
 	String openTimeoutExpression() default "";
@@ -171,6 +178,7 @@ public @interface CircuitBreaker {
 	 * @return the expression.
 	 * @since 1.2.3
 	 */
+	@AliasFor(annotation = Retryable.class)
 	String exceptionExpression() default "";
 
 }

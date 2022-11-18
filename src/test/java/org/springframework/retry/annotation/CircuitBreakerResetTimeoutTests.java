@@ -87,7 +87,7 @@ public class CircuitBreakerResetTimeoutTests {
 
 		private RetryContext context;
 
-		@CircuitBreaker(include = { RuntimeException.class }, openTimeout = 10000, resetTimeout = 15000)
+		@CircuitBreaker(retryFor = { RuntimeException.class }, openTimeout = 10000, resetTimeout = 15000)
 		String service(String payload) {
 			this.context = RetrySynchronizationManager.getContext();
 			System.out.println("real service called");
