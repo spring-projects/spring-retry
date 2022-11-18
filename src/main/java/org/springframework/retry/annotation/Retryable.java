@@ -54,8 +54,8 @@ public @interface Retryable {
 	String interceptor() default "";
 
 	/**
-	 * Exception types that are retryable. Synonym for include(). Defaults to empty (and
-	 * if excludes is also empty all exceptions are retried).
+	 * Exception types that are retryable. Defaults to empty (and if excludes is also
+	 * empty all exceptions are retried).
 	 * @return exception types to retry
 	 * @deprecated in favor of {@link #retryFor()}
 	 */

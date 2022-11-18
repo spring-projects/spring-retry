@@ -166,7 +166,7 @@ public class CircuitBreakerTests {
 		RetryContext context;
 
 		@Override
-		@CircuitBreaker(RuntimeException.class)
+		@CircuitBreaker(retryFor = RuntimeException.class)
 		public void service() {
 			this.context = RetrySynchronizationManager.getContext();
 			if (this.count++ < 5) {
