@@ -35,8 +35,8 @@ import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.listener.MethodInvocationRetryListenerSupport;
-import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
@@ -47,6 +47,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
+/**
+ * @author Dave Syer
+ * @author Marius Grama
+ * @author Gary Russell
+ * @author Stéphane Nicoll
+ * @author Henning Pöttker
+ */
 public class RetryOperationsInterceptorTests {
 
 	private static int count;
@@ -66,7 +73,7 @@ public class RetryOperationsInterceptorTests {
 		this.interceptor = new RetryOperationsInterceptor();
 		RetryTemplate retryTemplate = new RetryTemplate();
 		final AtomicBoolean calledFirst = new AtomicBoolean();
-		retryTemplate.registerListener(new RetryListenerSupport() {
+		retryTemplate.registerListener(new RetryListener() {
 
 			@Override
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
@@ -83,7 +90,7 @@ public class RetryOperationsInterceptorTests {
 			}
 
 		});
-		retryTemplate.registerListener(new RetryListenerSupport() {
+		retryTemplate.registerListener(new RetryListener() {
 
 			@Override
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {

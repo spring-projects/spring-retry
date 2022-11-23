@@ -364,8 +364,6 @@ If there has been an error, it is the last one thrown by the `RetryCallback`.
 Note that when there is more than one listener, they are in a list, so there is an order.
 In this case, `open` is called in the same order, while `onSuccess`, `onError`, and `close` are called in reverse order.
 
-`RetryListenerSupport` is provided, with no-op implementations; you can extend this class if you don't need to implement all of the `RetryListener` methods.
-
 ### Listeners for Reflective Method Invocations
 
 When dealing with methods that are annotated with `@Retryable` or with Spring AOP intercepted methods, Spring Retry allows a detailed inspection of the method invocation within the `RetryListener` implementation.

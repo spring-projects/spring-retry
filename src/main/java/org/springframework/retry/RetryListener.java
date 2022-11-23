@@ -23,6 +23,7 @@ package org.springframework.retry;
  *
  * @author Dave Syer
  * @author Gary Russell
+ * @author Henning Pöttker
  *
  */
 public interface RetryListener {
@@ -38,7 +39,9 @@ public interface RetryListener {
 	 * @param callback the current {@link RetryCallback}.
 	 * @return true if the retry should proceed.
 	 */
-	<T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback);
+	default <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+		return true;
+	}
 
 	/**
 	 * Called after the final attempt (successful or not). Allow the listener to clean up
@@ -49,7 +52,9 @@ public interface RetryListener {
 	 * @param <E> the exception type
 	 * @param <T> the return value
 	 */
-	<T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable);
+	default <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
+	}
 
 	/**
 	 * Called after a successful attempt; allow the listener to throw a new exception to
@@ -72,6 +77,8 @@ public interface RetryListener {
 	 * @param <T> the return value
 	 * @param <E> the exception to throw
 	 */
-	<T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback, Throwable throwable);
+	default <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
+	}
 
 }

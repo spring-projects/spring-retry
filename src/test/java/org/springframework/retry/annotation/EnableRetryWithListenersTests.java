@@ -24,13 +24,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
-import org.springframework.retry.listener.RetryListenerSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Henning Pöttker
  *
  */
 public class EnableRetryWithListenersTests {
@@ -68,7 +68,7 @@ public class EnableRetryWithListenersTests {
 
 		@Bean
 		public RetryListener listener() {
-			return new RetryListenerSupport() {
+			return new RetryListener() {
 				@Override
 				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 						Throwable throwable) {
@@ -94,7 +94,7 @@ public class EnableRetryWithListenersTests {
 
 		@Bean
 		public RetryListener listener1() {
-			return new RetryListenerSupport() {
+			return new RetryListener() {
 				@Override
 				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 						Throwable throwable) {
@@ -105,7 +105,7 @@ public class EnableRetryWithListenersTests {
 
 		@Bean
 		public RetryListener listener2() {
-			return new RetryListenerSupport() {
+			return new RetryListener() {
 				@Override
 				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 						Throwable throwable) {

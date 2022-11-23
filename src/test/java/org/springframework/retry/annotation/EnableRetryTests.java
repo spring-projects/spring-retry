@@ -39,7 +39,6 @@ import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
-import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
@@ -57,6 +56,7 @@ import static org.mockito.Mockito.verify;
  * @author Artem Bilan
  * @author Gary Russell
  * @author Aldo Sinanaj
+ * @author Henning Pöttker
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -910,7 +910,7 @@ public class EnableRetryTests {
 
 	}
 
-	public abstract static class OrderedListener extends RetryListenerSupport implements Ordered {
+	public abstract static class OrderedListener implements RetryListener, Ordered {
 
 	}
 

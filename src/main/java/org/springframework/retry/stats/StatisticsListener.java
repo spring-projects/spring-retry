@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 the original author or authors.
+ * Copyright 2012-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@ package org.springframework.retry.stats;
 import org.springframework.core.AttributeAccessor;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryStatistics;
-import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 
 /**
  * @author Dave Syer
+ * @author Henning Pöttker
  *
  */
-public class StatisticsListener extends RetryListenerSupport {
+public class StatisticsListener implements RetryListener {
 
 	private final StatisticsRepository repository;
 

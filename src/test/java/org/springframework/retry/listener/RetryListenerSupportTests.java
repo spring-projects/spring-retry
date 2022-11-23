@@ -21,6 +21,12 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+/**
+ * @author Dave Syer
+ * @author Gary Russell
+ * @author Henning Pöttker
+ */
+@SuppressWarnings("deprecation")
 public class RetryListenerSupportTests {
 
 	@Test
