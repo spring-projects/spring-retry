@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.StatelessBackOffPolicy;
-import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
@@ -48,6 +48,7 @@ import static org.mockito.Mockito.verify;
  * @author Rob Harrop
  * @author Dave Syer
  * @author Gary Russell
+ * @author Henning Pöttker
  */
 public class RetryTemplateTests {
 
@@ -311,7 +312,7 @@ public class RetryTemplateTests {
 	@Test
 	public void testRetryOnBadResult() {
 		RetryTemplate template = new RetryTemplate();
-		template.registerListener(new RetryListenerSupport() {
+		template.registerListener(new RetryListener() {
 
 			@Override
 			public <T, E extends Throwable> void onSuccess(RetryContext context, RetryCallback<T, E> callback,

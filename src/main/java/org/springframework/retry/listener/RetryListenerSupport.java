@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,10 @@ import org.springframework.retry.RetryListener;
  * Empty method implementation of {@link RetryListener}.
  *
  * @author Dave Syer
- *
+ * @author Henning Pöttker
+ * @deprecated in favor of the default implementations in {@link RetryListener}
  */
+@Deprecated(since = "2.0.1", forRemoval = true)
 public class RetryListenerSupport implements RetryListener {
 
 	public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,

@@ -32,8 +32,8 @@ import org.springframework.aop.target.SingletonTargetSource;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryOperations;
-import org.springframework.retry.listener.RetryListenerSupport;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -51,6 +51,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Henning Pöttker
  *
  */
 public class StatefulRetryOperationsInterceptorTests {
@@ -70,7 +71,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	@BeforeEach
 	public void setUp() {
 		interceptor = new StatefulRetryOperationsInterceptor();
-		retryTemplate.registerListener(new RetryListenerSupport() {
+		retryTemplate.registerListener(new RetryListener() {
 			@Override
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable throwable) {

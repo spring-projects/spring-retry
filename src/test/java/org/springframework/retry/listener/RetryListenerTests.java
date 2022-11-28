@@ -31,7 +31,14 @@ import org.springframework.retry.support.RetryTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
+/**
+ * @author Dave Syer
+ * @author Stéphane Nicoll
+ * @author Gary Russell
+ * @author Henning Pöttker
+ */
 public class RetryListenerTests {
 
 	RetryTemplate template = new RetryTemplate();
@@ -41,14 +48,42 @@ public class RetryListenerTests {
 	List<String> list = new ArrayList<>();
 
 	@Test
+	public void testOpenDefaultImplementation() {
+		var retryListener = new RetryListener() {
+		};
+		assertThat(retryListener.open(null, null)).isTrue();
+	}
+
+	@Test
+	public void testCloseDefaultImplementation() {
+		var retryListener = new RetryListener() {
+		};
+		assertThatNoException().isThrownBy(() -> retryListener.close(null, null, null));
+	}
+
+	@Test
+	public void testOnSuccessDefaultImplementation() {
+		var retryListener = new RetryListener() {
+		};
+		assertThatNoException().isThrownBy(() -> retryListener.onError(null, null, null));
+	}
+
+	@Test
+	public void testOnErrorDefaultImplementation() {
+		var retryListener = new RetryListener() {
+		};
+		assertThatNoException().isThrownBy(() -> retryListener.onError(null, null, null));
+	}
+
+	@Test
 	public void testOpenInterceptors() {
-		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
+		template.setListeners(new RetryListener[] { new RetryListener() {
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
 				count++;
 				list.add("1:" + count);
 				return true;
 			}
-		}, new RetryListenerSupport() {
+		}, new RetryListener() {
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
 				count++;
 				list.add("2:" + count);
@@ -63,7 +98,7 @@ public class RetryListenerTests {
 
 	@Test
 	public void testOpenCanVetoRetry() {
-		template.registerListener(new RetryListenerSupport() {
+		template.registerListener(new RetryListener() {
 			public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
 				list.add("1");
 				return false;
@@ -80,13 +115,13 @@ public class RetryListenerTests {
 
 	@Test
 	public void testCloseInterceptors() {
-		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
+		template.setListeners(new RetryListener[] { new RetryListener() {
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable t) {
 				count++;
 				list.add("1:" + count);
 			}
-		}, new RetryListenerSupport() {
+		}, new RetryListener() {
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable t) {
 				count++;
@@ -103,12 +138,12 @@ public class RetryListenerTests {
 	@Test
 	public void testOnError() {
 		template.setRetryPolicy(new NeverRetryPolicy());
-		template.setListeners(new RetryListener[] { new RetryListenerSupport() {
+		template.setListeners(new RetryListener[] { new RetryListener() {
 			public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
 					Throwable throwable) {
 				list.add("1");
 			}
-		}, new RetryListenerSupport() {
+		}, new RetryListener() {
 			public <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
 					Throwable throwable) {
 				list.add("2");
@@ -128,7 +163,7 @@ public class RetryListenerTests {
 
 	@Test
 	public void testCloseInterceptorsAfterRetry() {
-		template.registerListener(new RetryListenerSupport() {
+		template.registerListener(new RetryListener() {
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable t) {
 				list.add("" + count);
