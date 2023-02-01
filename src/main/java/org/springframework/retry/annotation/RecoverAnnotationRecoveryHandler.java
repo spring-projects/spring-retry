@@ -229,7 +229,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	 * @return true if the parameterized return types match.
 	 * @since 1.3.2
 	 */
-	private boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
+	// visible for test
+	boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
 			ParameterizedType failingMethodReturnType) {
 
 		Type[] methodActualArgs = methodReturnType.getActualTypeArguments();
@@ -242,13 +243,16 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			Type methodArgType = methodActualArgs[i];
 			Type failingMethodArgType = failingMethodActualArgs[i];
 			if (methodArgType instanceof ParameterizedType && failingMethodArgType instanceof ParameterizedType) {
-				return isParameterizedTypeAssignable((ParameterizedType) methodArgType,
-						(ParameterizedType) failingMethodArgType);
+				if (!isParameterizedTypeAssignable((ParameterizedType) methodArgType,
+						(ParameterizedType) failingMethodArgType))
+					return false;
 			}
-			if (methodArgType instanceof Class && failingMethodArgType instanceof Class
-					&& !failingMethodArgType.equals(methodArgType)) {
+			else if (methodArgType instanceof Class && failingMethodArgType instanceof Class) {
+				if (!failingMethodArgType.equals(methodArgType))
+					return false;
+			}
+			else if (!methodArgType.equals(failingMethodArgType))
 				return false;
-			}
 		}
 		return true;
 	}

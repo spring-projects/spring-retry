@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +47,23 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Gianluca Medici
  */
 public class RecoverAnnotationRecoveryHandlerTests {
+
+	@Test
+	public void parameterMatchTest() {
+		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
+				new DefaultRecover(), ReflectionUtils.findMethod(DefaultRecover.class, "foo", String.class));
+
+		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m1"),
+				getGenericReturnTypeByName("m2"))).isTrue();
+		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m3"),
+				getGenericReturnTypeByName("m4"))).isFalse();
+		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m5"),
+				getGenericReturnTypeByName("m6"))).isTrue();
+	}
+
+	private ParameterizedType getGenericReturnTypeByName(String name) {
+		return (ParameterizedType) ReflectionUtils.findMethod(ParameterTest.class, name).getGenericReturnType();
+	}
 
 	@Test
 	public void defaultRecoverMethod() {
@@ -291,6 +309,34 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new RecoverByComposedRetryableAnnotationName(), foo);
 		assertThat(handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned"))).isEqualTo(4);
+	}
+
+	private static class ParameterTest<T> {
+
+		List<T> m1() {
+			return null;
+		}
+
+		List<T> m2() {
+			return null;
+		}
+
+		Map<List<String>, Byte> m3() {
+			return null;
+		}
+
+		Map<List<String>, Integer> m4() {
+			return null;
+		}
+
+		Map<List<Integer>, Byte> m5() {
+			return null;
+		}
+
+		Map<List<Integer>, Byte> m6() {
+			return null;
+		}
+
 	}
 
 	private static class InAccessibleRecover {
