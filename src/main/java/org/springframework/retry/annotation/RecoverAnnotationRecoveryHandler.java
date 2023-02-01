@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ import org.springframework.util.StringUtils;
  * @author Gary Russell
  * @author Artem Bilan
  * @author Gianluca Medici
+ * @author Lijinliang
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -224,12 +225,12 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	 * Returns {@code true} if the input methodReturnType is a direct match of the
 	 * failingMethodReturnType. Takes nested generics into consideration as well, while
 	 * deciding a match.
-	 * @param methodReturnType
-	 * @param failingMethodReturnType
+	 * @param methodReturnType the method return type
+	 * @param failingMethodReturnType the failing method return type
 	 * @return true if the parameterized return types match.
 	 * @since 1.3.2
 	 */
-	private boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
+	private static boolean isParameterizedTypeAssignable(ParameterizedType methodReturnType,
 			ParameterizedType failingMethodReturnType) {
 
 		Type[] methodActualArgs = methodReturnType.getActualTypeArguments();
@@ -242,11 +243,18 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 			Type methodArgType = methodActualArgs[i];
 			Type failingMethodArgType = failingMethodActualArgs[i];
 			if (methodArgType instanceof ParameterizedType && failingMethodArgType instanceof ParameterizedType) {
-				return isParameterizedTypeAssignable((ParameterizedType) methodArgType,
-						(ParameterizedType) failingMethodArgType);
+				if (!isParameterizedTypeAssignable((ParameterizedType) methodArgType,
+						(ParameterizedType) failingMethodArgType)) {
+
+					return false;
+				}
 			}
-			if (methodArgType instanceof Class && failingMethodArgType instanceof Class
-					&& !failingMethodArgType.equals(methodArgType)) {
+			else if (methodArgType instanceof Class && failingMethodArgType instanceof Class) {
+				if (!failingMethodArgType.equals(methodArgType)) {
+					return false;
+				}
+			}
+			else if (!methodArgType.equals(failingMethodArgType)) {
 				return false;
 			}
 		}

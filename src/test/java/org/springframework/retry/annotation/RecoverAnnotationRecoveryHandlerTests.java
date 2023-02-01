@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2022 the original author or authors.
+ * Copyright 2013-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,8 +46,30 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Nathanaël Roberts
  * @author Maksim Kita
  * @author Gianluca Medici
+ * @author Lijinliang
  */
 public class RecoverAnnotationRecoveryHandlerTests {
+
+	@Test
+	public void genericReturnTypesMatch() throws InvocationTargetException, IllegalAccessException {
+		Method isParameterizedTypeAssignable =
+				ReflectionUtils.findMethod(RecoverAnnotationRecoveryHandler.class, "isParameterizedTypeAssignable",
+						ParameterizedType.class, ParameterizedType.class);
+		isParameterizedTypeAssignable.setAccessible(true);
+
+		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m1"),
+				getGenericReturnTypeByName("m2"))).isEqualTo(Boolean.TRUE);
+		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m2"),
+				getGenericReturnTypeByName("m2_1"))).isEqualTo(Boolean.FALSE);
+		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m3"),
+				getGenericReturnTypeByName("m4"))).isEqualTo(Boolean.FALSE);
+		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m5"),
+				getGenericReturnTypeByName("m6"))).isEqualTo(Boolean.TRUE);
+	}
+
+	private static ParameterizedType getGenericReturnTypeByName(String name) {
+		return (ParameterizedType) ReflectionUtils.findMethod(ParameterTest.class, name).getGenericReturnType();
+	}
 
 	@Test
 	public void defaultRecoverMethod() {
@@ -291,6 +315,38 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new RecoverByComposedRetryableAnnotationName(), foo);
 		assertThat(handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned"))).isEqualTo(4);
+	}
+
+	private static class ParameterTest<T, M> {
+
+		List<T> m1() {
+			return null;
+		}
+
+		List<T> m2() {
+			return null;
+		}
+
+		List<M> m2_1() {
+			return null;
+		}
+
+		Map<List<String>, Byte> m3() {
+			return null;
+		}
+
+		Map<List<String>, Integer> m4() {
+			return null;
+		}
+
+		Map<List<Integer>, Byte> m5() {
+			return null;
+		}
+
+		Map<List<Integer>, Byte> m6() {
+			return null;
+		}
+
 	}
 
 	private static class InAccessibleRecover {
