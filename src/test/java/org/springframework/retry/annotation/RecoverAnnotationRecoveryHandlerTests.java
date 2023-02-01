@@ -55,6 +55,8 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m1"),
 				getGenericReturnTypeByName("m2"))).isTrue();
+		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m2"),
+				getGenericReturnTypeByName("m2_1"))).isFalse();
 		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m3"),
 				getGenericReturnTypeByName("m4"))).isFalse();
 		assertThat(handler.isParameterizedTypeAssignable(getGenericReturnTypeByName("m5"),
@@ -311,13 +313,17 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		assertThat(handler.recover(new Object[] { "Kevin" }, new RuntimeException("Planned"))).isEqualTo(4);
 	}
 
-	private static class ParameterTest<T> {
+	private static class ParameterTest<T, M> {
 
 		List<T> m1() {
 			return null;
 		}
 
 		List<T> m2() {
+			return null;
+		}
+
+		List<M> m2_1() {
 			return null;
 		}
 
