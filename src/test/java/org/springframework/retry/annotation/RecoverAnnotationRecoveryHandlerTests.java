@@ -52,9 +52,8 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 	@Test
 	public void genericReturnTypesMatch() throws InvocationTargetException, IllegalAccessException {
-		Method isParameterizedTypeAssignable =
-				ReflectionUtils.findMethod(RecoverAnnotationRecoveryHandler.class, "isParameterizedTypeAssignable",
-						ParameterizedType.class, ParameterizedType.class);
+		Method isParameterizedTypeAssignable = ReflectionUtils.findMethod(RecoverAnnotationRecoveryHandler.class,
+				"isParameterizedTypeAssignable", ParameterizedType.class, ParameterizedType.class);
 		isParameterizedTypeAssignable.setAccessible(true);
 
 		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m1"),
