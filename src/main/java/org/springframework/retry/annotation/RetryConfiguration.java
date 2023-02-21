@@ -112,9 +112,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		retryableAnnotationTypes.add(Retryable.class);
 		this.pointcut = buildPointcut(retryableAnnotationTypes);
 		this.advice = buildAdvice();
-		if (this.advice instanceof BeanFactoryAware) {
-			((BeanFactoryAware) this.advice).setBeanFactory(this.beanFactory);
-		}
+		this.advice.setBeanFactory(this.beanFactory);
 		if (this.enableRetry != null) {
 			setOrder(enableRetry.getNumber("order"));
 		}
