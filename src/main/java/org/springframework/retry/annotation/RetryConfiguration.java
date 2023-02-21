@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,13 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ImportAware;
 import org.springframework.context.annotation.Role;
 import org.springframework.core.OrderComparator;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.lang.Nullable;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.MethodArgumentsKeyGenerator;
@@ -63,6 +67,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Artem Bilan
  * @author Markus Heiden
  * @author Gary Russell
+ * @author Yanming Zhou
  * @since 1.1
  *
  */
@@ -70,7 +75,10 @@ import org.springframework.util.ReflectionUtils;
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
-		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean, SmartInitializingSingleton {
+		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean, SmartInitializingSingleton, ImportAware {
+
+	@Nullable
+	protected AnnotationAttributes enableRetry;
 
 	private AnnotationAwareRetryOperationsInterceptor advice;
 
@@ -89,6 +97,12 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	private BeanFactory beanFactory;
 
 	@Override
+	public void setImportMetadata(AnnotationMetadata importMetadata) {
+		this.enableRetry = AnnotationAttributes
+				.fromMap(importMetadata.getAnnotationAttributes(EnableRetry.class.getName()));
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 		this.retryContextCache = findBean(RetryContextCache.class);
 		this.methodArgumentsKeyGenerator = findBean(MethodArgumentsKeyGenerator.class);
@@ -100,6 +114,9 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		this.advice = buildAdvice();
 		if (this.advice instanceof BeanFactoryAware) {
 			((BeanFactoryAware) this.advice).setBeanFactory(this.beanFactory);
+		}
+		if (this.enableRetry != null) {
+			setOrder(enableRetry.getNumber("order"));
 		}
 	}
 
