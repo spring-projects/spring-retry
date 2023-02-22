@@ -780,6 +780,9 @@ contributions, and you will get an author credit if we do.  Active
 contributors might be asked to join the core team and be given the
 ability to merge pull requests.
 
+## Getting Support
+Check out the [Spring Retry tags on Stack Overflow](https://stackoverflow.com/questions/tagged/spring-retry). [Commercial support](https://spring.io/support) is available too.
+
 ## Code of Conduct
 
 This project adheres to the [Contributor Covenant](https://github.com/spring-projects/spring-retry/blob/main/CODE_OF_CONDUCT.adoc).
