@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Copyright 2012-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AliasFor;
 
 /**
@@ -33,7 +34,8 @@ import org.springframework.core.annotation.AliasFor;
  * the annotations.
  *
  * @author Dave Syer
- * @since 2.0
+ * @author Yanming Zhou
+ * @since 1.1
  *
  */
 @Target(ElementType.TYPE)
@@ -50,5 +52,14 @@ public @interface EnableRetry {
 	 */
 	@AliasFor(annotation = EnableAspectJAutoProxy.class)
 	boolean proxyTargetClass() default false;
+
+	/**
+	 * Indicate the order in which the {@link RetryConfiguration} should be applied.
+	 * <p>
+	 * The default is {@link Ordered#LOWEST_PRECEDENCE} in order to run after all other
+	 * post-processors, so that it can add an advisor to existing proxies rather than
+	 * double-proxy.
+	 */
+	int order() default Ordered.LOWEST_PRECEDENCE;
 
 }
