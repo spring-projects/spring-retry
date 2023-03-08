@@ -35,6 +35,7 @@ import org.springframework.core.annotation.AliasFor;
  *
  * @author Dave Syer
  * @author Yanming Zhou
+ * @author Ruslan Stelmachenko
  * @since 1.1
  *
  */
@@ -54,12 +55,13 @@ public @interface EnableRetry {
 	boolean proxyTargetClass() default false;
 
 	/**
-	 * Indicate the order in which the {@link RetryConfiguration} should be applied.
+	 * Indicate the order in which the {@link RetryConfiguration} AOP <b>advice</b> should
+	 * be applied.
 	 * <p>
-	 * The default is {@link Ordered#LOWEST_PRECEDENCE} in order to run after all other
-	 * post-processors, so that it can add an advisor to existing proxies rather than
-	 * double-proxy.
+	 * The default is {@code Ordered.LOWEST_PRECEDENCE - 1} in order to make sure the
+	 * advice is applied before other advices with {@link Ordered#LOWEST_PRECEDENCE} order
+	 * (e.g. an advice responsible for {@code @Transactional} behavior).
 	 */
-	int order() default Ordered.LOWEST_PRECEDENCE;
+	int order() default Ordered.LOWEST_PRECEDENCE - 1;
 
 }
