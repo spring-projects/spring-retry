@@ -35,7 +35,7 @@
 		<assertj.version>3.21.0</assertj.version>
 		<log4j.version>2.17.2</log4j.version>
 
-		<spring.framework.version>6.0.0</spring.framework.version>
+		<spring.framework.version>6.0.7</spring.framework.version>
 	</properties>
 
 	<profiles>
@@ -182,7 +182,7 @@
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
-			<version>1.9.9.1</version>
+			<version>1.9.19</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
