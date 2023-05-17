@@ -267,7 +267,10 @@ public class BackOffPolicyBuilder {
 			return policy;
 		}
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
-		if (this.delay != null) {
+		if (this.delaySupplier != null) {
+			policy.backOffPeriodSupplier(this.delaySupplier);
+		}
+		else if (this.delay != null) {
 			policy.setBackOffPeriod(this.delay);
 		}
 		if (this.sleeper != null) {

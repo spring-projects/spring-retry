@@ -37,6 +37,7 @@ import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.backoff.Sleeper;
 import org.springframework.retry.interceptor.RetryInterceptorBuilder;
 import org.springframework.retry.policy.SimpleRetryPolicy;
@@ -257,6 +258,11 @@ public class EnableRetryTests {
 		assertThat(retryPolicy.getMaxAttempts()).isEqualTo(5);
 		service.service4();
 		assertThat(service.getCount()).isEqualTo(11);
+		interceptor = delegates.get(target(service)).get(ExpressionService.class.getDeclaredMethod("service4"));
+		template = (RetryTemplate) new DirectFieldAccessor(interceptor).getPropertyValue("retryOperations");
+		templateAccessor = new DirectFieldAccessor(template);
+		FixedBackOffPolicy fbp = (FixedBackOffPolicy) templateAccessor.getPropertyValue("backOffPolicy");
+		assertThat(fbp.getBackOffPeriod()).isEqualTo(5000L);
 		service.service5();
 		assertThat(service.getCount()).isEqualTo(12);
 		context.close();
@@ -762,7 +768,8 @@ public class EnableRetryTests {
 			}
 		}
 
-		@Retryable(exceptionExpression = "message.contains('this can be retried')")
+		@Retryable(exceptionExpression = "message.contains('this can be retried')",
+				backoff = @Backoff(delayExpression = "5000"))
 		public void service4() {
 			if (this.count++ < 10) {
 				throw new RuntimeException("this can be retried");
