@@ -57,4 +57,15 @@ public class TimeoutRetryPolicyTests {
 		assertThat(child.getParent()).isSameAs(context);
 	}
 
+	@Test
+	public void testConstructorWithCustomTimeout() throws Exception {
+		TimeoutRetryPolicy policy = new TimeoutRetryPolicy(100);
+		RetryContext context = policy.open(null);
+		policy.registerThrowable(context, new Exception());
+		assertThat(policy.canRetry(context)).isTrue();
+		Thread.sleep(200);
+		assertThat(policy.canRetry(context)).isFalse();
+		policy.close(context);
+	}
+
 }
