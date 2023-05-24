@@ -35,7 +35,23 @@ public class TimeoutRetryPolicy implements RetryPolicy {
 	 */
 	public static final long DEFAULT_TIMEOUT = 1000;
 
-	private long timeout = DEFAULT_TIMEOUT;
+	private long timeout;
+
+	/**
+	 * Create a new instance with the timeout set to {@link #DEFAULT_TIMEOUT}.
+	 */
+	public TimeoutRetryPolicy() {
+		this(DEFAULT_TIMEOUT);
+	}
+
+	/**
+	 * Create a new instance with a configurable timeout.
+	 * @param timeout timeout in milliseconds
+	 * @since 2.0.2
+	 */
+	public TimeoutRetryPolicy(long timeout) {
+		this.timeout = timeout;
+	}
 
 	/**
 	 * Setter for timeout in milliseconds. Default is {@link #DEFAULT_TIMEOUT}.
