@@ -38,7 +38,7 @@ import org.springframework.util.ClassUtils;
  * </pre>
  *
  * will execute the callback at least once, and as many as 3 times.
- *
+ * <p>
  * Since version 1.3 it is not necessary to use this class. The same behaviour can be
  * achieved by constructing a {@link CompositeRetryPolicy} with
  * {@link MaxAttemptsRetryPolicy} and {@link BinaryExceptionClassifierRetryPolicy} inside,
@@ -164,6 +164,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @param noRecovery the throwables.
 	 * @since 3.0
 	 */
+	@SuppressWarnings("unchecked")
 	public void setNotRecoverable(Class<? extends Throwable>... noRecovery) {
 		Map<Class<? extends Throwable>, Boolean> map = new HashMap<>();
 		for (Class<? extends Throwable> clazz : noRecovery) {
@@ -258,7 +259,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	/**
 	 * Delegates to an exception classifier.
-	 * @param ex
+	 * @param ex the exception to classify.
 	 * @return true if this exception or its ancestors have been registered as retryable.
 	 */
 	private boolean retryForException(Throwable ex) {

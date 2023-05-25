@@ -121,7 +121,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
 		Method result = null;
 
-		if (StringUtils.isEmpty(this.recoverMethodName)) {
+		if (!StringUtils.hasText(this.recoverMethodName)) {
 			int min = Integer.MAX_VALUE;
 			for (Map.Entry<Method, SimpleMetadata> entry : this.methods.entrySet()) {
 				Method method = entry.getKey();

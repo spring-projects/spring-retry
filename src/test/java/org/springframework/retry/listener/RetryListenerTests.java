@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
  * @author Stéphane Nicoll
  * @author Gary Russell
  * @author Henning Pöttker
+ * @author Artem Bilan
  */
 public class RetryListenerTests {
 
@@ -46,6 +47,27 @@ public class RetryListenerTests {
 	int count = 0;
 
 	List<String> list = new ArrayList<>();
+
+	@Test
+	public void testClose() {
+		RetryListener retryListener = new RetryListener() {
+		};
+		assertThatNoException().isThrownBy(() -> retryListener.close(null, null, null));
+	}
+
+	@Test
+	public void noExceptionOnError() {
+		RetryListener retryListener = new RetryListener() {
+		};
+		assertThatNoException().isThrownBy(() -> retryListener.onError(null, null, null));
+	}
+
+	@Test
+	public void testOpen() {
+		RetryListener retryListener = new RetryListener() {
+		};
+		assertThat(retryListener.open(null, null)).isTrue();
+	}
 
 	@Test
 	public void testOpenDefaultImplementation() {

@@ -34,6 +34,7 @@ public class SerializedMapRetryContextCache implements RetryContextCache {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public RetryContext get(Object key) {
 		byte[] bytes = map.get(key);
 		return (RetryContext) SerializationUtils.deserialize(bytes);
