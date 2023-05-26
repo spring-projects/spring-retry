@@ -41,13 +41,6 @@ resource_types:
     tag: 0.0.18
     username: ((docker-hub-username))
     password: ((docker-hub-password))
-- name: pull-request
-  type: registry-image
-  source:
-    repository: teliaoss/github-pr-resource
-    tag: v0.23.0
-    username: ((docker-hub-username))
-    password: ((docker-hub-password))
 - name: github-release
   type: registry-image
   source:
@@ -68,14 +61,6 @@ resources:
   icon: github
   source:
     <<: *git-repo-resource-source
-- name: git-pull-request
-  type: pull-request
-  icon: source-pull
-  source:
-    access_token: ((github-ci-pull-request-token))
-    repository: ((github-repo-name))
-    base_branch: ((branch))
-    ignore_paths: ["ci/*"]
 - name: github-pre-release
   type: github-release
   icon: briefcase-download-outline
@@ -163,33 +148,6 @@ jobs:
   - put: artifactory-repo
     params:
       <<: *artifactory-repo-put-params
-- name: build-pull-requests
-  serial: true
-  public: true
-  plan:
-  - get: ci-image
-  - get: git-repo
-    resource: git-pull-request
-    trigger: true
-    version: every
-  - do:
-    - put: git-pull-request
-      params:
-        path: git-repo
-        status: pending
-    - task: build-project
-      image: ci-image
-      file: git-repo/ci/tasks/build-pr-project.yml
-    on_success:
-      put: git-pull-request
-      params:
-        path: git-repo
-        status: success
-    on_failure:
-      put: git-pull-request
-      params:
-        path: git-repo
-        status: failure
 - name: stage-milestone
   serial: true
   plan:
@@ -353,5 +311,3 @@ groups:
   jobs: ["stage-milestone", "stage-rc", "stage-release", "promote-milestone", "promote-rc", "promote-release", "create-github-release"]
 - name: "ci-images"
   jobs: ["build-ci-image"]
-- name: "pull-requests"
-  jobs: ["build-pull-requests"]
