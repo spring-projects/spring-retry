@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class FatalExceptionRetryPolicyTests {
 
 		Object result = null;
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo")));
+			.isThrownBy(() -> retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo")));
 		result = retryTemplate.execute(callback, recoveryCallback, new DefaultRetryState("foo"));
 		// Callback is called once: the recovery path should also be called
 		assertThat(callback.attempts).isEqualTo(1);

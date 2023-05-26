@@ -240,17 +240,19 @@ public class EnableRetryTests {
 		assertThat(service.getCount()).isEqualTo(9);
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
 		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
-				config).getPropertyValue("advice");
+				config)
+			.getPropertyValue("advice");
 		@SuppressWarnings("unchecked")
 		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
-				advice).getPropertyValue("delegates");
+				advice)
+			.getPropertyValue("delegates");
 		MethodInterceptor interceptor = delegates.get(target(service))
-				.get(ExpressionService.class.getDeclaredMethod("service3"));
+			.get(ExpressionService.class.getDeclaredMethod("service3"));
 		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
-				.getPropertyValue("retryOperations");
+			.getPropertyValue("retryOperations");
 		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
 		ExponentialBackOffPolicy backOff = (ExponentialBackOffPolicy) templateAccessor
-				.getPropertyValue("backOffPolicy");
+			.getPropertyValue("backOffPolicy");
 		assertThat(backOff.getInitialInterval()).isEqualTo(1);
 		assertThat(backOff.getMaxInterval()).isEqualTo(5);
 		assertThat(backOff.getMultiplier()).isEqualTo(1.1);
@@ -281,17 +283,19 @@ public class EnableRetryTests {
 
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
 		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
-				config).getPropertyValue("advice");
+				config)
+			.getPropertyValue("advice");
 		@SuppressWarnings("unchecked")
 		Map<Object, Map<Method, MethodInterceptor>> delegates = (Map<Object, Map<Method, MethodInterceptor>>) new DirectFieldAccessor(
-				advice).getPropertyValue("delegates");
+				advice)
+			.getPropertyValue("delegates");
 		MethodInterceptor interceptor = delegates.get(target(service))
-				.get(ExpressionService.class.getDeclaredMethod("service6"));
+			.get(ExpressionService.class.getDeclaredMethod("service6"));
 		RetryTemplate template = (RetryTemplate) new DirectFieldAccessor(interceptor)
-				.getPropertyValue("retryOperations");
+			.getPropertyValue("retryOperations");
 		DirectFieldAccessor templateAccessor = new DirectFieldAccessor(template);
 		ExponentialBackOffPolicy backOff = (ExponentialBackOffPolicy) templateAccessor
-				.getPropertyValue("backOffPolicy");
+			.getPropertyValue("backOffPolicy");
 		assertThat(backOff.getInitialInterval()).isEqualTo(1000);
 		assertThat(backOff.getMaxInterval()).isEqualTo(2000);
 		assertThat(backOff.getMultiplier()).isEqualTo(1.2);

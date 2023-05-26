@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class RetryContextSerializationTests {
 		assertThat(context.getRetryCount()).isEqualTo(1);
 		assertThat(
 				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount())
-						.isEqualTo(1);
+			.isEqualTo(1);
 	}
 
 	@ParameterizedTest
@@ -89,7 +89,7 @@ public class RetryContextSerializationTests {
 	@SuppressWarnings("deprecation")
 	public void testSerializationCycleForPolicy(RetryPolicy policy) {
 		assertThat(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy)
-				.isTrue();
+			.isTrue();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,12 +75,12 @@ public class CircuitBreakerRetryTemplateTests {
 		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.retryTemplate.setThrowLastExceptionOnExhausted(true);
 		assertThatExceptionOfType(Exception.class)
-				.isThrownBy(() -> this.retryTemplate.execute(this.callback, this.state))
-				.isEqualTo(this.callback.exceptionToThrow);
+			.isThrownBy(() -> this.retryTemplate.execute(this.callback, this.state))
+			.isEqualTo(this.callback.exceptionToThrow);
 		assertThat(this.callback.getAttempts()).isEqualTo(1);
 		assertThatExceptionOfType(Exception.class)
-				.isThrownBy(() -> this.retryTemplate.execute(this.callback, this.state))
-				.isEqualTo(this.callback.exceptionToThrow);
+			.isThrownBy(() -> this.retryTemplate.execute(this.callback, this.state))
+			.isEqualTo(this.callback.exceptionToThrow);
 		assertThat(this.callback.getAttempts()).isEqualTo(1);
 	}
 

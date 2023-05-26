@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	public void testDefaultInterceptorSunnyDay() {
 		((Advised) service).addAdvice(interceptor);
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setLabel("FOO");
 		((Advised) service).addAdvice(interceptor);
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		assertThat(context.getAttribute(RetryContext.NAME)).isEqualTo("FOO");
 	}
@@ -105,7 +105,7 @@ public class StatefulRetryOperationsInterceptorTests {
 	public void testDefaultTransformerInterceptorSunnyDay() {
 		((Advised) transformer).addAdvice(interceptor);
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> transformer.transform("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 	}
 
@@ -115,7 +115,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		((Advised) service).addAdvice(interceptor);
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 	}
 
@@ -130,7 +130,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		service.service("foo");
 		assertThat(count).isEqualTo(2);
@@ -143,7 +143,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> transformer.transform("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		Collection<String> result = transformer.transform("foo");
 		assertThat(count).isEqualTo(2);
@@ -156,10 +156,10 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		assertThatExceptionOfType(ExhaustedRetryException.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Retry exhausted");
+			.withMessageStartingWith("Retry exhausted");
 		assertThat(count).isEqualTo(1);
 	}
 
@@ -169,7 +169,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> service.service("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		interceptor.setRecoverer((data, cause) -> {
 			count++;
@@ -216,7 +216,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		interceptor.setRetryOperations(retryTemplate);
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
 		assertThatExceptionOfType(Exception.class).isThrownBy(() -> transformer.transform("foo"))
-				.withMessageStartingWith("Not enough calls");
+			.withMessageStartingWith("Not enough calls");
 		assertThat(count).isEqualTo(1);
 		interceptor.setRecoverer((data, cause) -> {
 			count++;

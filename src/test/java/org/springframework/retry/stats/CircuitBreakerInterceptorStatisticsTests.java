@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 		assertThat(result).isEqualTo(RECOVERED);
 		assertThat(stats.getRecoveryCount()).describedAs("There should be two recoveries").isEqualTo(2);
 		assertThat(stats.getErrorCount()).describedAs("There should only be one error because the circuit is now open")
-				.isEqualTo(1);
+			.isEqualTo(1);
 	}
 
 	@Configuration

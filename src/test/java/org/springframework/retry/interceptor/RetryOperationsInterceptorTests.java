@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ public class RetryOperationsInterceptorTests {
 		assertThat(monitoringTags.entrySet()).hasSize(3);
 		assertThat(monitoringTags.get(labelTagName)).isEqualTo(label);
 		assertThat(monitoringTags.get(classTagName))
-				.isEqualTo(RetryOperationsInterceptorTests.Service.class.getSimpleName());
+			.isEqualTo(RetryOperationsInterceptorTests.Service.class.getSimpleName());
 		assertThat(monitoringTags.get(methodTagName)).isEqualTo("service");
 		assertThat(argumentsAsExpected.get()).isTrue();
 	}

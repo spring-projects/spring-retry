@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,14 +55,14 @@ public class BinaryExceptionClassifierTests {
 	@Test
 	public void testClassifyExactMatch() {
 		Collection<Class<? extends Throwable>> set = Collections
-				.<Class<? extends Throwable>>singleton(IllegalStateException.class);
+			.<Class<? extends Throwable>>singleton(IllegalStateException.class);
 		assertThat(new BinaryExceptionClassifier(set).classify(new IllegalStateException("Foo"))).isTrue();
 	}
 
 	@Test
 	public void testClassifyExactMatchInCause() {
 		Collection<Class<? extends Throwable>> set = Collections
-				.<Class<? extends Throwable>>singleton(IllegalStateException.class);
+			.<Class<? extends Throwable>>singleton(IllegalStateException.class);
 		BinaryExceptionClassifier binaryExceptionClassifier = new BinaryExceptionClassifier(set);
 		binaryExceptionClassifier.setTraverseCauses(true);
 		assertThat(binaryExceptionClassifier.classify(new RuntimeException(new IllegalStateException("Foo")))).isTrue();
@@ -71,7 +71,7 @@ public class BinaryExceptionClassifierTests {
 	@Test
 	public void testClassifySubclassMatchInCause() {
 		Collection<Class<? extends Throwable>> set = Collections
-				.<Class<? extends Throwable>>singleton(IllegalStateException.class);
+			.<Class<? extends Throwable>>singleton(IllegalStateException.class);
 		BinaryExceptionClassifier binaryExceptionClassifier = new BinaryExceptionClassifier(set);
 		binaryExceptionClassifier.setTraverseCauses(true);
 		assertThat(binaryExceptionClassifier.classify(new RuntimeException(new FooException("Foo")))).isTrue();
@@ -86,9 +86,9 @@ public class BinaryExceptionClassifierTests {
 		binaryExceptionClassifier.setTraverseCauses(true);
 		assertThat(
 				binaryExceptionClassifier.classify(new RuntimeException(new FooException("Foo", new BarException()))))
-						.isTrue();
+			.isTrue();
 		assertThat(((Map<?, ?>) new DirectFieldAccessor(binaryExceptionClassifier).getPropertyValue("classified"))
-				.containsKey(FooException.class)).isTrue();
+			.containsKey(FooException.class)).isTrue();
 	}
 
 	@Test
@@ -111,7 +111,7 @@ public class BinaryExceptionClassifierTests {
 				Collections.<Class<? extends Throwable>>singleton(IllegalStateException.class), false);
 		classifier.setTraverseCauses(true);
 		assertThat(classifier.classify(new RuntimeException(new RuntimeException(new IllegalStateException("Foo")))))
-				.isFalse();
+			.isFalse();
 	}
 
 	@SuppressWarnings("serial")

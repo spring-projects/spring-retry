@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,13 +69,13 @@ public class CircuitBreakerTests {
 		assertThat(delegates).hasSize(1);
 		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
-				.get(Service.class.getDeclaredMethod("expressionService"));
+			.get(Service.class.getDeclaredMethod("expressionService"));
 		DirectFieldAccessor accessor = new DirectFieldAccessor(interceptor);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.maxAttempts")).isEqualTo(8);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.openTimeout")).isEqualTo(19000L);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.resetTimeout")).isEqualTo(20000L);
 		assertThat(accessor.getPropertyValue("retryOperations.retryPolicy.delegate.expression.expression"))
-				.isEqualTo("#root instanceof RuntimeExpression");
+			.isEqualTo("#root instanceof RuntimeExpression");
 
 		interceptor = (MethodInterceptor) methodMap.get(Service.class.getDeclaredMethod("expressionService2"));
 		accessor = new DirectFieldAccessor(interceptor);
@@ -98,7 +98,7 @@ public class CircuitBreakerTests {
 		assertThat(delegates).hasSize(1);
 		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
-				.get(Service.class.getDeclaredMethod("expressionService3"));
+			.get(Service.class.getDeclaredMethod("expressionService3"));
 		Supplier<?> maxAttempts = TestUtils.getPropertyValue(interceptor,
 				"retryOperations.retryPolicy.delegate.maxAttemptsSupplier", Supplier.class);
 		assertThat(maxAttempts).isNotNull();

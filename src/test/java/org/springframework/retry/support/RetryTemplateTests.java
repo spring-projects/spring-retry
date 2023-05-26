@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,11 +225,11 @@ public class RetryTemplateTests {
 				assertThat(RetryTemplateTests.this.context).isNotSameAs(status1);
 				assertThat(status1.getParent()).isSameAs(RetryTemplateTests.this.context);
 				assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be the child")
-						.isSameAs(status1);
+					.isSameAs(status1);
 				return null;
 			});
 			assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be restored")
-					.isSameAs(status);
+				.isSameAs(status);
 			return result;
 		});
 		assertThat(this.count).isEqualTo(2);

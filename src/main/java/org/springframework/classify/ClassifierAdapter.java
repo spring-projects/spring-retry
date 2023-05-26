@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class ClassifierAdapter<C, T> implements Classifier<C, T> {
 	public final void setDelegate(Object delegate) {
 		this.classifier = null;
 		this.invoker = MethodInvokerUtils
-				.getMethodInvokerByAnnotation(org.springframework.classify.annotation.Classifier.class, delegate);
+			.getMethodInvokerByAnnotation(org.springframework.classify.annotation.Classifier.class, delegate);
 		if (this.invoker == null) {
 			this.invoker = MethodInvokerUtils.<C, T>getMethodInvokerForSingleArgument(delegate);
 		}

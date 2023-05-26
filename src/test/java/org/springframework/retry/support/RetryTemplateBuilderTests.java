@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,10 +79,15 @@ public class RetryTemplateBuilderTests {
 		RetryListener listener1 = mock(RetryListener.class);
 		RetryListener listener2 = mock(RetryListener.class);
 
-		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).exponentialBackoff(99, 1.5, 1717)
-				.retryOn(IOException.class)
-				.retryOn(Collections.<Class<? extends Throwable>>singletonList(IllegalArgumentException.class))
-				.traversingCauses().withListener(listener1).withListeners(Collections.singletonList(listener2)).build();
+		RetryTemplate template = RetryTemplate.builder()
+			.maxAttempts(10)
+			.exponentialBackoff(99, 1.5, 1717)
+			.retryOn(IOException.class)
+			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IllegalArgumentException.class))
+			.traversingCauses()
+			.withListener(listener1)
+			.withListeners(Collections.singletonList(listener2))
+			.build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 
@@ -108,7 +113,7 @@ public class RetryTemplateBuilderTests {
 	@Test
 	public void testFailOnRetryPoliciesConflict() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> RetryTemplate.builder().maxAttempts(3).withinMillis(1000).build());
+			.isThrownBy(() -> RetryTemplate.builder().maxAttempts(3).withinMillis(1000).build());
 	}
 
 	@Test
@@ -161,15 +166,15 @@ public class RetryTemplateBuilderTests {
 
 	@Test
 	public void testFailOnNotationMix() {
-		assertThatIllegalArgumentException().isThrownBy(
-				() -> RetryTemplate.builder().retryOn(IOException.class).notRetryOn(OutOfMemoryError.class));
+		assertThatIllegalArgumentException()
+			.isThrownBy(() -> RetryTemplate.builder().retryOn(IOException.class).notRetryOn(OutOfMemoryError.class));
 	}
 
 	@Test
 	public void testFailOnNotationsMix() {
 		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
-				.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
-				.notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class)));
+			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
+			.notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class)));
 	}
 
 	/* ---------------- BackOff -------------- */
@@ -182,7 +187,7 @@ public class RetryTemplateBuilderTests {
 	@Test
 	public void testFailOnBackOffPolicyConflict() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> RetryTemplate.builder().noBackoff().fixedBackoff(1000).build());
+			.isThrownBy(() -> RetryTemplate.builder().noBackoff().fixedBackoff(1000).build());
 	}
 
 	@Test
@@ -206,19 +211,19 @@ public class RetryTemplateBuilderTests {
 	@Test
 	public void testValidateInitAndMax() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(100, 2, 100).build());
+			.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(100, 2, 100).build());
 	}
 
 	@Test
 	public void testValidateMeaninglessMultipier() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(100, 1, 200).build());
+			.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(100, 1, 200).build());
 	}
 
 	@Test
 	public void testValidateZeroInitInterval() {
 		assertThatIllegalArgumentException()
-				.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(0, 2, 200).build());
+			.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(0, 2, 200).build());
 	}
 
 	/* ---------------- Utils -------------- */

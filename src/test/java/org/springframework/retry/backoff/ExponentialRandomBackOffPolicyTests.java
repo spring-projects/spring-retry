@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,9 @@ public class ExponentialRandomBackOffPolicyTests {
 			long expectedMaxValue = 2 * (long) (initialInterval
 					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
 			assertThat(sleeps.get(i))
-					.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
-							sleeps.get(i), expectedMaxValue, i)
-					.isLessThan(expectedMaxValue);
+				.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
+						sleeps.get(i), expectedMaxValue, i)
+				.isLessThan(expectedMaxValue);
 		}
 	}
 
@@ -89,9 +89,9 @@ public class ExponentialRandomBackOffPolicyTests {
 			long expectedMaxValue = 2 * (long) (initialInterval
 					+ initialInterval * Math.max(1, Math.pow(backOffPolicy.getMultiplier(), i)));
 			assertThat(sleeps.get(i))
-					.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
-							sleeps.get(i), expectedMaxValue, i)
-					.isLessThanOrEqualTo(expectedMaxValue);
+				.describedAs("Found a sleep [%d] which exceeds our max expected value of %d at interval %d",
+						sleeps.get(i), expectedMaxValue, i)
+				.isLessThanOrEqualTo(expectedMaxValue);
 		}
 	}
 

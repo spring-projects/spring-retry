@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2023 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,13 +57,17 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		isParameterizedTypeAssignable.setAccessible(true);
 
 		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m1"),
-				getGenericReturnTypeByName("m2"))).isEqualTo(Boolean.TRUE);
+				getGenericReturnTypeByName("m2")))
+			.isEqualTo(Boolean.TRUE);
 		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m2"),
-				getGenericReturnTypeByName("m2_1"))).isEqualTo(Boolean.FALSE);
+				getGenericReturnTypeByName("m2_1")))
+			.isEqualTo(Boolean.FALSE);
 		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m3"),
-				getGenericReturnTypeByName("m4"))).isEqualTo(Boolean.FALSE);
+				getGenericReturnTypeByName("m4")))
+			.isEqualTo(Boolean.FALSE);
 		assertThat(isParameterizedTypeAssignable.invoke(null, getGenericReturnTypeByName("m5"),
-				getGenericReturnTypeByName("m6"))).isEqualTo(Boolean.TRUE);
+				getGenericReturnTypeByName("m6")))
+			.isEqualTo(Boolean.TRUE);
 	}
 
 	private static ParameterizedType getGenericReturnTypeByName(String name) {
@@ -98,7 +102,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new SpecificException(), ReflectionUtils.findMethod(SpecificException.class, "foo", String.class));
 		assertThatExceptionOfType(ExhaustedRetryException.class)
-				.isThrownBy(() -> handler.recover(new Object[] { "Dave" }, new Error("Planned")));
+			.isThrownBy(() -> handler.recover(new Object[] { "Dave" }, new Error("Planned")));
 	}
 
 	@Test
@@ -173,7 +177,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 
 		@SuppressWarnings("unchecked")
 		Map<String, GenericReturnTypeRecover.One> recoverResponseMap = (Map<String, GenericReturnTypeRecover.One>) handler
-				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+			.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
 		assertThat(CollectionUtils.isEmpty(recoverResponseMap)).isFalse();
 		assertThat(recoverResponseMap.get("bar")).isNotNull();
 		assertThat(recoverResponseMap.get("bar").name).isEqualTo("barRecoverValue");
@@ -216,11 +220,11 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				ReflectionUtils.findMethod(NestedGenericInheritanceReturnTypeRecover.class, "foo", String.class));
 		@SuppressWarnings("unchecked")
 		Map<String, Map<String, Map<Integer, String>>> recoverResponseMapRe = (Map<String, Map<String, Map<Integer, String>>>) fooHandler
-				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+			.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
 		assertThat(recoverResponseMapRe.get("foo").get("foo").get(0)).isEqualTo("fooRecoverReValue");
 		@SuppressWarnings("unchecked")
 		Map<String, Map<String, Map<Integer, String>>> recoverResponseMapIe = (Map<String, Map<String, Map<Integer, String>>>) fooHandler
-				.recover(new Object[] { "Aldo" }, new IllegalStateException("Planned"));
+			.recover(new Object[] { "Aldo" }, new IllegalStateException("Planned"));
 		assertThat(recoverResponseMapIe.get("foo").get("foo").get(0)).isEqualTo("fooRecoverIeValue");
 	}
 
@@ -231,7 +235,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				ReflectionUtils.findMethod(NestedGenericInheritanceReturnTypeRecover.class, "bar", String.class));
 		@SuppressWarnings("unchecked")
 		Map<String, Map<String, Map<Number, String>>> recoverResponseMapRe = (Map<String, Map<String, Map<Number, String>>>) barHandler
-				.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
+			.recover(new Object[] { "Aldo" }, new RuntimeException("Planned"));
 		assertThat(recoverResponseMapRe.get("bar").get("bar").get(0.0)).isEqualTo("barRecoverNumberValue");
 
 	}
@@ -279,7 +283,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 				new MultipleQualifyingRecoversExtendsThrowable(), foo);
 		assertThat(handler.recover(new Object[] { "Kevin" }, new IllegalArgumentException("Planned"))).isEqualTo(2);
 		assertThat(handler.recover(new Object[] { "Kevin" }, new UnsupportedOperationException("Planned")))
-				.isEqualTo(3);
+			.isEqualTo(3);
 
 	}
 
@@ -289,7 +293,7 @@ public class RecoverAnnotationRecoveryHandlerTests {
 		RecoverAnnotationRecoveryHandler<?> handler = new RecoverAnnotationRecoveryHandler<Integer>(
 				new InheritanceOnArgumentClass(), foo);
 		assertThat(handler.recover(new Object[] { new ArrayList<String>() }, new IllegalArgumentException("Planned")))
-				.isEqualTo(1);
+			.isEqualTo(1);
 	}
 
 	@Test

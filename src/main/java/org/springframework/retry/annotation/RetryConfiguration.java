@@ -99,7 +99,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		this.enableRetry = AnnotationAttributes
-				.fromMap(importMetadata.getAnnotationAttributes(EnableRetry.class.getName()));
+			.fromMap(importMetadata.getAnnotationAttributes(EnableRetry.class.getName()));
 	}
 
 	@Override

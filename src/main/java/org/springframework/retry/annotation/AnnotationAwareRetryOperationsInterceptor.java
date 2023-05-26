@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,8 +228,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		RetryTemplate template = createTemplate(retryable.listeners());
 		template.setRetryPolicy(getRetryPolicy(retryable, true));
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff(), true));
-		return RetryInterceptorBuilder.stateless().retryOperations(template).label(retryable.label())
-				.recoverer(getRecoverer(target, method)).build();
+		return RetryInterceptorBuilder.stateless()
+			.retryOperations(template)
+			.label(retryable.label())
+			.recoverer(getRecoverer(target, method))
+			.build();
 	}
 
 	private MethodInterceptor getStatefulInterceptor(Object target, Method method, Retryable retryable) {
@@ -251,16 +254,24 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			if (!StringUtils.hasText(label)) {
 				label = method.toGenericString();
 			}
-			return RetryInterceptorBuilder.circuitBreaker().keyGenerator(new FixedKeyGenerator("circuit"))
-					.retryOperations(template).recoverer(getRecoverer(target, method)).label(label).build();
+			return RetryInterceptorBuilder.circuitBreaker()
+				.keyGenerator(new FixedKeyGenerator("circuit"))
+				.retryOperations(template)
+				.recoverer(getRecoverer(target, method))
+				.label(label)
+				.build();
 		}
 		RetryPolicy policy = getRetryPolicy(retryable, false);
 		template.setRetryPolicy(policy);
 		template.setBackOffPolicy(getBackoffPolicy(retryable.backoff(), false));
 		String label = retryable.label();
-		return RetryInterceptorBuilder.stateful().keyGenerator(this.methodArgumentsKeyGenerator)
-				.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier).retryOperations(template).label(label)
-				.recoverer(getRecoverer(target, method)).build();
+		return RetryInterceptorBuilder.stateful()
+			.keyGenerator(this.methodArgumentsKeyGenerator)
+			.newMethodArgumentsIdentifier(this.newMethodArgumentsIdentifier)
+			.retryOperations(template)
+			.label(label)
+			.recoverer(getRecoverer(target, method))
+			.build();
 	}
 
 	private void openTimeout(CircuitBreakerRetryPolicy breaker, CircuitBreaker circuit) {
@@ -383,7 +394,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (simple == null) {
 			if (hasExpression) {
 				simple = new ExpressionRetryPolicy(maxAttempts, policyMap, true, resolve(exceptionExpression),
-						retryNotExcluded).withBeanFactory(this.beanFactory);
+						retryNotExcluded)
+					.withBeanFactory(this.beanFactory);
 			}
 			else {
 				simple = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);

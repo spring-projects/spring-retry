@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,8 +61,11 @@ public class BackOffPolicyBuilderTests {
 	@Test
 	public void shouldCreateUniformRandomBackOffPolicy() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(1).maxDelay(5000).sleeper(mockSleeper)
-				.build();
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder()
+			.delay(1)
+			.maxDelay(5000)
+			.sleeper(mockSleeper)
+			.build();
 		assertThat(UniformRandomBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass())).isTrue();
 		UniformRandomBackOffPolicy policy = (UniformRandomBackOffPolicy) backOffPolicy;
 		assertThat(policy.getMinBackOffPeriod()).isEqualTo(1);
@@ -73,8 +76,13 @@ public class BackOffPolicyBuilderTests {
 	@Test
 	public void shouldCreateExponentialBackOff() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(100).maxDelay(1000).multiplier(2)
-				.random(false).sleeper(mockSleeper).build();
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder()
+			.delay(100)
+			.maxDelay(1000)
+			.multiplier(2)
+			.random(false)
+			.sleeper(mockSleeper)
+			.build();
 		assertThat(ExponentialBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass())).isTrue();
 		ExponentialBackOffPolicy policy = (ExponentialBackOffPolicy) backOffPolicy;
 		assertThat(policy.getInitialInterval()).isEqualTo(100);
@@ -86,8 +94,13 @@ public class BackOffPolicyBuilderTests {
 	@Test
 	public void shouldCreateExponentialRandomBackOff() {
 		Sleeper mockSleeper = mock(Sleeper.class);
-		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder().delay(10000).maxDelay(100000).multiplier(10)
-				.random(true).sleeper(mockSleeper).build();
+		BackOffPolicy backOffPolicy = BackOffPolicyBuilder.newBuilder()
+			.delay(10000)
+			.maxDelay(100000)
+			.multiplier(10)
+			.random(true)
+			.sleeper(mockSleeper)
+			.build();
 		assertThat(ExponentialRandomBackOffPolicy.class.isAssignableFrom(backOffPolicy.getClass())).isTrue();
 		ExponentialRandomBackOffPolicy policy = (ExponentialRandomBackOffPolicy) backOffPolicy;
 		assertThat(policy.getInitialInterval()).isEqualTo(10000);

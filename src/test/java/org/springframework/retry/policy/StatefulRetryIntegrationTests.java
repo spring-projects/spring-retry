@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,12 +51,12 @@ public class StatefulRetryIntegrationTests {
 		assertThat(cache.containsKey("foo")).isFalse();
 
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
-				.withMessage(null);
+			.withMessage(null);
 
 		assertThat(cache.containsKey("foo")).isTrue();
 
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
-				.withMessageContaining("exhausted");
+			.withMessageContaining("exhausted");
 
 		assertThat(cache.containsKey("foo")).isFalse();
 
@@ -80,7 +80,7 @@ public class StatefulRetryIntegrationTests {
 
 		Object result = "start_foo";
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
-				.withMessage(null);
+			.withMessage(null);
 
 		assertThat(cache.containsKey("foo")).isTrue();
 
@@ -108,7 +108,7 @@ public class StatefulRetryIntegrationTests {
 
 		Object result = "start_foo";
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
-				.withMessage(null);
+			.withMessage(null);
 
 		assertThat(cache.containsKey("foo")).isTrue();
 
@@ -158,7 +158,7 @@ public class StatefulRetryIntegrationTests {
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(1));
 
 		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> retryTemplate.execute(callback, retryState))
-				.withMessage(null);
+			.withMessage(null);
 
 		retryTemplate.execute(callback, retryState);
 		// The second attempt is successful by design...
