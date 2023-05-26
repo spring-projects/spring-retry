@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  *
  */
 public class CircuitBreakerStatisticsTests {
@@ -83,9 +84,8 @@ public class CircuitBreakerStatisticsTests {
 		assertThat(result).isEqualTo(RECOVERED);
 		result = this.retryTemplate.execute(this.callback, this.recovery, this.state);
 		assertThat(result).isEqualTo(RECOVERED);
-		assertThat(stats.getRecoveryCount()).describedAs("There should be two recoveries", null).isEqualTo(2);
-		assertThat(stats.getErrorCount())
-			.describedAs("There should only be one error because the circuit is now open", null)
+		assertThat(stats.getRecoveryCount()).describedAs("There should be two recoveries").isEqualTo(2);
+		assertThat(stats.getErrorCount()).describedAs("There should only be one error because the circuit is now open")
 			.isEqualTo(1);
 		assertThat(stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)).isEqualTo(Boolean.TRUE);
 		// Both recoveries are through a short circuit because we used NeverRetryPolicy
@@ -94,7 +94,7 @@ public class CircuitBreakerStatisticsTests {
 	}
 
 	@Test
-	public void testFailedRecoveryCountsAsAbort() throws Throwable {
+	public void testFailedRecoveryCountsAsAbort() {
 		this.retryTemplate.setRetryPolicy(new CircuitBreakerRetryPolicy(new NeverRetryPolicy()));
 		this.recovery = context -> {
 			throw new ExhaustedRetryException("Planned exhausted");
@@ -123,8 +123,7 @@ public class CircuitBreakerStatisticsTests {
 		}
 		MutableRetryStatistics stats = (MutableRetryStatistics) repository.findOne("test");
 		assertThat(stats.getAbortCount()).describedAs("There should be two aborts").isEqualTo(2);
-		assertThat(stats.getErrorCount())
-			.describedAs("There should only be one error because the circuit is now open", null)
+		assertThat(stats.getErrorCount()).describedAs("There should only be one error because the circuit is now open")
 			.isEqualTo(1);
 		assertThat(stats.getAttribute(CircuitBreakerRetryPolicy.CIRCUIT_OPEN)).isEqualTo(true);
 		resetAndAssert(this.cache, stats);

@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  *
  */
 public class CircuitBreakerTests {
@@ -176,8 +177,7 @@ public class CircuitBreakerTests {
 
 		@Override
 		@CircuitBreaker(maxAttemptsExpression = "#{2 * ${foo:4}}", openTimeoutExpression = "#{${bar:19}000}",
-				resetTimeoutExpression = "#{${baz:20}000}",
-				exceptionExpression = "#{#root instanceof RuntimeExpression}")
+				resetTimeoutExpression = "#{${baz:20}000}", exceptionExpression = "#root instanceof RuntimeExpression")
 		public void expressionService() {
 			this.count++;
 		}

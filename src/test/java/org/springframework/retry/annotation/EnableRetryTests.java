@@ -584,14 +584,14 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(RuntimeException.class)
+		@Retryable(retryFor = RuntimeException.class)
 		public void service() {
 			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
-		@Retryable(RuntimeException.class)
+		@Retryable(retryFor = RuntimeException.class)
 		public void other() {
 			if (this.count++ < 3) {
 				throw new RuntimeException("Other");
@@ -655,7 +655,7 @@ public class EnableRetryTests {
 
 	}
 
-	@Retryable(RuntimeException.class)
+	@Retryable(retryFor = RuntimeException.class)
 	protected static class RetryableService {
 
 		private int count = 0;

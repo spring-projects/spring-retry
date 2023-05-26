@@ -15,6 +15,9 @@
  */
 package org.springframework.retry.policy;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +39,15 @@ public class SerializedMapRetryContextCache implements RetryContextCache {
 	@Override
 	public RetryContext get(Object key) {
 		byte[] bytes = map.get(key);
-		return (RetryContext) SerializationUtils.deserialize(bytes);
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+			return (RetryContext) ois.readObject();
+		}
+		catch (IOException ex) {
+			throw new IllegalArgumentException("Failed to deserialize object", ex);
+		}
+		catch (ClassNotFoundException ex) {
+			throw new IllegalStateException("Failed to deserialize object type", ex);
+		}
 	}
 
 	@Override

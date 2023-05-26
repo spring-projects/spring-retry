@@ -78,35 +78,27 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 		SimpleMetadata meta = this.methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);
-		boolean methodAccessible = method.isAccessible();
-		try {
-			ReflectionUtils.makeAccessible(method);
-			RetryContext context = RetrySynchronizationManager.getContext();
-			Object proxy = null;
-			if (context != null) {
-				proxy = context.getAttribute("___proxy___");
-				if (proxy != null) {
-					Method proxyMethod = findMethodOnProxy(method, proxy);
-					if (proxyMethod == null) {
-						proxy = null;
-					}
-					else {
-						method = proxyMethod;
-					}
+		ReflectionUtils.makeAccessible(method);
+		RetryContext context = RetrySynchronizationManager.getContext();
+		Object proxy = null;
+		if (context != null) {
+			proxy = context.getAttribute("___proxy___");
+			if (proxy != null) {
+				Method proxyMethod = findMethodOnProxy(method, proxy);
+				if (proxyMethod == null) {
+					proxy = null;
+				}
+				else {
+					method = proxyMethod;
 				}
 			}
-			if (proxy == null) {
-				proxy = this.target;
-			}
-			@SuppressWarnings("unchecked")
-			T result = (T) ReflectionUtils.invokeMethod(method, proxy, argsToUse);
-			return result;
 		}
-		finally {
-			if (methodAccessible != method.isAccessible()) {
-				method.setAccessible(methodAccessible);
-			}
+		if (proxy == null) {
+			proxy = this.target;
 		}
+		@SuppressWarnings("unchecked")
+		T result = (T) ReflectionUtils.invokeMethod(method, proxy, argsToUse);
+		return result;
 	}
 
 	private Method findMethodOnProxy(Method method, Object proxy) {
@@ -121,7 +113,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 	private Method findClosestMatch(Object[] args, Class<? extends Throwable> cause) {
 		Method result = null;
 
-		if (StringUtils.isEmpty(this.recoverMethodName)) {
+		if (!StringUtils.hasText(this.recoverMethodName)) {
 			int min = Integer.MAX_VALUE;
 			for (Map.Entry<Method, SimpleMetadata> entry : this.methods.entrySet()) {
 				Method method = entry.getKey();
