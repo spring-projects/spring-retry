@@ -18,6 +18,7 @@ package org.springframework.retry.support;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.backoff.ExponentialRandomBackOffPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.backoff.UniformRandomBackOffPolicy;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
@@ -53,6 +55,7 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
  * @author Aleksandr Shamukov
  * @author Kim In Hoi
  * @author Gary Russell
+ * @author Andreas Ahlenstorf
  */
 public class RetryTemplateBuilderTests {
 
@@ -113,10 +116,11 @@ public class RetryTemplateBuilderTests {
 	@Test
 	public void testFailOnRetryPoliciesConflict() {
 		assertThatIllegalArgumentException()
-			.isThrownBy(() -> RetryTemplate.builder().maxAttempts(3).withinMillis(1000).build());
+			.isThrownBy(() -> RetryTemplate.builder().maxAttempts(3).withTimeout(1000).build());
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	public void testTimeoutPolicy() {
 		RetryTemplate template = RetryTemplate.builder().withinMillis(10000).build();
 
@@ -125,6 +129,28 @@ public class RetryTemplateBuilderTests {
 
 		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(TimeoutRetryPolicy.class);
 		assertThat(((TimeoutRetryPolicy) policyTuple.baseRetryPolicy).getTimeout()).isEqualTo(10000);
+	}
+
+	@Test
+	public void testTimeoutMillis() {
+		RetryTemplate template = RetryTemplate.builder().withTimeout(10000).build();
+
+		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
+		assertDefaultClassifier(policyTuple);
+
+		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(TimeoutRetryPolicy.class);
+		assertThat(((TimeoutRetryPolicy) policyTuple.baseRetryPolicy).getTimeout()).isEqualTo(10000);
+	}
+
+	@Test
+	public void testTimeoutDuration() {
+		RetryTemplate template = RetryTemplate.builder().withTimeout(Duration.ofSeconds(3)).build();
+
+		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
+		assertDefaultClassifier(policyTuple);
+
+		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(TimeoutRetryPolicy.class);
+		assertThat(((TimeoutRetryPolicy) policyTuple.baseRetryPolicy).getTimeout()).isEqualTo(3000);
 	}
 
 	@Test
@@ -191,9 +217,38 @@ public class RetryTemplateBuilderTests {
 	}
 
 	@Test
+	public void testFixedBackoff() {
+		RetryTemplate template = RetryTemplate.builder().fixedBackoff(200).build();
+		FixedBackOffPolicy policy = getPropertyValue(template, "backOffPolicy", FixedBackOffPolicy.class);
+
+		assertThat(policy.getBackOffPeriod()).isEqualTo(200);
+	}
+
+	@Test
+	public void testFixedBackoffDuration() {
+		RetryTemplate template = RetryTemplate.builder().fixedBackoff(Duration.ofSeconds(1)).build();
+		FixedBackOffPolicy policy = getPropertyValue(template, "backOffPolicy", FixedBackOffPolicy.class);
+
+		assertThat(policy.getBackOffPeriod()).isEqualTo(1000);
+	}
+
+	@Test
 	public void testUniformRandomBackOff() {
 		RetryTemplate template = RetryTemplate.builder().uniformRandomBackoff(10, 100).build();
 		assertThat(getPropertyValue(template, "backOffPolicy")).isInstanceOf(UniformRandomBackOffPolicy.class);
+	}
+
+	@Test
+	public void testUniformRandomBackOffDuration() {
+		RetryTemplate template = RetryTemplate.builder()
+			.uniformRandomBackoff(Duration.ofSeconds(1), Duration.ofSeconds(2))
+			.build();
+
+		UniformRandomBackOffPolicy policy = getPropertyValue(template, "backOffPolicy",
+				UniformRandomBackOffPolicy.class);
+
+		assertThat(policy.getMinBackOffPeriod()).isEqualTo(1000);
+		assertThat(policy.getMaxBackOffPeriod()).isEqualTo(2000);
 	}
 
 	@Test
@@ -203,9 +258,47 @@ public class RetryTemplateBuilderTests {
 	}
 
 	@Test
+	public void testExponentialBackoff() {
+		RetryTemplate template = RetryTemplate.builder().exponentialBackoff(10, 2, 500).build();
+		ExponentialBackOffPolicy policy = getPropertyValue(template, "backOffPolicy", ExponentialBackOffPolicy.class);
+
+		assertThat(policy.getInitialInterval()).isEqualTo(10);
+		assertThat(policy.getMultiplier()).isEqualTo(2);
+		assertThat(policy.getMaxInterval()).isEqualTo(500);
+	}
+
+	@Test
+	public void testExponentialBackoffDuration() {
+		RetryTemplate template = RetryTemplate.builder()
+			.exponentialBackoff(Duration.ofSeconds(2), 2, Duration.ofSeconds(3))
+			.build();
+
+		ExponentialBackOffPolicy policy = getPropertyValue(template, "backOffPolicy", ExponentialBackOffPolicy.class);
+
+		assertThat(policy.getInitialInterval()).isEqualTo(2000);
+		assertThat(policy.getMultiplier()).isEqualTo(2);
+		assertThat(policy.getMaxInterval()).isEqualTo(3000);
+		assertThat(policy.getMaxInterval()).isEqualTo(3000);
+	}
+
+	@Test
 	public void testExpBackOffWithRandom() {
 		RetryTemplate template = RetryTemplate.builder().exponentialBackoff(10, 2, 500, true).build();
 		assertThat(getPropertyValue(template, "backOffPolicy")).isInstanceOf(ExponentialRandomBackOffPolicy.class);
+	}
+
+	@Test
+	public void testExponentialRandomBackoffDuration() {
+		RetryTemplate template = RetryTemplate.builder()
+			.exponentialBackoff(Duration.ofSeconds(2), 2, Duration.ofSeconds(3), true)
+			.build();
+
+		ExponentialRandomBackOffPolicy policy = getPropertyValue(template, "backOffPolicy",
+				ExponentialRandomBackOffPolicy.class);
+
+		assertThat(policy.getInitialInterval()).isEqualTo(2000);
+		assertThat(policy.getMultiplier()).isEqualTo(2);
+		assertThat(policy.getMaxInterval()).isEqualTo(3000);
 	}
 
 	@Test

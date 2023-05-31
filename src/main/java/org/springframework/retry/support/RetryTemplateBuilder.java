@@ -15,6 +15,7 @@
  */
 package org.springframework.retry.support;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,6 +84,7 @@ import org.springframework.util.Assert;
  * @author Aleksandr Shamukov
  * @author Artem Bilan
  * @author Kim In Hoi
+ * @author Andreas Ahlenstorf
  * @since 1.3
  */
 public class RetryTemplateBuilder {
@@ -122,14 +124,41 @@ public class RetryTemplateBuilder {
 	 * @param timeout whole execution timeout in milliseconds
 	 * @return this
 	 * @see TimeoutRetryPolicy
+	 * @deprecated Use {@link #withTimeout(long)} instead.
 	 */
+	@Deprecated(since = "2.0.2", forRemoval = true)
 	public RetryTemplateBuilder withinMillis(long timeout) {
-		Assert.isTrue(timeout > 0, "Timeout should be positive");
+		return withTimeout(timeout);
+	}
+
+	/**
+	 * Retry until {@code timeout} has passed since the initial attempt.
+	 * @param timeoutMillis timeout in milliseconds
+	 * @return this
+	 * @see TimeoutRetryPolicy
+	 * @throws IllegalArgumentException if timeout is {@literal <=} 0 or if another retry
+	 * policy has already been configured.
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder withTimeout(long timeoutMillis) {
+		Assert.isTrue(timeoutMillis > 0, "timeoutMillis should be greater than 0");
 		Assert.isNull(this.baseRetryPolicy, "You have already selected another retry policy");
-		TimeoutRetryPolicy timeoutRetryPolicy = new TimeoutRetryPolicy();
-		timeoutRetryPolicy.setTimeout(timeout);
-		this.baseRetryPolicy = timeoutRetryPolicy;
+		this.baseRetryPolicy = new TimeoutRetryPolicy(timeoutMillis);
 		return this;
+	}
+
+	/**
+	 * Retry until {@code timeout} has passed since the initial attempt.
+	 * @param timeout duration for how long retries should be attempted
+	 * @return this
+	 * @see TimeoutRetryPolicy
+	 * @throws IllegalArgumentException if timeout is {@code null} or 0, or if another
+	 * retry policy has already been configured.
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder withTimeout(Duration timeout) {
+		Assert.notNull(timeout, "timeout must not be null");
+		return withTimeout(timeout.toMillis());
 	}
 
 	/**
@@ -181,6 +210,27 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
+	 * Use exponential backoff policy. The formula of backoff period:
+	 * <p>
+	 * {@code currentInterval = Math.min(initialInterval * Math.pow(multiplier, retryNum), maxInterval)}
+	 * <p>
+	 * (for first attempt retryNum = 0)
+	 * @param initialInterval initial sleep duration
+	 * @param multiplier backoff interval multiplier
+	 * @param maxInterval maximum backoff duration
+	 * @return this
+	 * @see ExponentialBackOffPolicy
+	 * @throws IllegalArgumentException if initialInterval is {@code null}, multiplier is
+	 * {@literal <=} 1, or if maxInterval is {@code null}
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder exponentialBackoff(Duration initialInterval, double multiplier, Duration maxInterval) {
+		Assert.notNull(initialInterval, "initialInterval must not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
+		return exponentialBackoff(initialInterval.toMillis(), multiplier, maxInterval.toMillis(), false);
+	}
+
+	/**
 	 * Use exponential backoff policy. The formula of backoff period (without randomness):
 	 * <p>
 	 * {@code currentInterval = Math.min(initialInterval * Math.pow(multiplier, retryNum), maxInterval)}
@@ -211,6 +261,31 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
+	 * Use exponential backoff policy. The formula of backoff period (without randomness):
+	 * <p>
+	 * {@code currentInterval = Math.min(initialInterval * Math.pow(multiplier, retryNum), maxInterval)}
+	 * <p>
+	 * (for first attempt retryNum = 0)
+	 * @param initialInterval initial sleep duration
+	 * @param multiplier backoff interval multiplier
+	 * @param maxInterval maximum backoff duration
+	 * @param withRandom adds some randomness to backoff intervals. For details, see
+	 * {@link ExponentialRandomBackOffPolicy}
+	 * @return this
+	 * @see ExponentialBackOffPolicy
+	 * @see ExponentialRandomBackOffPolicy
+	 * @throws IllegalArgumentException if initialInterval is {@code null}, multiplier is
+	 * {@literal <=} 1, or maxInterval is {@code null}
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder exponentialBackoff(Duration initialInterval, double multiplier, Duration maxInterval,
+			boolean withRandom) {
+		Assert.notNull(initialInterval, "initialInterval most not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
+		return this.exponentialBackoff(initialInterval.toMillis(), multiplier, maxInterval.toMillis(), withRandom);
+	}
+
+	/**
 	 * Perform each retry after fixed amount of time.
 	 * @param interval fixed interval in milliseconds
 	 * @return this
@@ -223,6 +298,24 @@ public class RetryTemplateBuilder {
 		policy.setBackOffPeriod(interval);
 		this.backOffPolicy = policy;
 		return this;
+	}
+
+	/**
+	 * Perform each retry after fixed amount of time.
+	 * @param interval fixed backoff duration
+	 * @return this
+	 * @see FixedBackOffPolicy
+	 * @throws IllegalArgumentException if another backoff policy has already been
+	 * configured, interval is {@code null} or less than 1 millisecond
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder fixedBackoff(Duration interval) {
+		Assert.notNull(interval, "interval must not be null");
+
+		long millis = interval.toMillis();
+		Assert.isTrue(millis >= 1, "interval is less than 1 millisecond");
+
+		return this.fixedBackoff(millis);
 	}
 
 	/**
@@ -242,6 +335,23 @@ public class RetryTemplateBuilder {
 		policy.setMaxBackOffPeriod(maxInterval);
 		this.backOffPolicy = policy;
 		return this;
+	}
+
+	/**
+	 * Use {@link UniformRandomBackOffPolicy}.
+	 * @param minInterval minimum backoff duration
+	 * @param maxInterval maximum backoff duration
+	 * @return this
+	 * @see UniformRandomBackOffPolicy
+	 * @throws IllegalArgumentException if minInterval is {@code null} or {@literal <} 1,
+	 * maxInterval is {@code null} or {@literal <} 1, maxInterval {@literal >=}
+	 * minInterval or if another backoff policy has already been configured.
+	 * @since 2.0.2
+	 */
+	public RetryTemplateBuilder uniformRandomBackoff(Duration minInterval, Duration maxInterval) {
+		Assert.notNull(minInterval, "minInterval must not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
+		return this.uniformRandomBackoff(minInterval.toMillis(), maxInterval.toMillis());
 	}
 
 	/**
