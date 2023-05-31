@@ -157,7 +157,7 @@ public class RetryTemplateBuilder {
 	 * @since 2.0.2
 	 */
 	public RetryTemplateBuilder withTimeout(Duration timeout) {
-		Assert.notNull(timeout, "timeout is null");
+		Assert.notNull(timeout, "timeout must not be null");
 		return withTimeout(timeout.toMillis());
 	}
 
@@ -225,8 +225,8 @@ public class RetryTemplateBuilder {
 	 * @since 2.0.2
 	 */
 	public RetryTemplateBuilder exponentialBackoff(Duration initialInterval, double multiplier, Duration maxInterval) {
-		Assert.notNull(initialInterval, "initialInterval is null");
-		Assert.notNull(maxInterval, "maxInterval is null");
+		Assert.notNull(initialInterval, "initialInterval must not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
 		return exponentialBackoff(initialInterval.toMillis(), multiplier, maxInterval.toMillis(), false);
 	}
 
@@ -280,8 +280,8 @@ public class RetryTemplateBuilder {
 	 */
 	public RetryTemplateBuilder exponentialBackoff(Duration initialInterval, double multiplier, Duration maxInterval,
 			boolean withRandom) {
-		Assert.notNull(initialInterval, "initialInterval is null");
-		Assert.notNull(maxInterval, "maxInterval is null");
+		Assert.notNull(initialInterval, "initialInterval most not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
 		return this.exponentialBackoff(initialInterval.toMillis(), multiplier, maxInterval.toMillis(), withRandom);
 	}
 
@@ -310,7 +310,7 @@ public class RetryTemplateBuilder {
 	 * @since 2.0.2
 	 */
 	public RetryTemplateBuilder fixedBackoff(Duration interval) {
-		Assert.notNull(interval, "interval is null");
+		Assert.notNull(interval, "interval must not be null");
 
 		long millis = interval.toMillis();
 		Assert.isTrue(millis >= 1, "interval is less than 1 millisecond");
@@ -349,8 +349,8 @@ public class RetryTemplateBuilder {
 	 * @since 2.0.2
 	 */
 	public RetryTemplateBuilder uniformRandomBackoff(Duration minInterval, Duration maxInterval) {
-		Assert.notNull(minInterval, "minInterval is null");
-		Assert.notNull(maxInterval, "maxInterval is null");
+		Assert.notNull(minInterval, "minInterval must not be null");
+		Assert.notNull(maxInterval, "maxInterval must not be null");
 		return this.uniformRandomBackoff(minInterval.toMillis(), maxInterval.toMillis());
 	}
 
