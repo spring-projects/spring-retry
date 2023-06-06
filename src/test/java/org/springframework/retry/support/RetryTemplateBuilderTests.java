@@ -308,7 +308,7 @@ public class RetryTemplateBuilderTests {
 	}
 
 	@Test
-	public void testValidateMeaninglessMultipier() {
+	public void testValidateMeaninglessMultiplier() {
 		assertThatIllegalArgumentException()
 			.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(100, 1, 200).build());
 	}
