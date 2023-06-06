@@ -465,7 +465,6 @@ public class RetryTemplateBuilder {
 	/**
 	 * Enable examining exception causes for {@link Throwable} instances that cause a
 	 * retry.
-	 *
 	 * <p>
 	 * Suppose the following {@code RetryTemplate}: <pre>{@code
 	 * RetryTemplate.builder()
@@ -526,11 +525,9 @@ public class RetryTemplateBuilder {
 
 	/**
 	 * Build a new {@link RetryTemplate}.
-	 *
 	 * <p>
 	 * Supports building multiple instances. However, it is not possible to change the
 	 * configuration between multiple {@code build()} calls.
-	 *
 	 * <p>
 	 * The {@code retryPolicy} of the returned {@link RetryTemplate} is always a
 	 * {@link CompositeRetryPolicy} that consists of one base policy and of
