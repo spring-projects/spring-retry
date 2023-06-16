@@ -60,7 +60,7 @@ template.execute(ctx -> {
 ```
 
 For versions prior to 1.3,
-see the examples in the [RetryTemplate](#retryTemplate) section.
+see the examples in the [RetryTemplate](#using-retrytemplate) section.
 
 ## Building
 
@@ -75,7 +75,7 @@ $ mvn install
 
 This section discusses the features of Spring Retry and shows how to use its API.
 
-### <a name="retryTemplate"></a> Using `RetryTemplate`
+### Using `RetryTemplate`
 
 To make processing more robust and less prone to failure, it sometimes helps to
 automatically retry a failed operation, in case it might succeed on a subsequent attempt.
