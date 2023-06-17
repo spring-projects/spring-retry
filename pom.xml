@@ -32,7 +32,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<junit-jupiter.version>5.8.2</junit-jupiter.version>
-		<assertj.version>3.21.0</assertj.version>
+		<assertj.version>3.24.2</assertj.version>
 		<log4j.version>2.20.0</log4j.version>
 
 		<spring.framework.version>6.0.10</spring.framework.version>
