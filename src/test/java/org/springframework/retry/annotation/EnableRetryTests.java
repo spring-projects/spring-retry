@@ -142,6 +142,24 @@ public class EnableRetryTests {
 	}
 
 	@Test
+	public void recoveryWithoutParam() {
+		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class)) {
+			RecoverableService service = context.getBean(RecoverableService.class);
+			assertThat(service.serviceWithoutParam()).isEqualTo("test");
+		}
+	}
+
+	@Test
+	public void recoveryWithParam() {
+		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfiguration.class)) {
+			RecoverableService service = context.getBean(RecoverableService.class);
+			assertThat(service.serviceWithParam("test")).isEqualTo("test");
+		}
+	}
+
+	@Test
 	public void type() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
 		RetryableService service = context.getBean(RetryableService.class);
@@ -635,6 +653,26 @@ public class EnableRetryTests {
 		@Recover
 		public void recover(Throwable cause) {
 			this.cause = cause;
+		}
+
+		@Retryable(retryFor = RuntimeException.class, recover = "recoverWithoutParam")
+		public String serviceWithoutParam() {
+			throw new RuntimeException("Planned");
+		}
+
+		@Recover
+		public String recoverWithoutParam() {
+			return "test";
+		}
+
+		@Retryable(retryFor = RuntimeException.class, recover = "recoverWithParam")
+		public String serviceWithParam(String param) {
+			throw new RuntimeException("Planned");
+		}
+
+		@Recover
+		public String recoverWithParam(String param) {
+			return param;
 		}
 
 		public Throwable getCause() {

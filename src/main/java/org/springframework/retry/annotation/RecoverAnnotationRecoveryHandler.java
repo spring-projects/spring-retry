@@ -54,6 +54,7 @@ import org.springframework.util.StringUtils;
  * @author Artem Bilan
  * @author Gianluca Medici
  * @author Lijinliang
+ * @author Yanming Zhou
  */
 public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationRecoverer<T> {
 
@@ -130,7 +131,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 					}
 					else if (distance == min) {
 						boolean parametersMatch = compareParameters(args, meta.getArgCount(),
-								method.getParameterTypes());
+								method.getParameterTypes(), false);
 						if (parametersMatch) {
 							result = method;
 						}
@@ -143,8 +144,8 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 				Method method = entry.getKey();
 				if (method.getName().equals(this.recoverMethodName)) {
 					SimpleMetadata meta = entry.getValue();
-					if (meta.type.isAssignableFrom(cause)
-							&& compareParameters(args, meta.getArgCount(), method.getParameterTypes())) {
+					if ((meta.type == null || meta.type.isAssignableFrom(cause))
+							&& compareParameters(args, meta.getArgCount(), method.getParameterTypes(), true)) {
 						result = method;
 						break;
 					}
@@ -164,8 +165,9 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return result;
 	}
 
-	private boolean compareParameters(Object[] args, int argCount, Class<?>[] parameterTypes) {
-		if (argCount == (args.length + 1)) {
+	private boolean compareParameters(Object[] args, int argCount, Class<?>[] parameterTypes,
+			boolean withRecoverMethodName) {
+		if ((withRecoverMethodName && argCount == args.length) || argCount == (args.length + 1)) {
 			int startingIndex = 0;
 			if (parameterTypes.length > 0 && Throwable.class.isAssignableFrom(parameterTypes[0])) {
 				startingIndex = 1;
