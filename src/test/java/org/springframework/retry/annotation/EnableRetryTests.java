@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import static org.junit.Assert.fail;
  * @author Artem Bilan
  * @author Gary Russell
  * @author Aldo Sinanaj
+ * @author Yanming Zhou
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -95,6 +96,15 @@ public class EnableRetryTests {
 		RecoverableService recoverable = context.getBean(RecoverableService.class);
 		recoverable.service();
 		assertTrue(recoverable.isOtherAdviceCalled());
+		context.close();
+	}
+
+	@Test
+	public void order() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestOrderConfiguration.class);
+		RetryConfiguration config = context.getBean(RetryConfiguration.class);
+		assertEquals(1, config.getOrder());
 		context.close();
 	}
 
@@ -321,6 +331,17 @@ public class EnableRetryTests {
 				return Integer.MAX_VALUE;
 			}
 
+		}
+
+	}
+
+	@Configuration
+	@EnableRetry(order = 1)
+	protected static class TestOrderConfiguration {
+
+		@Bean
+		public Service service() {
+			return new Service();
 		}
 
 	}
