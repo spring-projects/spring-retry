@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
@@ -81,17 +82,17 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	/**
 	 * The initial backoff interval.
 	 */
-	private Supplier<Long> initialIntervalSupplier;
+	private Function<RetryContext, Long> initialIntervalFunction;
 
 	/**
 	 * The maximum value of the backoff period in milliseconds.
 	 */
-	private Supplier<Long> maxIntervalSupplier;
+	private Function<RetryContext, Long> maxIntervalFunction;
 
 	/**
 	 * The value to add to the backoff period for each retry attempt.
 	 */
-	private Supplier<Double> multiplierSupplier;
+	private Function<RetryContext, Double> multiplierFunction;
 
 	private Sleeper sleeper = new ThreadWaitSleeper();
 
@@ -156,10 +157,12 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * millisecond.
 	 * @param initialIntervalSupplier the initial interval
 	 * @since 2.0
+	 * @deprecated in favor of {@link #initialIntervalFunction(Function)}.
 	 */
+	@Deprecated
 	public void initialIntervalSupplier(Supplier<Long> initialIntervalSupplier) {
 		Assert.notNull(initialIntervalSupplier, "'initialIntervalSupplier' cannot be null");
-		this.initialIntervalSupplier = initialIntervalSupplier;
+		this.initialIntervalFunction = context -> initialIntervalSupplier.get();
 	}
 
 	/**
@@ -167,10 +170,12 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * not use values much in excess of 1.0 (or the backoff will get very long very fast).
 	 * @param multiplierSupplier the multiplier
 	 * @since 2.0
+	 * @deprecated in favor of {@link #multiplierFunction(Function)}.
 	 */
+	@Deprecated
 	public void multiplierSupplier(Supplier<Double> multiplierSupplier) {
 		Assert.notNull(multiplierSupplier, "'multiplierSupplier' cannot be null");
-		this.multiplierSupplier = multiplierSupplier;
+		this.multiplierFunction = context -> multiplierSupplier.get();
 	}
 
 	/**
@@ -180,22 +185,90 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * too high).
 	 * @param maxIntervalSupplier in milliseconds.
 	 * @since 2.0
+	 * @deprecated in favor of {@link #maxIntervalFunction(Function)}.
 	 */
+	@Deprecated
 	public void maxIntervalSupplier(Supplier<Long> maxIntervalSupplier) {
 		Assert.notNull(maxIntervalSupplier, "'maxIntervalSupplier' cannot be null");
-		this.maxIntervalSupplier = maxIntervalSupplier;
+		this.maxIntervalFunction = context -> maxIntervalSupplier.get();
 	}
 
+	/**
+	 * Set the initial sleep interval value. Default supplier supplies {@code 100}
+	 * millisecond.
+	 * @param initialIntervalFunction the initial interval
+	 * @since 2.0.3
+	 */
+	public void initialIntervalFunction(Function<RetryContext, Long> initialIntervalFunction) {
+		Assert.notNull(initialIntervalFunction, "'initialIntervalFunction' cannot be null");
+		this.initialIntervalFunction = initialIntervalFunction;
+	}
+
+	/**
+	 * Set the multiplier value. Default supplier supplies '<code>2.0</code>'. Hint: do
+	 * not use values much in excess of 1.0 (or the backoff will get very long very fast).
+	 * @param multiplierFunction the multiplier
+	 * @since 2.0.3
+	 */
+	public void multiplierFunction(Function<RetryContext, Double> multiplierFunction) {
+		Assert.notNull(multiplierFunction, "'multiplierFunction' cannot be null");
+		this.multiplierFunction = multiplierFunction;
+	}
+
+	/**
+	 * Setter for maximum back off period. Default is 30000 (30 seconds). the value will
+	 * be reset to 1 if this method is called with a value less than 1. Set this to avoid
+	 * infinite waits if backing off a large number of times (or if the multiplier is set
+	 * too high).
+	 * @param maxIntervalFunction in milliseconds.
+	 * @since 2.0.3
+	 */
+	public void maxIntervalFunction(Function<RetryContext, Long> maxIntervalFunction) {
+		Assert.notNull(maxIntervalFunction, "'maxIntervalFunction' cannot be null");
+		this.maxIntervalFunction = maxIntervalFunction;
+	}
+
+	/**
+	 * @deprecated in favor of {@link #getInitialIntervalFunction()}.
+	 * @return the supplier.
+	 */
+	@Deprecated
 	protected Supplier<Long> getInitialIntervalSupplier() {
-		return initialIntervalSupplier;
+		return () -> this.initialIntervalFunction.apply(null);
 	}
 
+	/**
+	 * @deprecated in favor of {@link #getMaxIntervalFunction()}.
+	 * @return the supplier.
+	 */
+	@Deprecated
 	protected Supplier<Long> getMaxIntervalSupplier() {
-		return maxIntervalSupplier;
+		return () -> this.maxIntervalFunction.apply(null);
 	}
 
+	/**
+	 * @deprecated in favor of {@link #getMultiplierFunction()}.
+	 * @return the supplier.
+	 */
+	@Deprecated
 	protected Supplier<Double> getMultiplierSupplier() {
-		return multiplierSupplier;
+		return () -> this.multiplierFunction.apply(null);
+	}
+
+	protected Function<RetryContext, Long> getInitialIntervalFunction() {
+		return this.initialIntervalFunction;
+	}
+
+	protected void setInitialIntervalFunction(Function<RetryContext, Long> initialIntervalFunction) {
+		this.initialIntervalFunction = initialIntervalFunction;
+	}
+
+	protected Function<RetryContext, Long> getMaxIntervalFunction() {
+		return this.maxIntervalFunction;
+	}
+
+	protected Function<RetryContext, Double> getMultiplierFunction() {
+		return this.multiplierFunction;
 	}
 
 	/**
@@ -203,7 +276,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the initial interval
 	 */
 	public long getInitialInterval() {
-		return this.initialIntervalSupplier != null ? this.initialIntervalSupplier.get() : this.initialInterval;
+		return this.initialIntervalFunction != null ? this.initialIntervalFunction.apply(null) : this.initialInterval;
 	}
 
 	/**
@@ -211,7 +284,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the maximum interval.
 	 */
 	public long getMaxInterval() {
-		return this.maxIntervalSupplier != null ? this.maxIntervalSupplier.get() : this.maxInterval;
+		return this.maxIntervalFunction != null ? this.maxIntervalFunction.apply(null) : this.maxInterval;
 	}
 
 	/**
@@ -219,7 +292,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @return the multiplier in use
 	 */
 	public double getMultiplier() {
-		return this.multiplierSupplier != null ? this.multiplierSupplier.get() : this.multiplier;
+		return this.multiplierFunction != null ? this.multiplierFunction.apply(null) : this.multiplier;
 	}
 
 	/**
@@ -227,8 +300,8 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 */
 	@Override
 	public BackOffContext start(RetryContext context) {
-		return new ExponentialBackOffContext(this.initialInterval, this.multiplier, this.maxInterval,
-				this.initialIntervalSupplier, this.multiplierSupplier, this.maxIntervalSupplier);
+		return new ExponentialBackOffContext(context, this.initialInterval, this.multiplier, this.maxInterval,
+				this.initialIntervalFunction, this.multiplierFunction, this.maxIntervalFunction);
 	}
 
 	/**
@@ -251,27 +324,31 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 	static class ExponentialBackOffContext implements BackOffContext {
 
+		private final RetryContext context;
+
 		private final double multiplier;
 
 		private long interval;
 
 		private final long maxInterval;
 
-		private Supplier<Long> intervalSupplier;
+		private Function<RetryContext, Long> intervalFunction;
 
-		private Supplier<Double> multiplierSupplier;
+		private Function<RetryContext, Double> multiplierFunction;
 
-		private Supplier<Long> maxIntervalSupplier;
+		private Function<RetryContext, Long> maxIntervalFunction;
 
-		public ExponentialBackOffContext(long interval, double multiplier, long maxInterval,
-				Supplier<Long> intervalSupplier, Supplier<Double> multiplierSupplier,
-				Supplier<Long> maxIntervalSupplier) {
+		public ExponentialBackOffContext(RetryContext context, long interval, double multiplier, long maxInterval,
+				Function<RetryContext, Long> intervalFunction, Function<RetryContext, Double> multiplierFunction,
+				Function<RetryContext, Long> maxIntervalFunction) {
+
+			this.context = context;
 			this.interval = interval;
 			this.multiplier = multiplier;
 			this.maxInterval = maxInterval;
-			this.intervalSupplier = intervalSupplier;
-			this.multiplierSupplier = multiplierSupplier;
-			this.maxIntervalSupplier = maxIntervalSupplier;
+			this.intervalFunction = intervalFunction;
+			this.multiplierFunction = multiplierFunction;
+			this.maxIntervalFunction = maxIntervalFunction;
 		}
 
 		public synchronized long getSleepAndIncrement() {
@@ -291,15 +368,15 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public double getMultiplier() {
-			return this.multiplierSupplier != null ? this.multiplierSupplier.get() : this.multiplier;
+			return this.multiplierFunction != null ? this.multiplierFunction.apply(this.context) : this.multiplier;
 		}
 
 		public long getInterval() {
-			return this.intervalSupplier != null ? this.intervalSupplier.get() : this.interval;
+			return this.intervalFunction != null ? this.intervalFunction.apply(this.context) : this.interval;
 		}
 
 		public long getMaxInterval() {
-			return this.maxIntervalSupplier != null ? this.maxIntervalSupplier.get() : this.maxInterval;
+			return this.maxIntervalFunction != null ? this.maxIntervalFunction.apply(this.context) : this.maxInterval;
 		}
 
 	}

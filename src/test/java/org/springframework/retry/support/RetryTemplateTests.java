@@ -20,7 +20,9 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryCallback;
@@ -56,6 +58,13 @@ public class RetryTemplateTests {
 
 	int count = 0;
 
+	TestInfo info;
+
+	@BeforeEach
+	void before(TestInfo info) {
+		this.info = info;
+	}
+
 	@Test
 	public void testSuccessfulRetry() throws Throwable {
 		for (int x = 1; x <= 10; x++) {
@@ -63,7 +72,7 @@ public class RetryTemplateTests {
 			callback.setAttemptsBeforeSuccess(x);
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
-			retryTemplate.execute(callback);
+			retryTemplate.execute(callback, this.info.getDisplayName());
 			assertThat(callback.attempts).isEqualTo(x);
 		}
 	}
@@ -84,7 +93,7 @@ public class RetryTemplateTests {
 			};
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(x));
-			retryTemplate.execute(callback);
+			retryTemplate.execute(callback, this.info.getDisplayName());
 			assertThat(attempts.get()).isEqualTo(x);
 		}
 	}
@@ -96,7 +105,7 @@ public class RetryTemplateTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(2));
 		final Object value = new Object();
-		Object result = retryTemplate.execute(callback, context -> value);
+		Object result = retryTemplate.execute(callback, context -> value, this.info.getDisplayName());
 		assertThat(callback.attempts).isEqualTo(2);
 		assertThat(result).isEqualTo(value);
 	}
@@ -106,7 +115,7 @@ public class RetryTemplateTests {
 		MockRetryCallback callback = new MockRetryCallback();
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new NeverRetryPolicy());
-		retryTemplate.execute(callback);
+		retryTemplate.execute(callback, this.info.getDisplayName());
 		assertThat(callback.attempts).isEqualTo(1);
 	}
 
@@ -119,7 +128,8 @@ public class RetryTemplateTests {
 		RetryTemplate retryTemplate = new RetryTemplate();
 		int retryAttempts = 2;
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(retryAttempts));
-		assertThatIllegalArgumentException().isThrownBy(() -> retryTemplate.execute(callback));
+		assertThatIllegalArgumentException()
+			.isThrownBy(() -> retryTemplate.execute(callback, this.info.getDisplayName()));
 		assertThat(callback.attempts).isEqualTo(retryAttempts);
 	}
 
@@ -132,7 +142,7 @@ public class RetryTemplateTests {
 
 		RetryTemplate retryTemplate = new RetryTemplate();
 		retryTemplate.setRetryPolicy(new SimpleRetryPolicy(attempts));
-		retryTemplate.execute(callback);
+		retryTemplate.execute(callback, this.info.getDisplayName());
 		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
@@ -148,7 +158,7 @@ public class RetryTemplateTests {
 				Collections.<Class<? extends Throwable>, Boolean>singletonMap(Exception.class, true)));
 		BinaryExceptionClassifier classifier = new BinaryExceptionClassifier(
 				Collections.<Class<? extends Throwable>>singleton(IllegalArgumentException.class), false);
-		retryTemplate.execute(callback, new DefaultRetryState("foo", classifier));
+		retryTemplate.execute(callback, new DefaultRetryState("foo", classifier), this.info.getDisplayName());
 		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
@@ -165,7 +175,7 @@ public class RetryTemplateTests {
 		callback.setAttemptsBeforeSuccess(attempts);
 
 		try {
-			template.execute(callback);
+			template.execute(callback, this.info.getDisplayName());
 		}
 		catch (Exception e) {
 			assertThat(e).isNotNull();
@@ -173,7 +183,7 @@ public class RetryTemplateTests {
 		}
 		callback.setExceptionToThrow(new RuntimeException());
 
-		template.execute(callback);
+		template.execute(callback, this.info.getDisplayName());
 		assertThat(callback.attempts).isEqualTo(attempts);
 	}
 
@@ -186,7 +196,7 @@ public class RetryTemplateTests {
 			RetryTemplate retryTemplate = new RetryTemplate();
 			retryTemplate.setRetryPolicy(new SimpleRetryPolicy(10));
 			retryTemplate.setBackOffPolicy(backOff);
-			retryTemplate.execute(callback);
+			retryTemplate.execute(callback, this.info.getDisplayName());
 			assertThat(callback.attempts).isEqualTo(x);
 			assertThat(backOff.startCalls).isEqualTo(1);
 			assertThat(backOff.backOffCalls).isEqualTo(x - 1);
@@ -199,7 +209,7 @@ public class RetryTemplateTests {
 		assertThatIllegalStateException().isThrownBy(() -> retryTemplate.execute(status -> {
 			status.setExhaustedOnly();
 			throw new IllegalStateException("Retry this operation");
-		})).withMessage("Retry this operation");
+		}, this.info.getDisplayName())).withMessage("Retry this operation");
 	}
 
 	@Test
@@ -209,7 +219,7 @@ public class RetryTemplateTests {
 		assertThatIllegalStateException().isThrownBy(() -> retryTemplate.execute(status -> {
 			status.setExhaustedOnly();
 			throw new IllegalStateException("Retry this operation");
-		})).withMessage("Retry this operation");
+		}, this.info.getDisplayName())).withMessage("Retry this operation");
 	}
 
 	@Test
@@ -224,14 +234,16 @@ public class RetryTemplateTests {
 				assertThat(RetryTemplateTests.this.context).isNotNull();
 				assertThat(RetryTemplateTests.this.context).isNotSameAs(status1);
 				assertThat(status1.getParent()).isSameAs(RetryTemplateTests.this.context);
-				assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be the child")
+				assertThat(RetrySynchronizationManager.getContext(this.info.getDisplayName()))
+					.describedAs("The context should be the child")
 					.isSameAs(status1);
 				return null;
-			});
-			assertThat(RetrySynchronizationManager.getContext()).describedAs("The context should be restored")
+			}, this.info.getDisplayName());
+			assertThat(RetrySynchronizationManager.getContext(this.info.getDisplayName()))
+				.describedAs("The context should be restored")
 				.isSameAs(status);
 			return result;
-		});
+		}, this.info.getDisplayName());
 		assertThat(this.count).isEqualTo(2);
 	}
 
@@ -242,7 +254,7 @@ public class RetryTemplateTests {
 		try {
 			retryTemplate.execute(context -> {
 				throw new Error("Realllly bad!");
-			});
+			}, this.info.getDisplayName());
 			fail("Expected Error");
 		}
 		catch (Error e) {
@@ -262,7 +274,7 @@ public class RetryTemplateTests {
 		});
 		assertThatExceptionOfType(TerminatedRetryException.class).isThrownBy(() -> retryTemplate.execute(context -> {
 			throw new RuntimeException("Realllly bad!");
-		})).withCauseInstanceOf(RuntimeException.class).withStackTraceContaining("Planned");
+		}, this.info.getDisplayName())).withCauseInstanceOf(RuntimeException.class).withStackTraceContaining("Planned");
 	}
 
 	@Test
@@ -276,7 +288,7 @@ public class RetryTemplateTests {
 		});
 		assertThatExceptionOfType(BackOffInterruptedException.class).isThrownBy(() -> retryTemplate.execute(context -> {
 			throw new RuntimeException("Bad!");
-		})).withMessage("foo");
+		}, this.info.getDisplayName())).withMessage("foo");
 	}
 
 	/**
@@ -305,7 +317,7 @@ public class RetryTemplateTests {
 				return true;
 			}
 
-		})).withMessage("maybe next time!");
+		}, this.info.getDisplayName())).withMessage("maybe next time!");
 		verify(bop).start(any());
 	}
 
@@ -329,7 +341,7 @@ public class RetryTemplateTests {
 		template.execute((ctx) -> {
 			callCount.incrementAndGet();
 			return first.getAndSet(false) ? "bad" : "good";
-		});
+		}, this.info.getDisplayName());
 		assertThat(callCount.get()).isEqualTo(2);
 	}
 

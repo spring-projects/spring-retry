@@ -17,7 +17,7 @@
 package org.springframework.retry.annotation;
 
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.jupiter.api.Test;
@@ -100,18 +100,18 @@ public class CircuitBreakerTests {
 		Map<?, ?> methodMap = (Map<?, ?>) delegates.values().iterator().next();
 		MethodInterceptor interceptor = (MethodInterceptor) methodMap
 			.get(Service.class.getDeclaredMethod("expressionService3"));
-		Supplier<?> maxAttempts = TestUtils.getPropertyValue(interceptor,
-				"retryOperations.retryPolicy.delegate.maxAttemptsSupplier", Supplier.class);
+		Function<?, ?> maxAttempts = TestUtils.getPropertyValue(interceptor,
+				"retryOperations.retryPolicy.delegate.maxAttemptsFunction", Function.class);
 		assertThat(maxAttempts).isNotNull();
-		assertThat(maxAttempts.get()).isEqualTo(10);
+		assertThat(maxAttempts.apply(null)).isEqualTo(10);
 		CircuitBreakerRetryPolicy policy = TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy",
 				CircuitBreakerRetryPolicy.class);
-		Supplier openTO = TestUtils.getPropertyValue(policy, "openTimeoutSupplier", Supplier.class);
+		Function<?, ?> openTO = TestUtils.getPropertyValue(policy, "openTimeoutFunction", Function.class);
 		assertThat(openTO).isNotNull();
-		assertThat(openTO.get()).isEqualTo(10000L);
-		Supplier resetTO = TestUtils.getPropertyValue(policy, "resetTimeoutSupplier", Supplier.class);
+		assertThat(openTO.apply(null)).isEqualTo(10000L);
+		Function<?, ?> resetTO = TestUtils.getPropertyValue(policy, "resetTimeoutFunction", Function.class);
 		assertThat(resetTO).isNotNull();
-		assertThat(resetTO.get()).isEqualTo(20000L);
+		assertThat(resetTO.apply(null)).isEqualTo(20000L);
 		RetryContext ctx = service.getContext();
 		assertThat(TestUtils.getPropertyValue(ctx, "openWindow")).isEqualTo(10000L);
 		assertThat(TestUtils.getPropertyValue(ctx, "timeout")).isEqualTo(20000L);

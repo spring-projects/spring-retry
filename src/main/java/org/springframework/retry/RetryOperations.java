@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2007 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.retry;
 
 import org.springframework.retry.support.DefaultRetryState;
+import org.springframework.retry.support.RetrySynchronizationManager;
 
 /**
  * Defines the basic set of operations implemented by {@link RetryOperations} to execute
@@ -24,6 +25,7 @@ import org.springframework.retry.support.DefaultRetryState;
  *
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public interface RetryOperations {
 
@@ -41,6 +43,24 @@ public interface RetryOperations {
 	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback) throws E;
 
 	/**
+	 * Execute the supplied {@link RetryCallback} with the configured retry semantics. See
+	 * implementations for configuration details.
+	 * @param <T> the return value
+	 * @param retryCallback the {@link RetryCallback}
+	 * @param <E> the exception to throw
+	 * @param contextKey a key to use to map the context when
+	 * {@link RetrySynchronizationManager#isUseThreadLocal()} is false. Must be unique for
+	 * each execution.
+	 * @return the value returned by the {@link RetryCallback} upon successful invocation.
+	 * @throws E any {@link Exception} raised by the {@link RetryCallback} upon
+	 * unsuccessful retry.
+	 * @throws E the exception thrown
+	 */
+	default <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, String contextKey) throws E {
+		return execute(retryCallback);
+	}
+
+	/**
 	 * Execute the supplied {@link RetryCallback} with a fallback on exhausted retry to
 	 * the {@link RecoveryCallback}. See implementations for configuration details.
 	 * @param recoveryCallback the {@link RecoveryCallback}
@@ -53,6 +73,26 @@ public interface RetryOperations {
 	 */
 	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback)
 			throws E;
+
+	/**
+	 * Execute the supplied {@link RetryCallback} with a fallback on exhausted retry to
+	 * the {@link RecoveryCallback}. See implementations for configuration details.
+	 * @param recoveryCallback the {@link RecoveryCallback}
+	 * @param retryCallback the {@link RetryCallback} {@link RecoveryCallback} upon
+	 * @param <T> the type to return
+	 * @param <E> the type of the exception
+	 * @param contextKey a key to use to map the context when
+	 * {@link RetrySynchronizationManager#isUseThreadLocal()} is false. Must be unique for
+	 * each execution.
+	 * @return the value returned by the {@link RetryCallback} upon successful invocation,
+	 * and that returned by the {@link RecoveryCallback} otherwise.
+	 * @throws E any {@link Exception} raised by the unsuccessful retry.
+	 */
+	default <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+			String contextKey) throws E {
+
+		return execute(retryCallback, recoveryCallback);
+	}
 
 	/**
 	 * A simple stateful retry. Execute the supplied {@link RetryCallback} with a target
@@ -77,6 +117,34 @@ public interface RetryOperations {
 			throws E, ExhaustedRetryException;
 
 	/**
+	 * A simple stateful retry. Execute the supplied {@link RetryCallback} with a target
+	 * object for the attempt identified by the {@link DefaultRetryState}. Exceptions
+	 * thrown by the callback are always propagated immediately so the state is required
+	 * to be able to identify the previous attempt, if there is one - hence the state is
+	 * required. Normal patterns would see this method being used inside a transaction,
+	 * where the callback might invalidate the transaction if it fails.
+	 *
+	 * See implementations for configuration details.
+	 * @param retryCallback the {@link RetryCallback}
+	 * @param retryState the {@link RetryState}
+	 * @param <T> the type of the return value
+	 * @param <E> the type of the exception to return
+	 * @return the value returned by the {@link RetryCallback} upon successful invocation,
+	 * and that returned by the {@link RecoveryCallback} otherwise.
+	 * @param contextKey a key to use to map the context when
+	 * {@link RetrySynchronizationManager#isUseThreadLocal()} is false. Must be unique for
+	 * each execution.
+	 * @throws E any {@link Exception} raised by the {@link RecoveryCallback}.
+	 * @throws ExhaustedRetryException if the last attempt for this state has already been
+	 * reached
+	 */
+	default <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState,
+			String contextKey) throws E, ExhaustedRetryException {
+
+		return execute(retryCallback, retryState);
+	}
+
+	/**
 	 * A stateful retry with a recovery path. Execute the supplied {@link RetryCallback}
 	 * with a fallback on exhausted retry to the {@link RecoveryCallback} and a target
 	 * object for the retry attempt identified by the {@link DefaultRetryState}.
@@ -93,5 +161,29 @@ public interface RetryOperations {
 	 */
 	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
 			RetryState retryState) throws E;
+
+	/**
+	 * A stateful retry with a recovery path. Execute the supplied {@link RetryCallback}
+	 * with a fallback on exhausted retry to the {@link RecoveryCallback} and a target
+	 * object for the retry attempt identified by the {@link DefaultRetryState}.
+	 * @param recoveryCallback the {@link RecoveryCallback}
+	 * @param retryState the {@link RetryState}
+	 * @param retryCallback the {@link RetryCallback}
+	 * @param <T> the return value type
+	 * @param <E> the exception type
+	 * @param contextKey a key to use to map the context when
+	 * {@link RetrySynchronizationManager#isUseThreadLocal()} is false. Must be unique for
+	 * each execution.
+	 * @see #execute(RetryCallback, RetryState)
+	 * @return the value returned by the {@link RetryCallback} upon successful invocation,
+	 * and that returned by the {@link RecoveryCallback} otherwise.
+	 * @throws E any {@link Exception} raised by the {@link RecoveryCallback} upon
+	 * unsuccessful retry.
+	 */
+	default <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+			RetryState retryState, String contextKey) throws E {
+
+		return execute(retryCallback, recoveryCallback, retryState);
+	}
 
 }

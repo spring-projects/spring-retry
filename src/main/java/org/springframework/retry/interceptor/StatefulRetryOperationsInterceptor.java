@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.springframework.retry.interceptor;
 
 import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -25,7 +27,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RecoveryCallback;
-import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
 import org.springframework.retry.RetryState;
@@ -56,6 +57,8 @@ import org.springframework.util.StringUtils;
  * @author Gary Russell
  */
 public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
+
+	private static final AtomicLong unique = new AtomicLong();
 
 	private transient final Log logger = LogFactory.getLog(getClass());
 
@@ -141,7 +144,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 	 * the recoverer (so the return type for that should be the same as the intercepted
 	 * method).
 	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 * @see MethodInvocationRecoverer#recover(Object[], Throwable)
+	 * @see MethodInvocationRecoverer#recover(RetryContext, Object[], Throwable)
 	 *
 	 */
 	@Override
@@ -159,12 +162,14 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		}
 
 		Object key = createKey(invocation, defaultKey);
+		String contextKey = (key != null ? key.toString() : UUID.randomUUID().toString()) + unique.getAndIncrement();
 		RetryState retryState = new DefaultRetryState(key,
 				this.newMethodArgumentsIdentifier != null && this.newMethodArgumentsIdentifier.isNew(args),
 				this.rollbackClassifier);
 
-		Object result = this.retryOperations.execute(new StatefulMethodInvocationRetryCallback(invocation, label),
-				this.recoverer != null ? new ItemRecovererCallback(args, this.recoverer) : null, retryState);
+		Object result = this.retryOperations.execute(new StatefulMethodInvocationRetryCallback(invocation, this.label),
+				this.recoverer != null ? new ItemRecovererCallback(args, this.recoverer) : null, retryState,
+				contextKey);
 
 		if (this.logger.isDebugEnabled()) {
 			this.logger.debug("Exiting proxied method in stateful retry with result: (" + result + ")");
@@ -187,7 +192,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 		if (this.useRawKey) {
 			return generatedKey;
 		}
-		String name = StringUtils.hasText(label) ? label : invocation.getMethod().toGenericString();
+		String name = StringUtils.hasText(this.label) ? this.label : invocation.getMethod().toGenericString();
 		return Arrays.asList(name, generatedKey);
 	}
 
@@ -204,7 +209,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 		@Override
 		public Object doWithRetry(RetryContext context) throws Exception {
-			context.setAttribute(RetryContext.NAME, label);
+			context.setAttribute(RetryContext.NAME, this.label);
 			try {
 				return this.invocation.proceed();
 			}
@@ -238,7 +243,7 @@ public class StatefulRetryOperationsInterceptor implements MethodInterceptor {
 
 		@Override
 		public Object recover(RetryContext context) {
-			return this.recoverer.recover(this.args, context.getLastThrowable());
+			return this.recoverer.recover(context, this.args, context.getLastThrowable());
 		}
 
 	}

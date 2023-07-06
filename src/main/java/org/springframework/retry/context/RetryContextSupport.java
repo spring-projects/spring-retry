@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2014 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.springframework.retry.RetryPolicy;
 
 /**
  * @author Dave Syer
+ * @author Gary Russell
  */
 @SuppressWarnings("serial")
 public class RetryContextSupport extends AttributeAccessorSupport implements RetryContext {
@@ -37,26 +38,34 @@ public class RetryContextSupport extends AttributeAccessorSupport implements Ret
 	public RetryContextSupport(RetryContext parent) {
 		super();
 		this.parent = parent;
+		if (parent != null) {
+			setAttribute(RetryContext.KEY, parent.getAttribute(RetryContext.KEY));
+		}
 	}
 
+	@Override
 	public RetryContext getParent() {
 		return this.parent;
 	}
 
+	@Override
 	public boolean isExhaustedOnly() {
-		return terminate;
+		return this.terminate;
 	}
 
+	@Override
 	public void setExhaustedOnly() {
-		terminate = true;
+		this.terminate = true;
 	}
 
+	@Override
 	public int getRetryCount() {
-		return count;
+		return this.count;
 	}
 
+	@Override
 	public Throwable getLastThrowable() {
-		return lastException;
+		return this.lastException;
 	}
 
 	/**
@@ -73,14 +82,15 @@ public class RetryContextSupport extends AttributeAccessorSupport implements Ret
 	 */
 	public void registerThrowable(Throwable throwable) {
 		this.lastException = throwable;
-		if (throwable != null)
-			count++;
+		if (throwable != null) {
+			this.count++;
+		}
 	}
 
 	@Override
 	public String toString() {
-		return String.format("[RetryContext: count=%d, lastException=%s, exhausted=%b]", count, lastException,
-				terminate);
+		return String.format("[RetryContext: count=%d, lastException=%s, exhausted=%b]", this.count, this.lastException,
+				this.terminate);
 	}
 
 }

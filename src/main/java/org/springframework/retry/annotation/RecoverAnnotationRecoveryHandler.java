@@ -73,6 +73,11 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 
 	@Override
 	public T recover(Object[] args, Throwable cause) {
+		return recover(RetrySynchronizationManager.getContext(), args, cause);
+	}
+
+	@Override
+	public T recover(RetryContext context, Object[] args, Throwable cause) {
 		Method method = findClosestMatch(args, cause.getClass());
 		if (method == null) {
 			throw new ExhaustedRetryException("Cannot locate recovery method", cause);
@@ -80,7 +85,6 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		SimpleMetadata meta = this.methods.get(method);
 		Object[] argsToUse = meta.getArgs(cause, args);
 		ReflectionUtils.makeAccessible(method);
-		RetryContext context = RetrySynchronizationManager.getContext();
 		Object proxy = null;
 		if (context != null) {
 			proxy = context.getAttribute("___proxy___");
@@ -288,7 +292,6 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		}
 		if (filteredMethods.size() > 0) {
 			this.methods.clear();
-			;
 			this.methods.putAll(filteredMethods);
 		}
 	}

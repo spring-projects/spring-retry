@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.springframework.retry.RetryContext;
 import org.springframework.util.Assert;
 
 /**
@@ -31,6 +33,7 @@ import org.springframework.util.Assert;
  * @author Rob Harrop
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Gary Russell
  */
 public class FixedBackOffPolicy extends StatelessBackOffPolicy implements SleepingBackOffPolicy<FixedBackOffPolicy> {
 
@@ -42,13 +45,16 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	/**
 	 * The back off period in milliseconds. Defaults to 1000ms.
 	 */
-	private Supplier<Long> backOffPeriod = () -> DEFAULT_BACK_OFF_PERIOD;
+	private Function<RetryContext, Long> backOffPeriod = context -> DEFAULT_BACK_OFF_PERIOD;
 
 	private Sleeper sleeper = new ThreadWaitSleeper();
 
+	private RetryContext retryContext;
+
+	@Override
 	public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
 		FixedBackOffPolicy res = new FixedBackOffPolicy();
-		res.backOffPeriodSupplier(backOffPeriod);
+		res.backOffPeriodFunction(this.backOffPeriod);
 		res.setSleeper(sleeper);
 		return res;
 	}
@@ -66,7 +72,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * @param backOffPeriod the back off period
 	 */
 	public void setBackOffPeriod(long backOffPeriod) {
-		this.backOffPeriod = () -> (backOffPeriod > 0 ? backOffPeriod : 1);
+		this.backOffPeriod = context -> (backOffPeriod > 0 ? backOffPeriod : 1);
 	}
 
 	/**
@@ -74,10 +80,23 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * supplier supplies 1000ms.
 	 * @param backOffPeriodSupplier the back off period
 	 * @since 2.0
+	 * @deprecated in favor of {@link #backOffPeriodFunction(Function)}.
 	 */
+	@Deprecated
 	public void backOffPeriodSupplier(Supplier<Long> backOffPeriodSupplier) {
 		Assert.notNull(backOffPeriodSupplier, "'backOffPeriodSupplier' cannot be null");
-		this.backOffPeriod = backOffPeriodSupplier;
+		this.backOffPeriod = context -> backOffPeriodSupplier.get();
+	}
+
+	/**
+	 * Set a supplier for the back off period in milliseconds. Cannot be &lt; 1. Default
+	 * supplier supplies 1000ms.
+	 * @param backOffPeriodFunction the back off period
+	 * @since 2.0.3
+	 */
+	public void backOffPeriodFunction(Function<RetryContext, Long> backOffPeriodFunction) {
+		Assert.notNull(backOffPeriodFunction, "'backOffPeriodFunction' cannot be null");
+		this.backOffPeriod = backOffPeriodFunction;
 	}
 
 	/**
@@ -85,24 +104,32 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 * @return the backoff period
 	 */
 	public long getBackOffPeriod() {
-		return this.backOffPeriod.get();
+		return this.backOffPeriod.apply(this.retryContext);
+	}
+
+	@Override
+	public BackOffContext start(RetryContext status) {
+		this.retryContext = status;
+		return super.start(status);
 	}
 
 	/**
 	 * Pause for the {@link #setBackOffPeriod(long)}.
 	 * @throws BackOffInterruptedException if interrupted during sleep.
 	 */
+	@Override
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
-			sleeper.sleep(this.backOffPeriod.get());
+			this.sleeper.sleep(this.backOffPeriod.apply(this.retryContext));
 		}
 		catch (InterruptedException e) {
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
 
+	@Override
 	public String toString() {
-		return "FixedBackOffPolicy[backOffPeriod=" + this.backOffPeriod.get() + "]";
+		return "FixedBackOffPolicy[backOffPeriod=" + this.backOffPeriod.apply(this.retryContext) + "]";
 	}
 
 }

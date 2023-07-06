@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2022 the original author or authors.
+ * Copyright 2022-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
+
+import org.springframework.retry.RetryContext;
 
 /**
  * Fluent API for creating a {@link BackOffPolicy} based on given attributes. The delay
@@ -68,6 +71,7 @@ import java.util.function.Supplier;
  * load concurrent access.
  *
  * @author Tomaz Fernandes
+ * @author Gary Russell
  * @since 1.3.3
  */
 public class BackOffPolicyBuilder {
@@ -84,13 +88,13 @@ public class BackOffPolicyBuilder {
 
 	private Sleeper sleeper;
 
-	private Supplier<Long> delaySupplier;
+	private Function<RetryContext, Long> delayFunction;
 
-	private Supplier<Long> maxDelaySupplier;
+	private Function<RetryContext, Long> maxDelayFunction;
 
-	private Supplier<Double> multiplierSupplier;
+	private Function<RetryContext, Double> multiplierFunction;
 
-	private Supplier<Boolean> randomSupplier;
+	private Function<RetryContext, Boolean> randomFunction;
 
 	private BackOffPolicyBuilder() {
 	}
@@ -171,9 +175,11 @@ public class BackOffPolicyBuilder {
 	 * @param delaySupplier the supplier.
 	 * @return this
 	 * @since 2.0
+	 * @deprecated in favor of {@link #delayFunction(Function)}.
 	 */
+	@Deprecated
 	public BackOffPolicyBuilder delaySupplier(Supplier<Long> delaySupplier) {
-		this.delaySupplier = delaySupplier;
+		this.delayFunction = context -> delaySupplier.get();
 		return this;
 	}
 
@@ -182,9 +188,11 @@ public class BackOffPolicyBuilder {
 	 * @param maxDelaySupplier the supplier.
 	 * @return this
 	 * @since 2.0
+	 * @deprecated in favor of {@link #maxDelayFunction(Function)}.
 	 */
+	@Deprecated
 	public BackOffPolicyBuilder maxDelaySupplier(Supplier<Long> maxDelaySupplier) {
-		this.maxDelaySupplier = maxDelaySupplier;
+		this.maxDelayFunction = context -> maxDelaySupplier.get();
 		return this;
 	}
 
@@ -193,9 +201,11 @@ public class BackOffPolicyBuilder {
 	 * @param multiplierSupplier the supplier.
 	 * @return this
 	 * @since 2.0
+	 * @deprecated in favor of {@link #multiplierFunction(Function)}.
 	 */
+	@Deprecated
 	public BackOffPolicyBuilder multiplierSupplier(Supplier<Double> multiplierSupplier) {
-		this.multiplierSupplier = multiplierSupplier;
+		this.multiplierFunction = context -> multiplierSupplier.get();
 		return this;
 	}
 
@@ -204,9 +214,55 @@ public class BackOffPolicyBuilder {
 	 * @param randomSupplier the supplier.
 	 * @return this
 	 * @since 2.0
+	 * @deprecated in favor of {@link #randomFunction(Function)}.
 	 */
+	@Deprecated
 	public BackOffPolicyBuilder randomSupplier(Supplier<Boolean> randomSupplier) {
-		this.randomSupplier = randomSupplier;
+		this.randomFunction = context -> randomSupplier.get();
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the delay.
+	 * @param delayFunction the supplier.
+	 * @return this
+	 * @since 2.0.3
+	 */
+	public BackOffPolicyBuilder delayFunction(Function<RetryContext, Long> delayFunction) {
+		this.delayFunction = delayFunction;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the max delay.
+	 * @param maxDelayFunction the supplier.
+	 * @return this
+	 * @since 2.0.3
+	 */
+	public BackOffPolicyBuilder maxDelayFunction(Function<RetryContext, Long> maxDelayFunction) {
+		this.maxDelayFunction = maxDelayFunction;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the multiplier.
+	 * @param multiplierFunction the supplier.
+	 * @return this
+	 * @since 2.0.3
+	 */
+	public BackOffPolicyBuilder multiplierFunction(Function<RetryContext, Double> multiplierFunction) {
+		this.multiplierFunction = multiplierFunction;
+		return this;
+	}
+
+	/**
+	 * Set a supplier for the random.
+	 * @param randomFunction the supplier.
+	 * @return this
+	 * @since 2.0.3
+	 */
+	public BackOffPolicyBuilder randomFunction(Function<RetryContext, Boolean> randomFunction) {
+		this.randomFunction = randomFunction;
 		return this;
 	}
 
@@ -215,7 +271,7 @@ public class BackOffPolicyBuilder {
 	 * @return the {@link BackOffPolicy} instance
 	 */
 	public BackOffPolicy build() {
-		if (this.multiplier != null && this.multiplier > 0 || this.multiplierSupplier != null) {
+		if (this.multiplier != null && this.multiplier > 0 || this.multiplierFunction != null) {
 			ExponentialBackOffPolicy policy;
 			if (Boolean.TRUE.equals(this.random)) {
 				policy = new ExponentialRandomBackOffPolicy();
@@ -226,21 +282,21 @@ public class BackOffPolicyBuilder {
 			if (this.delay != null) {
 				policy.setInitialInterval(this.delay);
 			}
-			if (this.delaySupplier != null) {
-				policy.initialIntervalSupplier(this.delaySupplier);
+			if (this.delayFunction != null) {
+				policy.initialIntervalFunction(this.delayFunction);
 			}
 			if (this.multiplier != null) {
 				policy.setMultiplier(this.multiplier);
 			}
-			if (this.multiplierSupplier != null) {
-				policy.multiplierSupplier(this.multiplierSupplier);
+			if (this.multiplierFunction != null) {
+				policy.multiplierFunction(this.multiplierFunction);
 			}
 			if (this.maxDelay != null && this.delay != null) {
 				policy.setMaxInterval(
 						this.maxDelay > this.delay ? this.maxDelay : ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL);
 			}
-			if (this.maxDelaySupplier != null) {
-				policy.maxIntervalSupplier(this.maxDelaySupplier);
+			if (this.maxDelayFunction != null) {
+				policy.maxIntervalFunction(this.maxDelayFunction);
 			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);
@@ -252,14 +308,14 @@ public class BackOffPolicyBuilder {
 			if (this.delay != null) {
 				policy.setMinBackOffPeriod(this.delay);
 			}
-			if (this.delaySupplier != null) {
-				policy.minBackOffPeriodSupplier(this.delaySupplier);
+			if (this.delayFunction != null) {
+				policy.minBackOffPeriodFunction(this.delayFunction);
 			}
 			if (this.maxDelay != null) {
 				policy.setMaxBackOffPeriod(this.maxDelay);
 			}
-			if (this.maxDelaySupplier != null) {
-				policy.maxBackOffPeriodSupplier(this.maxDelaySupplier);
+			if (this.maxDelayFunction != null) {
+				policy.maxBackOffPeriodFunction(this.maxDelayFunction);
 			}
 			if (this.sleeper != null) {
 				policy.setSleeper(this.sleeper);
@@ -267,8 +323,8 @@ public class BackOffPolicyBuilder {
 			return policy;
 		}
 		FixedBackOffPolicy policy = new FixedBackOffPolicy();
-		if (this.delaySupplier != null) {
-			policy.backOffPeriodSupplier(this.delaySupplier);
+		if (this.delayFunction != null) {
+			policy.backOffPeriodFunction(this.delayFunction);
 		}
 		else if (this.delay != null) {
 			policy.setBackOffPeriod(this.delay);

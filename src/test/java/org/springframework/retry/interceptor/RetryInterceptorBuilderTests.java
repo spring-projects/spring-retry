@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.junit.jupiter.api.Test;
@@ -80,6 +80,7 @@ public class RetryInterceptorBuilderTests {
 		assertThat(TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.maxInterval")).isEqualTo(10L);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testWithCustomBackOffPolicy() {
 		StatefulRetryOperationsInterceptor interceptor = RetryInterceptorBuilder.stateful()
@@ -89,11 +90,12 @@ public class RetryInterceptorBuilderTests {
 
 		assertThat(TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts")).isEqualTo(5);
 		assertThat(
-				TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod", Supplier.class)
-					.get())
+				TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod", Function.class)
+					.apply(null))
 			.isEqualTo(1000L);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testWithCustomNewMessageIdentifier() throws Exception {
 		final CountDownLatch latch = new CountDownLatch(1);
@@ -108,8 +110,8 @@ public class RetryInterceptorBuilderTests {
 
 		assertThat(TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy.maxAttempts")).isEqualTo(5);
 		assertThat(
-				TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod", Supplier.class)
-					.get())
+				TestUtils.getPropertyValue(interceptor, "retryOperations.backOffPolicy.backOffPeriod", Function.class)
+					.apply(null))
 			.isEqualTo(1000L);
 		final AtomicInteger count = new AtomicInteger();
 		Foo delegate = createDelegate(interceptor, count);

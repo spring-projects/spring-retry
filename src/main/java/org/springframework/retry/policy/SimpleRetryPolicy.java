@@ -19,6 +19,7 @@ package org.springframework.retry.policy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.springframework.classify.BinaryExceptionClassifier;
@@ -69,7 +70,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 
 	private int maxAttempts;
 
-	private Supplier<Integer> maxAttemptsSupplier;
+	private Function<RetryContext, Integer> maxAttemptsFunction;
 
 	private BinaryExceptionClassifier retryableClassifier;
 
@@ -184,10 +185,28 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @param maxAttemptsSupplier the maximum number of attempts including the initial
 	 * attempt.
 	 * @since 2.0
+	 * @deprecated in favor of {@link #maxAttemptsFunction}.
 	 */
+	@Deprecated
 	public void maxAttemptsSupplier(Supplier<Integer> maxAttemptsSupplier) {
 		Assert.notNull(maxAttemptsSupplier, "'maxAttemptsSupplier' cannot be null");
-		this.maxAttemptsSupplier = maxAttemptsSupplier;
+		this.maxAttemptsFunction = conteext -> maxAttemptsSupplier.get();
+	}
+
+	/**
+	 * Set a function for the number of attempts before retries are exhausted. Includes
+	 * the initial attempt before the retries begin so, generally, will be {@code >= 1}.
+	 * For example setting this property to 3 means 3 attempts total (initial + 2
+	 * retries). IMPORTANT: This policy cannot be serialized when a max attempts supplier
+	 * is provided. Serialization might be used by a distributed cache when using this
+	 * policy in a {@code CircuitBreaker} context.
+	 * @param maxAttemptsFunction the maximum number of attempts including the initial
+	 * attempt.
+	 * @since 2.0
+	 */
+	public void maxAttemptsFunction(Function<RetryContext, Integer> maxAttemptsFunction) {
+		Assert.notNull(maxAttemptsFunction, "'maxAttemptsFunction' cannot be null");
+		this.maxAttemptsFunction = maxAttemptsFunction;
 	}
 
 	/**
@@ -195,8 +214,20 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * @return the maximum number of attempts
 	 */
 	public int getMaxAttempts() {
-		if (this.maxAttemptsSupplier != null) {
-			return this.maxAttemptsSupplier.get();
+		if (this.maxAttemptsFunction != null) {
+			return this.maxAttemptsFunction.apply(null);
+		}
+		return this.maxAttempts;
+	}
+
+	/**
+	 * The maximum number of attempts before failure.
+	 * @return the maximum number of attempts
+	 * @since 2.0.3
+	 */
+	public int getMaxAttempts(RetryContext context) {
+		if (this.maxAttemptsFunction != null) {
+			return this.maxAttemptsFunction.apply(context);
 		}
 		return this.maxAttempts;
 	}
@@ -211,7 +242,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	@Override
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
-		boolean can = (t == null || retryForException(t)) && context.getRetryCount() < getMaxAttempts();
+		boolean can = (t == null || retryForException(t)) && context.getRetryCount() < getMaxAttempts(context);
 		if (!can && t != null && !this.recoverableClassifier.classify(t)) {
 			context.setAttribute(RetryContext.NO_RECOVERY, true);
 		}

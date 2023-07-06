@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,24 @@
 package org.springframework.retry;
 
 import org.springframework.core.AttributeAccessor;
+import org.springframework.retry.support.RetrySynchronizationManager;
 
 /**
  * Low-level access to ongoing retry operation. Normally not needed by clients, but can be
  * used to alter the course of the retry, e.g. force an early termination.
  *
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public interface RetryContext extends AttributeAccessor {
+
+	/**
+	 * Retry context attribute name for the key to a map of contexts when not using thread
+	 * locals in {@link RetrySynchronizationManager}.
+	 * @since 2.0.3
+	 */
+	String KEY = "context.key";
 
 	/**
 	 * Retry context attribute name for reporting key. Can be used for reporting purposes,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.springframework.retry.backoff;
 
 import java.util.Random;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.springframework.retry.RetryContext;
 
@@ -44,6 +44,7 @@ import org.springframework.retry.RetryContext;
  * @author Jon Travis
  * @author Dave Syer
  * @author Chase Diem
+ * @author Gary Russell
  */
 @SuppressWarnings("serial")
 public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
@@ -52,11 +53,13 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 	 * Returns a new instance of {@link org.springframework.retry.backoff.BackOffContext},
 	 * seeded with this policies settings.
 	 */
+	@Override
 	public BackOffContext start(RetryContext context) {
-		return new ExponentialRandomBackOffContext(getInitialInterval(), getMultiplier(), getMaxInterval(),
-				getInitialIntervalSupplier(), getMultiplierSupplier(), getMaxIntervalSupplier());
+		return new ExponentialRandomBackOffContext(context, getInitialInterval(), getMultiplier(), getMaxInterval(),
+				getInitialIntervalFunction(), getMultiplierFunction(), getMaxIntervalFunction());
 	}
 
+	@Override
 	protected ExponentialBackOffPolicy newInstance() {
 		return new ExponentialRandomBackOffPolicy();
 	}
@@ -65,17 +68,17 @@ public class ExponentialRandomBackOffPolicy extends ExponentialBackOffPolicy {
 
 		private final Random r = new Random();
 
-		public ExponentialRandomBackOffContext(long expSeed, double multiplier, long maxInterval,
-				Supplier<Long> expSeedSupplier, Supplier<Double> multiplierSupplier,
-				Supplier<Long> maxIntervalSupplier) {
+		public ExponentialRandomBackOffContext(RetryContext context, long expSeed, double multiplier, long maxInterval,
+				Function<RetryContext, Long> expSeedSupplier, Function<RetryContext, Double> multiplierSupplier,
+				Function<RetryContext, Long> maxIntervalSupplier) {
 
-			super(expSeed, multiplier, maxInterval, expSeedSupplier, multiplierSupplier, maxIntervalSupplier);
+			super(context, expSeed, multiplier, maxInterval, expSeedSupplier, multiplierSupplier, maxIntervalSupplier);
 		}
 
 		@Override
 		public synchronized long getSleepAndIncrement() {
 			long next = super.getSleepAndIncrement();
-			next = (long) (next * (1 + r.nextFloat() * (getMultiplier() - 1)));
+			next = (long) (next * (1 + this.r.nextFloat() * (getMultiplier() - 1)));
 			if (next > super.getMaxInterval()) {
 				next = super.getMaxInterval();
 			}

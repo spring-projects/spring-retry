@@ -70,8 +70,8 @@ public class StatefulRetryOperationsInterceptorTests {
 
 	@BeforeEach
 	public void setUp() {
-		interceptor = new StatefulRetryOperationsInterceptor();
-		retryTemplate.registerListener(new RetryListener() {
+		this.interceptor = new StatefulRetryOperationsInterceptor();
+		this.retryTemplate.registerListener(new RetryListener() {
 			@Override
 			public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
 					Throwable throwable) {
@@ -190,7 +190,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
 		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture());
+		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture(), any());
 		assertThat(captor.getValue().getKey()).isNull();
 	}
 
@@ -206,7 +206,7 @@ public class StatefulRetryOperationsInterceptorTests {
 		when(invocation.getArguments()).thenReturn(new Object[] { new Object() });
 		this.interceptor.invoke(invocation);
 		ArgumentCaptor<DefaultRetryState> captor = ArgumentCaptor.forClass(DefaultRetryState.class);
-		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture());
+		verify(template).execute(any(RetryCallback.class), eq(null), captor.capture(), any());
 		assertThat(captor.getValue().getKey()).isEqualTo("bar");
 	}
 

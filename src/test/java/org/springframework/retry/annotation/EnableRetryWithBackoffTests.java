@@ -75,7 +75,8 @@ public class EnableRetryWithBackoffTests {
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
 		assertThat(context.getBean(PeriodSleeper.class).getPeriods().toString()).isNotEqualTo("[1000, 1100]");
 		assertThat(periods.get(0) > 1000).describedAs("Wrong periods: %s" + periods.toString()).isTrue();
-		assertThat(periods.get(1) > 1100 && periods.get(1) < 1210).describedAs("Wrong periods: %s" + periods.toString())
+		assertThat(periods.get(1) >= 1100 && periods.get(1) < 1210)
+			.describedAs("Wrong periods: %s" + periods.toString())
 			.isTrue();
 		context.close();
 	}
@@ -89,7 +90,8 @@ public class EnableRetryWithBackoffTests {
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
 		assertThat(context.getBean(PeriodSleeper.class).getPeriods().toString()).isNotEqualTo("[1000, 1100]");
 		assertThat(periods.get(0) > 1000).describedAs("Wrong periods: %s" + periods.toString()).isTrue();
-		assertThat(periods.get(1) > 1100 && periods.get(1) < 1210).describedAs("Wrong periods: %s" + periods.toString())
+		assertThat(periods.get(1) >= 1100 && periods.get(1) < 1210)
+			.describedAs("Wrong periods: %s" + periods.toString())
 			.isTrue();
 		context.close();
 	}
@@ -138,11 +140,11 @@ public class EnableRetryWithBackoffTests {
 
 		@Override
 		public void sleep(long period) {
-			periods.add(period);
+			this.periods.add(period);
 		}
 
 		private List<Long> getPeriods() {
-			return periods;
+			return this.periods;
 		}
 
 	}
@@ -153,13 +155,13 @@ public class EnableRetryWithBackoffTests {
 
 		@Retryable(backoff = @Backoff(delay = 1000))
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -170,13 +172,13 @@ public class EnableRetryWithBackoffTests {
 		private int count = 0;
 
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -187,13 +189,13 @@ public class EnableRetryWithBackoffTests {
 
 		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1))
 		public void service() {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new IllegalStateException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -204,13 +206,13 @@ public class EnableRetryWithBackoffTests {
 
 		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, random = true))
 		public void service(int value) {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}
@@ -221,13 +223,13 @@ public class EnableRetryWithBackoffTests {
 
 		@Retryable(backoff = @Backoff(delay = 1000, maxDelay = 2000, multiplier = 1.1, randomExpression = "#{true}"))
 		public void service(int value) {
-			if (count++ < 2) {
+			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
 		public int getCount() {
-			return count;
+			return this.count;
 		}
 
 	}

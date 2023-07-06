@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.retry.interceptor;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -47,8 +48,11 @@ import org.springframework.util.StringUtils;
  *
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Gary Russell
  */
 public class RetryOperationsInterceptor implements MethodInterceptor {
+
+	private static final AtomicLong unique = new AtomicLong();
 
 	private RetryOperations retryOperations = new RetryTemplate();
 
@@ -80,6 +84,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			name = invocation.getMethod().toGenericString();
 		}
 		final String label = name;
+		String contextKey = label + unique.getAndIncrement();
 
 		RetryCallback<Object, Throwable> retryCallback = new MethodInvocationRetryCallback<Object, Throwable>(
 				invocation, label) {
@@ -88,7 +93,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			public Object doWithRetry(RetryContext context) throws Exception {
 
 				context.setAttribute(RetryContext.NAME, this.label);
-				context.setAttribute("ARGS", new Args(invocation.getArguments()));
+				context.setAttribute("ARGS", new Args(this.invocation.getArguments()));
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to
@@ -121,18 +126,18 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(),
 					this.recoverer);
 			try {
-				Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback);
+				Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback, contextKey);
 				return recovered;
 			}
 			finally {
-				RetryContext context = RetrySynchronizationManager.getContext();
+				RetryContext context = RetrySynchronizationManager.getContext(contextKey);
 				if (context != null) {
 					context.removeAttribute("__proxy__");
 				}
 			}
 		}
 
-		return this.retryOperations.execute(retryCallback);
+		return this.retryOperations.execute(retryCallback, contextKey);
 
 	}
 
@@ -156,7 +161,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 		@Override
 		public Object recover(RetryContext context) {
-			return this.recoverer.recover(this.args, context.getLastThrowable());
+			return this.recoverer.recover(context, this.args, context.getLastThrowable());
 		}
 
 	}

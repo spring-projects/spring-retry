@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.lang.Nullable;
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
@@ -206,7 +207,7 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	@Override
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback) throws E {
-		return doExecute(retryCallback, null, null);
+		return doExecute(retryCallback, null, null, null);
 	}
 
 	/**
@@ -222,7 +223,7 @@ public class RetryTemplate implements RetryOperations {
 	@Override
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
 			RecoveryCallback<T> recoveryCallback) throws E {
-		return doExecute(retryCallback, recoveryCallback, null);
+		return doExecute(retryCallback, recoveryCallback, null, null);
 	}
 
 	/**
@@ -237,7 +238,7 @@ public class RetryTemplate implements RetryOperations {
 	@Override
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState)
 			throws E, ExhaustedRetryException {
-		return doExecute(retryCallback, null, retryState);
+		return doExecute(retryCallback, null, retryState, null);
 	}
 
 	/**
@@ -252,7 +253,34 @@ public class RetryTemplate implements RetryOperations {
 	@Override
 	public final <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback,
 			RecoveryCallback<T> recoveryCallback, RetryState retryState) throws E, ExhaustedRetryException {
-		return doExecute(retryCallback, recoveryCallback, retryState);
+		return doExecute(retryCallback, recoveryCallback, retryState, null);
+	}
+
+	@Override
+	public <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, String contextKey) throws E {
+
+		return doExecute(retryCallback, null, null, contextKey);
+	}
+
+	@Override
+	public <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+			String contextKey) throws E {
+
+		return doExecute(retryCallback, recoveryCallback, null, contextKey);
+	}
+
+	@Override
+	public <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState,
+			String contextKey) throws E, ExhaustedRetryException {
+
+		return doExecute(retryCallback, null, retryState, contextKey);
+	}
+
+	@Override
+	public <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+			RetryState retryState, String contextKey) throws E {
+
+		return doExecute(retryCallback, recoveryCallback, retryState, contextKey);
 	}
 
 	/**
@@ -263,19 +291,22 @@ public class RetryTemplate implements RetryOperations {
 	 * @param state the {@link RetryState}
 	 * @param <T> the type of the return value
 	 * @param <E> the exception type to throw
+	 * @param contextKey a key to use to map the context when
+	 * {@link RetrySynchronizationManager#isUseThreadLocal()} is false.
 	 * @see RetryOperations#execute(RetryCallback, RecoveryCallback, RetryState)
 	 * @throws ExhaustedRetryException if the retry has been exhausted.
 	 * @throws E an exception if the retry operation fails
 	 * @return T the retried value
 	 */
 	protected <T, E extends Throwable> T doExecute(RetryCallback<T, E> retryCallback,
-			RecoveryCallback<T> recoveryCallback, RetryState state) throws E, ExhaustedRetryException {
+			@Nullable RecoveryCallback<T> recoveryCallback, @Nullable RetryState state, @Nullable String contextKey)
+			throws E, ExhaustedRetryException {
 
 		RetryPolicy retryPolicy = this.retryPolicy;
 		BackOffPolicy backOffPolicy = this.backOffPolicy;
 
 		// Allow the retry policy to initialise itself...
-		RetryContext context = open(retryPolicy, state);
+		RetryContext context = open(retryPolicy, state, contextKey);
 		if (this.logger.isTraceEnabled()) {
 			this.logger.trace("RetryContext retrieved: " + context);
 		}
@@ -395,7 +426,7 @@ public class RetryTemplate implements RetryOperations {
 		finally {
 			close(retryPolicy, context, state, lastException == null || exhausted);
 			doCloseInterceptors(retryCallback, context, lastException);
-			RetrySynchronizationManager.clear();
+			RetrySynchronizationManager.clear(context);
 		}
 
 	}
@@ -462,23 +493,38 @@ public class RetryTemplate implements RetryOperations {
 	 * @param retryPolicy a {@link RetryPolicy} to delegate the context creation
 	 * @return a retry context, either a new one or the one used last time the same state
 	 * was encountered
+	 * @deprecated in favor of {@link #open(RetryPolicy, RetryState, String)}.
 	 */
+	@Deprecated
 	protected RetryContext open(RetryPolicy retryPolicy, RetryState state) {
+		return open(retryPolicy, state, null);
+	}
+
+	/**
+	 * Delegate to the {@link RetryPolicy} having checked in the cache for an existing
+	 * value if the state is not null.
+	 * @param state a {@link RetryState}
+	 * @param retryPolicy a {@link RetryPolicy} to delegate the context creation
+	 * @param contextKey the context key when not using a thread local.
+	 * @return a retry context, either a new one or the one used last time the same state
+	 * was encountered
+	 */
+	protected RetryContext open(RetryPolicy retryPolicy, RetryState state, @Nullable String contextKey) {
 
 		if (state == null) {
-			return doOpenInternal(retryPolicy);
+			return doOpenInternal(retryPolicy, contextKey);
 		}
 
 		Object key = state.getKey();
 		if (state.isForceRefresh()) {
-			return doOpenInternal(retryPolicy, state);
+			return doOpenInternal(retryPolicy, state, contextKey);
 		}
 
 		// If there is no cache hit we can avoid the possible expense of the
 		// cache re-hydration.
 		if (!this.retryContextCache.containsKey(key)) {
 			// The cache is only used if there is a failure.
-			return doOpenInternal(retryPolicy, state);
+			return doOpenInternal(retryPolicy, state, contextKey);
 		}
 
 		RetryContext context = this.retryContextCache.get(key);
@@ -490,7 +536,7 @@ public class RetryTemplate implements RetryOperations {
 			}
 			// The cache could have been expired in between calls to
 			// containsKey(), so we have to live with this:
-			return doOpenInternal(retryPolicy, state);
+			return doOpenInternal(retryPolicy, state, contextKey);
 		}
 
 		// Start with a clean slate for state that others may be inspecting
@@ -501,8 +547,11 @@ public class RetryTemplate implements RetryOperations {
 
 	}
 
-	private RetryContext doOpenInternal(RetryPolicy retryPolicy, RetryState state) {
-		RetryContext context = retryPolicy.open(RetrySynchronizationManager.getContext());
+	private RetryContext doOpenInternal(RetryPolicy retryPolicy, RetryState state, @Nullable String contextKey) {
+		RetryContext context = retryPolicy.open(RetrySynchronizationManager.getContext(contextKey));
+		if (contextKey != null) {
+			context.setAttribute(RetryContext.KEY, contextKey);
+		}
 		if (state != null) {
 			context.setAttribute(RetryContext.STATE_KEY, state.getKey());
 		}
@@ -512,8 +561,8 @@ public class RetryTemplate implements RetryOperations {
 		return context;
 	}
 
-	private RetryContext doOpenInternal(RetryPolicy retryPolicy) {
-		return doOpenInternal(retryPolicy, null);
+	private RetryContext doOpenInternal(RetryPolicy retryPolicy, @Nullable String contextKey) {
+		return doOpenInternal(retryPolicy, null, contextKey);
 	}
 
 	/**
@@ -545,7 +594,7 @@ public class RetryTemplate implements RetryOperations {
 				return recovered;
 			}
 			else {
-				logger.debug("Retry exhausted and recovery disabled for this throwable");
+				this.logger.debug("Retry exhausted and recovery disabled for this throwable");
 			}
 		}
 		if (state != null) {

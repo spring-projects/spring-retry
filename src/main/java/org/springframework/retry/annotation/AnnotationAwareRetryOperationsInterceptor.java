@@ -44,6 +44,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
@@ -286,7 +287,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.openTimeoutSupplier(() -> evaluate(parsed, Long.class, false));
+				breaker.openTimeoutFunction(context -> evaluate(context, parsed, Long.class, false));
 				return;
 			}
 		}
@@ -305,7 +306,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 				}
 			}
 			else {
-				breaker.resetTimeoutSupplier(() -> evaluate(parsed, Long.class, false));
+				breaker.resetTimeoutFunction(context -> evaluate(context, parsed, Long.class, false));
 			}
 		}
 		breaker.setResetTimeout(circuit.resetTimeout());
@@ -377,7 +378,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 					? new ExpressionRetryPolicy(resolve(exceptionExpression)).withBeanFactory(this.beanFactory)
 					: new SimpleRetryPolicy();
 			if (expression != null) {
-				simple.maxAttemptsSupplier(() -> evaluate(expression, Integer.class, stateless));
+				simple.maxAttemptsFunction(context -> evaluate(context, expression, Integer.class, stateless));
 			}
 			else {
 				simple.setMaxAttempts(maxAttempts);
@@ -400,7 +401,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			else {
 				simple = new SimpleRetryPolicy(maxAttempts, policyMap, true, retryNotExcluded);
 				if (expression != null) {
-					simple.maxAttemptsSupplier(() -> evaluate(expression, Integer.class, stateless));
+					simple.maxAttemptsFunction(context -> evaluate(context, expression, Integer.class, stateless));
 				}
 			}
 		}
@@ -466,25 +467,25 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 
 		BackOffPolicyBuilder builder = BackOffPolicyBuilder.newBuilder();
 		if (minExp != null) {
-			builder.delaySupplier(() -> evaluate(minExp, Long.class, stateless));
+			builder.delayFunction(context -> evaluate(context, minExp, Long.class, stateless));
 		}
 		else {
 			builder.delay(min);
 		}
 		if (maxExp != null) {
-			builder.maxDelaySupplier(() -> evaluate(maxExp, Long.class, stateless));
+			builder.maxDelayFunction(context -> evaluate(maxExp, Long.class, stateless));
 		}
 		else {
 			builder.maxDelay(max);
 		}
 		if (multExp != null) {
-			builder.multiplierSupplier(() -> evaluate(multExp, Double.class, stateless));
+			builder.multiplierFunction(context -> evaluate(multExp, Double.class, stateless));
 		}
 		else {
 			builder.multiplier(multiplier);
 		}
 		if (randomExp != null) {
-			builder.randomSupplier(() -> evaluate(randomExp, Boolean.class, stateless));
+			builder.randomFunction(context -> evaluate(randomExp, Boolean.class, stateless));
 		}
 		else {
 			builder.random(isRandom);
@@ -517,6 +518,18 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			if (args == null) {
 				args = Args.NO_ARGS;
 			}
+		}
+		return expression.getValue(this.evaluationContext, args, type);
+	}
+
+	private <T> T evaluate(@Nullable RetryContext context, Expression expression, Class<T> type, boolean stateless) {
+
+		if (context == null || context.getAttribute(RetryContext.KEY) == null) {
+			return evaluate(expression, type, stateless);
+		}
+		Args args = (Args) context.getAttribute("ARGS");
+		if (args == null) {
+			args = Args.NO_ARGS;
 		}
 		return expression.getValue(this.evaluationContext, args, type);
 	}
