@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,10 @@
 
 package org.springframework.retry.support;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.lang.Nullable;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryOperations;
@@ -30,6 +34,7 @@ import org.springframework.retry.RetryOperations;
  * {@link RetryOperations} implementations.
  *
  * @author Dave Syer
+ * @author Gary Russell
  *
  */
 public final class RetrySynchronizationManager {
@@ -39,13 +44,41 @@ public final class RetrySynchronizationManager {
 
 	private static final ThreadLocal<RetryContext> context = new ThreadLocal<>();
 
+	private static final Map<Thread, RetryContext> contexts = new ConcurrentHashMap<>();
+
+	private static boolean useThreadLocal = true;
+
+	/**
+	 * Set to false to store the context in a map (keyed by the current thread) instead of
+	 * in a {@link ThreadLocal}. Recommended when using virtual threads.
+	 * @param use true to use a {@link ThreadLocal} (default true).
+	 * @since 2.0.3
+	 */
+	public static void setUseThreadLocal(boolean use) {
+		useThreadLocal = use;
+	}
+
+	/**
+	 * Return true if contexts are held in a ThreadLocal (default) rather than a Map.
+	 * @return the useThreadLocal
+	 * @since 2.0.3
+	 */
+	public static boolean isUseThreadLocal() {
+		return useThreadLocal;
+	}
+
 	/**
 	 * Public accessor for the locally enclosing {@link RetryContext}.
 	 * @return the current retry context, or null if there isn't one
 	 */
+	@Nullable
 	public static RetryContext getContext() {
-		RetryContext result = context.get();
-		return result;
+		if (useThreadLocal) {
+			return context.get();
+		}
+		else {
+			return contexts.get(Thread.currentThread());
+		}
 	}
 
 	/**
@@ -55,10 +88,18 @@ public final class RetrySynchronizationManager {
 	 * @param context the new context to register
 	 * @return the old context if there was one
 	 */
+	@Nullable
 	public static RetryContext register(RetryContext context) {
-		RetryContext oldContext = getContext();
-		RetrySynchronizationManager.context.set(context);
-		return oldContext;
+		if (useThreadLocal) {
+			RetryContext oldContext = getContext();
+			RetrySynchronizationManager.context.set(context);
+			return oldContext;
+		}
+		else {
+			RetryContext oldContext = contexts.get(Thread.currentThread());
+			contexts.put(Thread.currentThread(), context);
+			return oldContext;
+		}
 	}
 
 	/**
@@ -66,10 +107,21 @@ public final class RetrySynchronizationManager {
 	 * {@link RetryOperations} implementations.
 	 * @return the old value if there was one.
 	 */
+	@Nullable
 	public static RetryContext clear() {
 		RetryContext value = getContext();
 		RetryContext parent = value == null ? null : value.getParent();
-		RetrySynchronizationManager.context.set(parent);
+		if (useThreadLocal) {
+			RetrySynchronizationManager.context.set(parent);
+		}
+		else {
+			if (parent != null) {
+				contexts.put(Thread.currentThread(), parent);
+			}
+			else {
+				contexts.remove(Thread.currentThread());
+			}
+		}
 		return value;
 	}
 

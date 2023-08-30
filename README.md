@@ -166,13 +166,18 @@ RetryTemplate.builder()
 
 ### Using `RetryContext`
 
-The method parameter for the `RetryCallback` is a `RetryContext`. Many callbacks ignore
-the context. However, if necessary, you can use it as an attribute bag to store data for
-the duration of the iteration.
+The method parameter for the `RetryCallback` is a `RetryContext`.
+Many callbacks ignore the context.
+However, if necessary, you can use it as an attribute bag to store data for the duration of the iteration.
+It also has some useful properties, such as `retryCount`.
 
-A `RetryContext` has a parent context if there is a nested retry in progress in the same
-thread. The parent context is occasionally useful for storing data that needs to be shared
-between calls to execute.
+A `RetryContext` has a parent context if there is a nested retry in progress in the same thread.
+The parent context is occasionally useful for storing data that needs to be shared between calls to execute.
+
+If you dont have access to the context directly, you can obtain the current context within the scope of the retries by calling `RetrySynchronizationManager.getContext()`.
+By default, the context is stored in a `ThreadLocal`.
+JEP 444 recommends that `ThreadLocal` should be avoided when using virtual threads, available in Java 21 and beyond.
+To store the contexts in a `Map` instead of a `ThreadLocal`, call `RetrySynchronizationManager.setUseThreadLocal(false)`.
 
 ### Using `RecoveryCallback`
 
