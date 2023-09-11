@@ -332,7 +332,7 @@ back off with an exponentially increasing wait period, to avoid two retries gett
 lock step and both failing (a lesson learned from Ethernet). For this purpose, Spring
 Retry provides `ExponentialBackoffPolicy`. Spring Retry also provides randomized versions
 of delay policies that are quite useful to avoid resonating between related failures in a
-complex system by adding Jitter.
+complex system, by adding jitter.
 
 ## Listeners
 
