@@ -116,8 +116,8 @@ public @interface Backoff {
 
 	/**
 	 * In the exponential case ({@link #multiplier()} &gt; 0) set this to true to have the
-	 * backoff delays randomized, so that the maximum delay is multiplier times the
-	 * previous delay and the distribution is uniform between the two values.
+	 * backoff delays randomized with jitter, so that the maximum delay is multiplier
+	 * times the previous delay and the distribution is uniform between the two values.
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	boolean random() default false;
