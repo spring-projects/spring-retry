@@ -560,22 +560,22 @@ public class EnableRetryTests {
 		int count = 0;
 
 		public int getMaxAttempts() {
-			count++;
+			this.count++;
 			return 3;
 		}
 
 		public long getInitial() {
-			count++;
+			this.count++;
 			return 1000;
 		}
 
 		public long getMax() {
-			count++;
+			this.count++;
 			return 2000;
 		}
 
 		public double getMult() {
-			count++;
+			this.count++;
 			return 1.2;
 		}
 
@@ -639,10 +639,10 @@ public class EnableRetryTests {
 		@Retryable(retryFor = RuntimeException.class, noRetryFor = IllegalStateException.class,
 				notRecoverable = { IllegalArgumentException.class, IllegalStateException.class })
 		public void service() {
-			if (this.count++ >= 3 && count < 7) {
+			if (this.count++ >= 3 && this.count < 7) {
 				throw new IllegalArgumentException("Planned");
 			}
-			else if (count > 6) {
+			else if (this.count > 6) {
 				throw new IllegalStateException("Planned");
 			}
 			else {
@@ -801,7 +801,7 @@ public class EnableRetryTests {
 			throw new RuntimeException("this cannot be retried");
 		}
 
-		@Retryable(exceptionExpression = "@exceptionChecker.${retryMethod}(#root)",
+		@Retryable(exceptionExpression = "@exceptionChecker.${retryMethod}(#root)", retryFor = RuntimeException.class,
 				maxAttemptsExpression = "@integerFiveBean", backoff = @Backoff(delayExpression = "${one}",
 						maxDelayExpression = "@integerFiveBean", multiplierExpression = "${onePointOne}"))
 		public void service3() {
