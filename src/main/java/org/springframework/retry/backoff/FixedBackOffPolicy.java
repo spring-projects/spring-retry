@@ -97,6 +97,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 			sleeper.sleep(this.backOffPeriod.get());
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}

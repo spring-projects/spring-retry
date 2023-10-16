@@ -138,6 +138,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 			this.sleeper.sleep(min + delta);
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}

@@ -19,6 +19,7 @@ package org.springframework.retry.backoff;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /**
  * @author Tomaz Fernandes
@@ -38,6 +39,25 @@ public class UniformRandomBackOffPolicyTests {
 
 		assertThat(withSleeper.getMinBackOffPeriod()).isEqualTo(minBackOff);
 		assertThat(withSleeper.getMaxBackOffPeriod()).isEqualTo(maxBackOff);
+	}
+
+
+	@Test
+	public void testInterruptedStatusIsRestored() {
+		UniformRandomBackOffPolicy backOffPolicy = new UniformRandomBackOffPolicy();
+		int minBackOff = 1000;
+		int maxBackOff = 10000;
+		backOffPolicy.setMinBackOffPeriod(minBackOff);
+		backOffPolicy.setMaxBackOffPeriod(maxBackOff);
+		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(new Sleeper() {
+			@Override
+			public void sleep(long backOffPeriod) throws InterruptedException {
+				throw new InterruptedException("foo");
+			}
+		});
+
+		assertThatExceptionOfType(BackOffInterruptedException.class).isThrownBy(() -> withSleeper.backOff(null));
+		assertThat(Thread.interrupted()).isTrue();
 	}
 
 }

@@ -245,6 +245,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 			this.sleeper.sleep(sleepTime);
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
