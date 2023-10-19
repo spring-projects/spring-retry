@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2014 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ package org.springframework.retry.backoff;
  * @author Rob Harrop
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Marius Lichtblau
  */
 public class FixedBackOffPolicy extends StatelessBackOffPolicy implements SleepingBackOffPolicy<FixedBackOffPolicy> {
 
@@ -82,6 +83,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 			sleeper.sleep(backOffPeriod);
 		}
 		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 		}
 	}
