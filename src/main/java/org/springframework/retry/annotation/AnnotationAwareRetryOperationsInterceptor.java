@@ -75,6 +75,7 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Roman Akentev
  * @since 1.1
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
@@ -323,6 +324,9 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	}
 
 	private RetryListener[] getListenersBeans(String[] listenersBeanNames) {
+		if (listenersBeanNames.length == 1 && "".equals(listenersBeanNames[0].trim())) {
+			return new RetryListener[0];
+		}
 		RetryListener[] listeners = new RetryListener[listenersBeanNames.length];
 		for (int i = 0; i < listeners.length; i++) {
 			listeners[i] = this.beanFactory.getBean(listenersBeanNames[i], RetryListener.class);

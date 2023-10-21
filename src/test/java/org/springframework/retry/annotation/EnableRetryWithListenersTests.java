@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2022 the original author or authors.
+ * Copyright 2012-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Dave Syer
  * @author Gary Russell
  * @author Henning Pöttker
+ * @author Roman Akentev
  *
  */
 public class EnableRetryWithListenersTests {
@@ -52,6 +53,16 @@ public class EnableRetryWithListenersTests {
 		service.service();
 		assertThat(context.getBean(TestConfigurationMultipleListeners.class).count1).isEqualTo(1);
 		assertThat(context.getBean(TestConfigurationMultipleListeners.class).count2).isEqualTo(0);
+		context.close();
+	}
+
+	@Test
+	public void excludedListeners() {
+		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+				TestConfigurationExcludedListeners.class);
+		ServiceWithExcludedListeners service = context.getBean(ServiceWithExcludedListeners.class);
+		service.service();
+		assertThat(context.getBean(TestConfigurationExcludedListeners.class).count).isEqualTo(0);
 		context.close();
 	}
 
@@ -116,6 +127,41 @@ public class EnableRetryWithListenersTests {
 
 	}
 
+	@Configuration
+	@EnableRetry(proxyTargetClass = true)
+	protected static class TestConfigurationExcludedListeners {
+
+		private int count = 0;
+
+		@Bean
+		public ServiceWithExcludedListeners service() {
+			return new ServiceWithExcludedListeners();
+		}
+
+		@Bean
+		public RetryListener listener1() {
+			return new RetryListener() {
+				@Override
+				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+						Throwable throwable) {
+					count++;
+				}
+			};
+		}
+
+		@Bean
+		public RetryListener listener2() {
+			return new RetryListener() {
+				@Override
+				public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+						Throwable throwable) {
+					count++;
+				}
+			};
+		}
+
+	}
+
 	protected static class Service {
 
 		private int count = 0;
@@ -138,6 +184,23 @@ public class EnableRetryWithListenersTests {
 		private int count = 0;
 
 		@Retryable(backoff = @Backoff(delay = 1000), listeners = "listener1")
+		public void service() {
+			if (count++ < 2) {
+				throw new RuntimeException("Planned");
+			}
+		}
+
+		public int getCount() {
+			return count;
+		}
+
+	}
+
+	protected static class ServiceWithExcludedListeners {
+
+		private int count = 0;
+
+		@Retryable(backoff = @Backoff(delay = 1000), listeners = "")
 		public void service() {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");
