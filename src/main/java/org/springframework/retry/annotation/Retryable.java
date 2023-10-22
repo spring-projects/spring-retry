@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2022 the original author or authors.
+ * Copyright 2014-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.core.annotation.AliasFor;
  * @author Artem Bilan
  * @author Gary Russell
  * @author Maksim Kita
+ * @author Donghyeok Jang
  * @since 1.1
  *
  */
@@ -165,7 +166,9 @@ public @interface Retryable {
 
 	/**
 	 * Bean names of retry listeners to use instead of default ones defined in Spring
-	 * context
+	 * context. However, If this attribute is set to the name of a non-existent retry
+	 * listener, not only the default ones but also a non-existent retry listener,
+	 * is not set.
 	 * @return retry listeners bean names
 	 */
 	String[] listeners() default {};
