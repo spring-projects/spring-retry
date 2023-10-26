@@ -77,7 +77,9 @@ public @interface Backoff {
 	long maxDelay() default 0;
 
 	/**
-	 * If positive, then used as a multiplier for generating the next delay for backoff.
+	 * If greater than 1.0, used as a multiplier for generating the next delay for
+	 * backoff; any value less than or equal to 1.0 is treated as 1.0, meaning a fixed
+	 * delay.
 	 * @return a multiplier to use to calculate the next backoff delay (default 0 =
 	 * ignored)
 	 */
@@ -106,8 +108,9 @@ public @interface Backoff {
 
 	/**
 	 * Evaluates to a value used as a multiplier for generating the next delay for
-	 * backoff. Overrides {@link #multiplier()}. Use {@code #{...}} for one-time
-	 * evaluation during initialization, omit the delimiters for evaluation at runtime.
+	 * backoff; ; any value less than or equal to 1.0 is treated as 1.0, meaning a fixed
+	 * delay. Overrides {@link #multiplier()}. Use {@code #{...}} for one-time evaluation
+	 * during initialization, omit the delimiters for evaluation at runtime.
 	 * @return a multiplier expression to use to calculate the next backoff delay (default
 	 * 0 = ignored)
 	 * @since 1.2
@@ -115,20 +118,19 @@ public @interface Backoff {
 	String multiplierExpression() default "";
 
 	/**
-	 * In the exponential case ({@link #multiplier()} &gt; 0 and not equal to 1.0) set
-	 * this to true to have the backoff delays randomized with jitter, so that the maximum
-	 * delay is multiplier times the previous delay and the distribution is uniform
-	 * between the two values.
+	 * In the exponential case ({@link #multiplier()} &gt; 1.0) set this to true to have
+	 * the backoff delays randomized with jitter, so that the maximum delay is multiplier
+	 * times the previous delay and the distribution is uniform between the two values.
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	boolean random() default false;
 
 	/**
-	 * Evaluates to a value. In the exponential case ({@link #multiplier()} &gt; 0 and not
-	 * equal to 1.0) set this to true to have the backoff delays randomized, so that the
-	 * maximum delay is multiplier times the previous delay and the distribution is
-	 * uniform between the two values. Use {@code #{...}} for one-time evaluation during
-	 * initialization, omit the delimiters for evaluation at runtime.
+	 * Evaluates to a value. In the exponential case ({@link #multiplier()} &gt; 1.0) set
+	 * this to true to have the backoff delays randomized, so that the maximum delay is
+	 * multiplier times the previous delay and the distribution is uniform between the two
+	 * values. Use {@code #{...}} for one-time evaluation during initialization, omit the
+	 * delimiters for evaluation at runtime.
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	String randomExpression() default "";
