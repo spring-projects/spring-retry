@@ -160,4 +160,23 @@ public class CompositeRetryPolicyTests {
 		assertThat(policy.canRetry(context)).isTrue();
 	}
 
+	@Test
+	public void testMaximumAttemptsForNonSuitablePolicies() {
+		CompositeRetryPolicy policy = new CompositeRetryPolicy();
+		policy.setOptimistic(true);
+		policy.setPolicies(new RetryPolicy[] { new NeverRetryPolicy(), new NeverRetryPolicy() });
+
+		assertThat(policy.getMaxAttempts()).isEqualTo(RetryPolicy.NO_MAXIMUM_ATTEMPTS_SET);
+	}
+
+	@Test
+	public void testMaximumAttemptsForSuitablePolicies() {
+		CompositeRetryPolicy policy = new CompositeRetryPolicy();
+		policy.setOptimistic(true);
+		policy.setPolicies(
+				new RetryPolicy[] { new SimpleRetryPolicy(6), new SimpleRetryPolicy(3), new SimpleRetryPolicy(4) });
+
+		assertThat(policy.getMaxAttempts()).isEqualTo(3);
+	}
+
 }

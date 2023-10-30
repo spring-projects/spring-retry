@@ -296,6 +296,10 @@ public class RetryTemplate implements RetryOperations {
 				throw new TerminatedRetryException("Retry terminated abnormally by interceptor before first attempt");
 			}
 
+			if (!context.hasAttribute(RetryContext.MAX_ATTEMPTS)) {
+				context.setAttribute(RetryContext.MAX_ATTEMPTS, retryPolicy.getMaxAttempts());
+			}
+
 			// Get or Start the backoff context...
 			BackOffContext backOffContext = null;
 			Object resource = context.getAttribute("backOffContext");

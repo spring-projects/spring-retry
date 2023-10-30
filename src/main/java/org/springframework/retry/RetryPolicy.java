@@ -31,6 +31,12 @@ import java.io.Serializable;
 public interface RetryPolicy extends Serializable {
 
 	/**
+	 * The value returned by {@link RetryPolicy#getMaxAttempts()} when the policy doesn't
+	 * provide a maximum number of attempts before failure
+	 */
+	int NO_MAXIMUM_ATTEMPTS_SET = -1;
+
+	/**
 	 * @param context the current retry status
 	 * @return true if the operation can proceed
 	 */
@@ -58,5 +64,15 @@ public interface RetryPolicy extends Serializable {
 	 * @param throwable the exception to throw
 	 */
 	void registerThrowable(RetryContext context, Throwable throwable);
+
+	/**
+	 * Called to understand if the policy has a fixed number of maximum attempts before
+	 * failure
+	 * @return -1 if the policy doesn't provide a fixed number of maximum attempts before
+	 * failure, the number of maximum attempts before failure otherwise
+	 */
+	default int getMaxAttempts() {
+		return NO_MAXIMUM_ATTEMPTS_SET;
+	}
 
 }

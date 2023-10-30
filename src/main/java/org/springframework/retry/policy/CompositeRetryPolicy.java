@@ -145,6 +145,22 @@ public class CompositeRetryPolicy implements RetryPolicy {
 		((RetryContextSupport) context).registerThrowable(throwable);
 	}
 
+	/**
+	 * @return the lower 'maximum number of attempts before failure' between all policies
+	 * that have a 'maximum number of attempts before failure' set, if at least one is
+	 * present among the policies, return {@link RetryPolicy#NO_MAXIMUM_ATTEMPTS_SET}
+	 * otherwise
+	 */
+	@Override
+	public int getMaxAttempts() {
+		return Arrays.stream(policies)
+			.map(RetryPolicy::getMaxAttempts)
+			.filter(maxAttempts -> maxAttempts != NO_MAXIMUM_ATTEMPTS_SET)
+			.sorted()
+			.findFirst()
+			.orElse(NO_MAXIMUM_ATTEMPTS_SET);
+	}
+
 	private static class CompositeRetryContext extends RetryContextSupport {
 
 		RetryContext[] contexts;

@@ -62,6 +62,13 @@ public interface RetryContext extends AttributeAccessor {
 	String NO_RECOVERY = "context.no-recovery";
 
 	/**
+	 * Retry context attribute that represent the maximum number of attempts for policies
+	 * that provide a maximum number of attempts before failure. For other policies the
+	 * value returned is {@link RetryPolicy#NO_MAXIMUM_ATTEMPTS_SET}
+	 */
+	String MAX_ATTEMPTS = "context.max-attempts";
+
+	/**
 	 * Signal to the framework that no more attempts should be made to try or retry the
 	 * current {@link RetryCallback}.
 	 */
