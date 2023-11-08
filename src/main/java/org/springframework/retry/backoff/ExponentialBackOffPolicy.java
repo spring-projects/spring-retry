@@ -49,10 +49,10 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	protected final Log logger = LogFactory.getLog(this.getClass());
 
 	/**
-	 * The default 'initialInterval' value - 100 millisecs. Coupled with the default
+	 * The default 'initialInterval' value - 1000 millisecs. Coupled with the default
 	 * 'multiplier' value this gives a useful initial spread of pauses for 1-5 retries.
 	 */
-	public static final long DEFAULT_INITIAL_INTERVAL = 100L;
+	public static final long DEFAULT_INITIAL_INTERVAL = 1000L;
 
 	/**
 	 * The default maximum backoff time (30 seconds).
