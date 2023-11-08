@@ -95,7 +95,7 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
-	public void testMultiBackOffWithInitialDelaySupplaier() {
+	public void testMultiBackOffWithInitialDelaySupplier() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		long seed = 40;
 		double multiplier = 1.2;
