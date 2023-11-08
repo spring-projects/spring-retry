@@ -297,7 +297,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public long getInterval() {
-			return this.interval > 0 ? this.interval : this.intervalSupplier.get();
+			if (intervalSupplier == null) {
+				return this.interval;
+			} else {
+				return this.interval == DEFAULT_INITIAL_INTERVAL ? this.intervalSupplier.get() : this.interval;
+			}
 		}
 
 		public long getMaxInterval() {
