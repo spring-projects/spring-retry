@@ -289,7 +289,14 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		protected long getNextInterval() {
-			return (long) (this.interval * getMultiplier());
+			if (initialIntervalSupplier == null) {
+				return (long) (this.interval * getMultiplier());
+			}
+			else {
+				return this.interval == DEFAULT_INITIAL_INTERVAL
+						? (long) (this.initialIntervalSupplier.get() * getMultiplier())
+						: (long) (this.interval * getMultiplier());
+			}
 		}
 
 		public double getMultiplier() {

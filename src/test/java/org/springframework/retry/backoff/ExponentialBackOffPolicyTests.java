@@ -95,6 +95,22 @@ public class ExponentialBackOffPolicyTests {
 	}
 
 	@Test
+	public void testMultiBackOffWithInitialDelaySupplaier() {
+		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
+		long seed = 40;
+		double multiplier = 1.2;
+		strategy.initialIntervalSupplier(() -> 40L);
+		strategy.setMultiplier(multiplier);
+		strategy.setSleeper(sleeper);
+		BackOffContext context = strategy.start(null);
+		for (int x = 0; x < 5; x++) {
+			strategy.backOff(context);
+			assertThat(sleeper.getLastBackOff()).isEqualTo(seed);
+			seed *= multiplier;
+		}
+	}
+
+	@Test
 	public void testInterruptedStatusIsRestored() {
 		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
 		strategy.setSleeper(new Sleeper() {
