@@ -289,13 +289,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		protected long getNextInterval() {
-			if (this.initialIntervalSupplier == null) {
+			if (this.initialIntervalSupplier == null || this.interval != DEFAULT_INITIAL_INTERVAL) {
 				return (long) (this.interval * getMultiplier());
 			}
 			else {
-				return this.interval == DEFAULT_INITIAL_INTERVAL
-						? (long) (this.initialIntervalSupplier.get() * getMultiplier())
-						: (long) (this.interval * getMultiplier());
+				return (long) (this.initialIntervalSupplier.get() * getMultiplier());
 			}
 		}
 
@@ -304,11 +302,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public long getInterval() {
-			if (initialIntervalSupplier == null) {
+			if (initialIntervalSupplier == null || this.interval != DEFAULT_INITIAL_INTERVAL) {
 				return this.interval;
 			}
 			else {
-				return this.interval == DEFAULT_INITIAL_INTERVAL ? this.initialIntervalSupplier.get() : this.interval;
+				return this.initialIntervalSupplier.get();
 			}
 		}
 
