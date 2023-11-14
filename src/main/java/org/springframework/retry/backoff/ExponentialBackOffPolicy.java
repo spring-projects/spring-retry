@@ -52,7 +52,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * The default 'initialInterval' value - 1000 millisecs. Coupled with the default
 	 * 'multiplier' value this gives a useful initial spread of pauses for 1-5 retries.
 	 */
-	public static final long DEFAULT_INITIAL_INTERVAL = 1000L;
+	public static final long DEFAULT_INITIAL_INTERVAL = 100L;
 
 	/**
 	 * The default maximum backoff time (30 seconds).
@@ -259,7 +259,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 		private final long maxInterval;
 
-		private final Supplier<Long> initialIntervalSupplier;
+		private Supplier<Long> initialIntervalSupplier;
 
 		private Supplier<Double> multiplierSupplier;
 
@@ -289,12 +289,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		protected long getNextInterval() {
-			if (this.initialIntervalSupplier == null || this.interval != DEFAULT_INITIAL_INTERVAL) {
-				return (long) (this.interval * getMultiplier());
-			}
-			else {
-				return (long) (this.initialIntervalSupplier.get() * getMultiplier());
-			}
+			return (long) (this.interval * getMultiplier());
 		}
 
 		public double getMultiplier() {
@@ -302,12 +297,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public long getInterval() {
-			if (initialIntervalSupplier == null || this.interval != DEFAULT_INITIAL_INTERVAL) {
-				return this.interval;
+			if (this.initialIntervalSupplier != null) {
+				this.interval = this.initialIntervalSupplier.get();
+				this.initialIntervalSupplier = null;
 			}
-			else {
-				return this.initialIntervalSupplier.get();
-			}
+			return this.interval;
 		}
 
 		public long getMaxInterval() {
