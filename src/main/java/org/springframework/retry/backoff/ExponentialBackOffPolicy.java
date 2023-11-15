@@ -42,6 +42,7 @@ import org.springframework.util.ClassUtils;
  * @author Gary Russell
  * @author Artem Bilan
  * @author Marius Lichtblau
+ * @author Anton Aharkau
  */
 @SuppressWarnings("serial")
 public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
@@ -259,7 +260,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 
 		private final long maxInterval;
 
-		private Supplier<Long> intervalSupplier;
+		private Supplier<Long> initialIntervalSupplier;
 
 		private Supplier<Double> multiplierSupplier;
 
@@ -271,7 +272,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 			this.interval = interval;
 			this.multiplier = multiplier;
 			this.maxInterval = maxInterval;
-			this.intervalSupplier = intervalSupplier;
+			this.initialIntervalSupplier = intervalSupplier;
 			this.multiplierSupplier = multiplierSupplier;
 			this.maxIntervalSupplier = maxIntervalSupplier;
 		}
@@ -297,7 +298,11 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 		}
 
 		public long getInterval() {
-			return this.intervalSupplier != null ? this.intervalSupplier.get() : this.interval;
+			if (this.initialIntervalSupplier != null) {
+				this.interval = this.initialIntervalSupplier.get();
+				this.initialIntervalSupplier = null;
+			}
+			return this.interval;
 		}
 
 		public long getMaxInterval() {
