@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Dave Syer
  * @author Gary Russell
  * @author Marius Lichtblau
+ * @author Anton Aharkau
  */
 public class ExponentialBackOffPolicyTests {
 

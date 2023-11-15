@@ -42,6 +42,7 @@ import org.springframework.util.ClassUtils;
  * @author Gary Russell
  * @author Artem Bilan
  * @author Marius Lichtblau
+ * @author Anton Aharkau
  */
 @SuppressWarnings("serial")
 public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
