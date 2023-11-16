@@ -348,7 +348,7 @@ The following listing shows the `RetryListener` interface:
 ```java
 public interface RetryListener {
 
-    void open(RetryContext context, RetryCallback<T> callback);
+    boolean open(RetryContext context, RetryCallback<T> callback);
 
     void onSuccess(RetryContext context, T result);
 
