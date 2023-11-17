@@ -23,6 +23,7 @@ import org.springframework.core.AttributeAccessor;
  * used to alter the course of the retry, e.g. force an early termination.
  *
  * @author Dave Syer
+ * @author Emanuele Ivaldi
  *
  */
 public interface RetryContext extends AttributeAccessor {

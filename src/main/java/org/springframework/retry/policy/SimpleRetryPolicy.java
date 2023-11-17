@@ -58,6 +58,7 @@ import org.springframework.util.ClassUtils;
  * @author Gary Russell
  * @author Aleksandr Shamukov
  * @author Artem Bilan
+ * @author Emanuele Ivaldi
  */
 @SuppressWarnings("serial")
 public class SimpleRetryPolicy implements RetryPolicy {

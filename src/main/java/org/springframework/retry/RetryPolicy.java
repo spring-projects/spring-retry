@@ -26,6 +26,7 @@ import java.io.Serializable;
  * API for a range of different platforms for the external context.
  *
  * @author Dave Syer
+ * @author Emanuele Ivaldi
  *
  */
 public interface RetryPolicy extends Serializable {

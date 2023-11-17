@@ -75,6 +75,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * @author Artem Bilan
  * @author Josh Long
  * @author Aleksandr Shamukov
+ * @author Emanuele Ivaldi
  */
 public class RetryTemplate implements RetryOperations {
 

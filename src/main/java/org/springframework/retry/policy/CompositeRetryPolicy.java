@@ -30,6 +30,7 @@ import org.springframework.retry.context.RetryContextSupport;
  *
  * @author Dave Syer
  * @author Michael Minella
+ * @author Emanuele Ivaldi
  *
  */
 @SuppressWarnings("serial")

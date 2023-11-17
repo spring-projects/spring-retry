@@ -60,6 +60,7 @@ import static org.mockito.Mockito.verify;
  * @author Henning Pöttker
  * @author Yanming Zhou
  * @author Anton Aharkau
+ * @author Emanuele Ivaldi
  * @since 1.1
  */
 public class EnableRetryTests {

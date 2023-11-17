@@ -51,6 +51,7 @@ import static org.mockito.Mockito.verify;
  * @author Dave Syer
  * @author Gary Russell
  * @author Henning Pöttker
+ * @author Emanuele Ivaldi
  */
 public class RetryTemplateTests {
 
