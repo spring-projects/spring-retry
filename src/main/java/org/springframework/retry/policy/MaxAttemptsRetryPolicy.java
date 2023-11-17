@@ -74,6 +74,7 @@ public class MaxAttemptsRetryPolicy implements RetryPolicy {
 	 * The maximum number of attempts before failure.
 	 * @return the maximum number of attempts
 	 */
+	@Override
 	public int getMaxAttempts() {
 		return this.maxAttempts;
 	}

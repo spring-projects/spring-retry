@@ -23,6 +23,7 @@ import org.springframework.core.AttributeAccessor;
  * used to alter the course of the retry, e.g. force an early termination.
  *
  * @author Dave Syer
+ * @author Emanuele Ivaldi
  *
  */
 public interface RetryContext extends AttributeAccessor {
@@ -60,6 +61,13 @@ public interface RetryContext extends AttributeAccessor {
 	 * recoverable.
 	 */
 	String NO_RECOVERY = "context.no-recovery";
+
+	/**
+	 * Retry context attribute that represent the maximum number of attempts for policies
+	 * that provide a maximum number of attempts before failure. For other policies the
+	 * value returned is {@link RetryPolicy#NO_MAXIMUM_ATTEMPTS_SET}
+	 */
+	String MAX_ATTEMPTS = "context.max-attempts";
 
 	/**
 	 * Signal to the framework that no more attempts should be made to try or retry the

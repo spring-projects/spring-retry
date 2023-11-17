@@ -26,11 +26,13 @@ import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
+import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.TerminatedRetryException;
 import org.springframework.retry.backoff.BackOffContext;
 import org.springframework.retry.backoff.BackOffInterruptedException;
 import org.springframework.retry.backoff.BackOffPolicy;
 import org.springframework.retry.backoff.StatelessBackOffPolicy;
+import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
@@ -49,6 +51,7 @@ import static org.mockito.Mockito.verify;
  * @author Dave Syer
  * @author Gary Russell
  * @author Henning Pöttker
+ * @author Emanuele Ivaldi
  */
 public class RetryTemplateTests {
 
@@ -331,6 +334,30 @@ public class RetryTemplateTests {
 			return first.getAndSet(false) ? "bad" : "good";
 		});
 		assertThat(callCount.get()).isEqualTo(2);
+	}
+
+	@Test
+	public void testContextForPolicyWithMaximumNumberOfAttempts() throws Throwable {
+		RetryTemplate retryTemplate = new RetryTemplate();
+		RetryPolicy retryPolicy = new SimpleRetryPolicy(2);
+		retryTemplate.setRetryPolicy(retryPolicy);
+
+		Integer result = retryTemplate.execute((RetryCallback<Integer, Throwable>) context -> (Integer) context
+			.getAttribute(RetryContext.MAX_ATTEMPTS), context -> RetryPolicy.NO_MAXIMUM_ATTEMPTS_SET);
+
+		assertThat(result).isEqualTo(2);
+	}
+
+	@Test
+	public void testContextForPolicyWithNoMaximumNumberOfAttempts() throws Throwable {
+		RetryTemplate retryTemplate = new RetryTemplate();
+		RetryPolicy retryPolicy = new AlwaysRetryPolicy();
+		retryTemplate.setRetryPolicy(retryPolicy);
+
+		Integer result = retryTemplate.execute((RetryCallback<Integer, Throwable>) context -> (Integer) context
+			.getAttribute(RetryContext.MAX_ATTEMPTS), context -> RetryPolicy.NO_MAXIMUM_ATTEMPTS_SET);
+
+		assertThat(result).isEqualTo(RetryPolicy.NO_MAXIMUM_ATTEMPTS_SET);
 	}
 
 	private static class MockRetryCallback implements RetryCallback<Object, Exception> {

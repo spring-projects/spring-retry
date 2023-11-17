@@ -75,6 +75,7 @@ import org.springframework.retry.policy.SimpleRetryPolicy;
  * @author Artem Bilan
  * @author Josh Long
  * @author Aleksandr Shamukov
+ * @author Emanuele Ivaldi
  */
 public class RetryTemplate implements RetryOperations {
 
@@ -294,6 +295,10 @@ public class RetryTemplate implements RetryOperations {
 
 			if (!running) {
 				throw new TerminatedRetryException("Retry terminated abnormally by interceptor before first attempt");
+			}
+
+			if (!context.hasAttribute(RetryContext.MAX_ATTEMPTS)) {
+				context.setAttribute(RetryContext.MAX_ATTEMPTS, retryPolicy.getMaxAttempts());
 			}
 
 			// Get or Start the backoff context...

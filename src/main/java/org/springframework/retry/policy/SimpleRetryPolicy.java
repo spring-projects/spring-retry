@@ -58,6 +58,7 @@ import org.springframework.util.ClassUtils;
  * @author Gary Russell
  * @author Aleksandr Shamukov
  * @author Artem Bilan
+ * @author Emanuele Ivaldi
  */
 @SuppressWarnings("serial")
 public class SimpleRetryPolicy implements RetryPolicy {
@@ -194,6 +195,7 @@ public class SimpleRetryPolicy implements RetryPolicy {
 	 * The maximum number of attempts before failure.
 	 * @return the maximum number of attempts
 	 */
+	@Override
 	public int getMaxAttempts() {
 		if (this.maxAttemptsSupplier != null) {
 			return this.maxAttemptsSupplier.get();

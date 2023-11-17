@@ -60,6 +60,7 @@ import static org.mockito.Mockito.verify;
  * @author Henning Pöttker
  * @author Yanming Zhou
  * @author Anton Aharkau
+ * @author Emanuele Ivaldi
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -295,7 +296,7 @@ public class EnableRetryTests {
 		ExpressionService service = context.getBean(ExpressionService.class);
 		service.service6();
 		RuntimeConfigs runtime = context.getBean(RuntimeConfigs.class);
-		verify(runtime, times(5)).getMaxAttempts();
+		verify(runtime, times(6)).getMaxAttempts();
 		verify(runtime, times(1)).getInitial();
 		verify(runtime, times(2)).getMax();
 		verify(runtime, times(2)).getMult();
