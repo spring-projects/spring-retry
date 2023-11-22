@@ -118,7 +118,7 @@ public class CircuitBreakerRetryPolicy implements RetryPolicy {
 			resetTimeout = this.resetTimeoutSupplier.get();
 		}
 		long openTimeout = this.openTimeout;
-		if (this.resetTimeoutSupplier != null) {
+		if (this.openTimeoutSupplier != null) {
 			openTimeout = this.openTimeoutSupplier.get();
 		}
 		return new CircuitBreakerRetryContext(parent, this.delegate, resetTimeout, openTimeout);
