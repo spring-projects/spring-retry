@@ -88,16 +88,13 @@ short wait. To automate the retry of such operations, Spring Retry has the
 ```java
 public interface RetryOperations {
 
-    <T> T execute(RetryCallback<T> retryCallback) throws Exception;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback) throws E;
 
-    <T> T execute(RetryCallback<T> retryCallback, RecoveryCallback<T> recoveryCallback)
-        throws Exception;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback) throws E;
 
-    <T> T execute(RetryCallback<T> retryCallback, RetryState retryState)
-        throws Exception, ExhaustedRetryException;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState) throws E, ExhaustedRetryException;
 
-    <T> T execute(RetryCallback<T> retryCallback, RecoveryCallback<T> recoveryCallback,
-        RetryState retryState) throws Exception;
+	<T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback, RetryState retryState) throws E;
 
 }
 ```
@@ -105,9 +102,9 @@ public interface RetryOperations {
 The basic callback is a simple interface that lets you insert some business logic to be retried:
 
 ```java
-public interface RetryCallback<T> {
+public interface RetryCallback<T, E extends Throwable> {
 
-    T doWithRetry(RetryContext context) throws Throwable;
+    T doWithRetry(RetryContext context) throws E;
 
 }
 ```
@@ -129,9 +126,9 @@ policy.setTimeout(30000L);
 
 template.setRetryPolicy(policy);
 
-Foo result = template.execute(new RetryCallback<Foo>() {
+MyObject result = template.execute(new RetryCallback<MyObject, Exception>() {
 
-    public Foo doWithRetry(RetryContext context) {
+    public MyObject doWithRetry(RetryContext context) {
         // Do stuff that might fail, e.g. webservice operation
         return result;
     }
@@ -174,7 +171,7 @@ It also has some useful properties, such as `retryCount`.
 A `RetryContext` has a parent context if there is a nested retry in progress in the same thread.
 The parent context is occasionally useful for storing data that needs to be shared between calls to execute.
 
-If you dont have access to the context directly, you can obtain the current context within the scope of the retries by calling `RetrySynchronizationManager.getContext()`.
+If you don't have access to the context directly, you can obtain the current context within the scope of the retries by calling `RetrySynchronizationManager.getContext()`.
 By default, the context is stored in a `ThreadLocal`.
 JEP 444 recommends that `ThreadLocal` should be avoided when using virtual threads, available in Java 21 and beyond.
 To store the contexts in a `Map` instead of a `ThreadLocal`, call `RetrySynchronizationManager.setUseThreadLocal(false)`.
@@ -186,12 +183,12 @@ callback: `RecoveryCallback`. To use this feature, clients can pass in the callb
 together to the same method, as the following example shows:
 
 ```
-Foo foo = template.execute(new RetryCallback<Foo>() {
-    public Foo doWithRetry(RetryContext context) {
+MyObject myObject = template.execute(new RetryCallback<MyObject, Exception>() {
+    public MyObject doWithRetry(RetryContext context) {
         // business logic here
     },
-  new RecoveryCallback<Foo>() {
-    Foo recover(RetryContext context) throws Exception {
+  new RecoveryCallback<MyObject>() {
+    MyObject recover(RetryContext context) throws Exception {
           // recover logic here
     }
 });
@@ -294,8 +291,8 @@ SimpleRetryPolicy policy = new SimpleRetryPolicy(5, Collections.singletonMap(Exc
 // Use the policy...
 RetryTemplate template = new RetryTemplate();
 template.setRetryPolicy(policy);
-template.execute(new RetryCallback<Foo>() {
-    public Foo doWithRetry(RetryContext context) {
+template.execute(new RetryCallback<MyObject, Exception>() {
+    public MyObject doWithRetry(RetryContext context) {
         // business logic here
     }
 });
@@ -341,20 +338,29 @@ complex system, by adding jitter.
 
 ## Listeners
 
-It is often useful to be able to receive additional callbacks for cross cutting concerns across a number of different retries. For this purpose, Spring Retry provides the `RetryListener` interface. The `RetryTemplate` lets you register `RetryListener` instances, and they are given callbacks with the `RetryContext` and `Throwable` (where available during the iteration).
+It is often useful to be able to receive additional callbacks for cross-cutting concerns across a number of different retries. 
+For this purpose, Spring Retry provides the `RetryListener` interface. 
+The `RetryTemplate` lets you register `RetryListener` instances, and they are given callbacks with the `RetryContext` and `Throwable` (where available during the iteration).
 
 The following listing shows the `RetryListener` interface:
 
 ```java
 public interface RetryListener {
 
-    boolean open(RetryContext context, RetryCallback<T> callback);
+	default <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
+		return true;
+	}
 
-    void onSuccess(RetryContext context, T result);
+	default <T, E extends Throwable> void onSuccess(RetryContext context, RetryCallback<T, E> callback, T result) {
+	}
 
-    void onError(RetryContext context, RetryCallback<T> callback, Throwable e);
+	default <T, E extends Throwable> void onError(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
+	}
 
-    void close(RetryContext context, RetryCallback<T> callback, Throwable e);
+	default <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
+			Throwable throwable) {
+	}
 
 }
 ```
@@ -632,7 +638,7 @@ public void service() {
 Where `runtimeConfigs` is a bean with those properties.
 
 ```java
-@Retryable(maxAttemptsExpression = "args[0] == 'foo' ? 3 : 1")
+@Retryable(maxAttemptsExpression = "args[0] == 'something' ? 3 : 1")
 public void conditional(String string) {
     ...
 }
@@ -655,7 +661,7 @@ AspectJ's `aspectjweaver` module. For example, for Gradle, you should add the fo
 line  to your `build.gradle` file:
 
 ```
-    runtime('org.aspectj:aspectjweaver:1.8.13')
+    runtime('org.aspectj:aspectjweaver:1.9.20.1')
 ```
 ### Further customizations
 
