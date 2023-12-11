@@ -190,6 +190,9 @@ public class EnableRetryTests {
 		service.setExceptionToThrow(new IllegalArgumentException());
 		service.service();
 		assertThat(service.getCount()).isEqualTo(3);
+
+		assertThatExceptionOfType(InstantiationException.class).isThrownBy(service::reThrowAsIs).withMessage("noRetry");
+
 		context.close();
 	}
 
@@ -748,6 +751,16 @@ public class EnableRetryTests {
 
 		public void setExceptionToThrow(RuntimeException exceptionToThrow) {
 			this.exceptionToThrow = exceptionToThrow;
+		}
+
+		@Retryable(noRetryFor = InstantiationException.class, recover = "noRetryRecovery")
+		public void reThrowAsIs() throws InstantiationException {
+			throw new InstantiationException("noRetry");
+		}
+
+		@Recover
+		public void noRetryRecovery(Throwable ex) throws Throwable {
+			throw ex;
 		}
 
 	}

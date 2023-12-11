@@ -16,6 +16,7 @@
 
 package org.springframework.retry.support;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -545,9 +546,14 @@ public class RetryTemplate implements RetryOperations {
 		boolean doRecover = !Boolean.TRUE.equals(context.getAttribute(RetryContext.NO_RECOVERY));
 		if (recoveryCallback != null) {
 			if (doRecover) {
-				T recovered = recoveryCallback.recover(context);
-				context.setAttribute(RetryContext.RECOVERED, true);
-				return recovered;
+				try {
+					T recovered = recoveryCallback.recover(context);
+					context.setAttribute(RetryContext.RECOVERED, true);
+					return recovered;
+				}
+				catch (UndeclaredThrowableException undeclaredThrowableException) {
+					throw wrapIfNecessary(undeclaredThrowableException.getUndeclaredThrowable());
+				}
 			}
 			else {
 				logger.debug("Retry exhausted and recovery disabled for this throwable");
