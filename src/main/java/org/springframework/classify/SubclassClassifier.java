@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2023 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,24 +24,24 @@ import java.util.concurrent.ConcurrentMap;
  * A {@link Classifier} for a parameterised object type based on a map. Classifies objects
  * according to their inheritance relation with the supplied type map. If the object to be
  * classified is one of the keys of the provided map, or is a subclass of one of the keys,
- * then the map entry value for that key is returned. Otherwise returns the default value
+ * then the map entry value for that key is returned. Otherwise, returns the default value
  * which is null by default.
  *
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  * @param <T> the type of the thing to classify
  * @param <C> the output of the classifier
  */
 @SuppressWarnings("serial")
 public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
-	private ConcurrentMap<Class<? extends T>, C> classified = new ConcurrentHashMap<>();
+	private ConcurrentMap<Class<? extends T>, C> classified;
 
-	private C defaultValue = null;
+	private C defaultValue;
 
 	/**
 	 * Create a {@link SubclassClassifier} with null default value.
-	 *
 	 */
 	public SubclassClassifier() {
 		this(null);
@@ -86,7 +86,7 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	}
 
 	/**
-	 * The keys is the type and this will be mapped along with all subclasses to the
+	 * The key is the type and this will be mapped along with all subclasses to the
 	 * corresponding value. The most specific types will match first.
 	 * @param type the type of the input object
 	 * @param target the target value for all such types
@@ -103,7 +103,6 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 	 */
 	@Override
 	public C classify(T classifiable) {
-
 		if (classifiable == null) {
 			return this.defaultValue;
 		}
@@ -116,7 +115,9 @@ public class SubclassClassifier<T, C> implements Classifier<T, C> {
 
 		// check for subclasses
 		C value = null;
-		for (Class<?> cls = exceptionClass; !cls.equals(Object.class) && value == null; cls = cls.getSuperclass()) {
+		for (Class<?> cls = exceptionClass.getSuperclass(); !cls.equals(Object.class)
+				&& value == null; cls = cls.getSuperclass()) {
+
 			value = this.classified.get(cls);
 		}
 
