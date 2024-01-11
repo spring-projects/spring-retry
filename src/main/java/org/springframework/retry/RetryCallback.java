@@ -24,6 +24,7 @@ package org.springframework.retry;
  * @param <E> the type of exception it declares may be thrown
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Artem Bilan
  */
 public interface RetryCallback<T, E extends Throwable> {
 
@@ -36,5 +37,15 @@ public interface RetryCallback<T, E extends Throwable> {
 	 * @throws E of type E if processing fails
 	 */
 	T doWithRetry(RetryContext context) throws E;
+
+	/**
+	 * A logical identifier for this callback to distinguish retries around business
+	 * operations.
+	 * @return the identifier for this callback.
+	 * @since 2.0.6
+	 */
+	default String getLabel() {
+		return null;
+	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -317,6 +317,9 @@ public class RetryTemplate implements RetryOperations {
 				}
 			}
 
+			Object label = retryCallback.getLabel();
+			String labelMessage = (label != null) ? "; for: '" + label + "'" : "";
+
 			/*
 			 * We allow the whole loop to be skipped if the policy or context already
 			 * forbid the first try. This is used in the case of external retry to allow a
@@ -327,7 +330,7 @@ public class RetryTemplate implements RetryOperations {
 
 				try {
 					if (this.logger.isDebugEnabled()) {
-						this.logger.debug("Retry: count=" + context.getRetryCount());
+						this.logger.debug("Retry: count=" + context.getRetryCount() + labelMessage);
 					}
 					// Reset the last exception, so if we are successful
 					// the close interceptors will not think we failed...
@@ -355,22 +358,23 @@ public class RetryTemplate implements RetryOperations {
 							backOffPolicy.backOff(backOffContext);
 						}
 						catch (BackOffInterruptedException ex) {
-							lastException = e;
 							// back off was prevented by another thread - fail the retry
 							if (this.logger.isDebugEnabled()) {
-								this.logger.debug("Abort retry because interrupted: count=" + context.getRetryCount());
+								this.logger.debug("Abort retry because interrupted: count=" + context.getRetryCount()
+										+ labelMessage);
 							}
 							throw ex;
 						}
 					}
 
 					if (this.logger.isDebugEnabled()) {
-						this.logger.debug("Checking for rethrow: count=" + context.getRetryCount());
+						this.logger.debug("Checking for rethrow: count=" + context.getRetryCount() + labelMessage);
 					}
 
 					if (shouldRethrow(retryPolicy, context, state)) {
 						if (this.logger.isDebugEnabled()) {
-							this.logger.debug("Rethrow in retry for policy: count=" + context.getRetryCount());
+							this.logger
+								.debug("Rethrow in retry for policy: count=" + context.getRetryCount() + labelMessage);
 						}
 						throw RetryTemplate.<E>wrapIfNecessary(e);
 					}
@@ -388,7 +392,7 @@ public class RetryTemplate implements RetryOperations {
 			}
 
 			if (state == null && this.logger.isDebugEnabled()) {
-				this.logger.debug("Retry failed last attempt: count=" + context.getRetryCount());
+				this.logger.debug("Retry failed last attempt: count=" + context.getRetryCount() + labelMessage);
 			}
 
 			exhausted = true;
@@ -525,7 +529,7 @@ public class RetryTemplate implements RetryOperations {
 	/**
 	 * Actions to take after final attempt has failed. If there is state clean up the
 	 * cache. If there is a recovery callback, execute that and return its result.
-	 * Otherwise throw an exception.
+	 * Otherwise, throw an exception.
 	 * @param recoveryCallback the callback for recovery (might be null)
 	 * @param context the current retry context
 	 * @param state the {@link RetryState}

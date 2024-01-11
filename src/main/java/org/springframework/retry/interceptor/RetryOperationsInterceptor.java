@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2022 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 package org.springframework.retry.interceptor;
 
-import java.util.Arrays;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import org.springframework.aop.ProxyMethodInvocation;
+import org.springframework.lang.Nullable;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -35,9 +34,9 @@ import org.springframework.util.StringUtils;
 /**
  * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
  * on a service if it fails. The injected {@link RetryOperations} is used to control the
- * number of retries. By default it will retry a fixed number of times, according to the
+ * number of retries. By default, it will retry a fixed number of times, according to the
  * defaults in {@link RetryTemplate}.
- *
+ * <p>
  * Hint about transaction boundaries. If you want to retry a failed transaction you need
  * to make sure that the transaction boundary is inside the retry, otherwise the
  * successful attempt will roll back with the whole transaction. If the method being
@@ -47,11 +46,13 @@ import org.springframework.util.StringUtils;
  *
  * @author Rob Harrop
  * @author Dave Syer
+ * @author Artem Bilan
  */
 public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	private RetryOperations retryOperations = new RetryTemplate();
 
+	@Nullable
 	private MethodInvocationRecoverer<?> recoverer;
 
 	private String label;
@@ -71,18 +72,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 	@Override
 	public Object invoke(final MethodInvocation invocation) throws Throwable {
-
-		String name;
-		if (StringUtils.hasText(this.label)) {
-			name = this.label;
-		}
-		else {
-			name = invocation.getMethod().toGenericString();
-		}
-		final String label = name;
-
-		RetryCallback<Object, Throwable> retryCallback = new MethodInvocationRetryCallback<Object, Throwable>(
-				invocation, label) {
+		RetryCallback<Object, Throwable> retryCallback = new MethodInvocationRetryCallback<>(invocation, this.label) {
 
 			@Override
 			public Object doWithRetry(RetryContext context) throws Exception {
@@ -117,42 +107,21 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 
 		};
 
-		if (this.recoverer != null) {
-			ItemRecovererCallback recoveryCallback = new ItemRecovererCallback(invocation.getArguments(),
-					this.recoverer);
-			try {
-				Object recovered = this.retryOperations.execute(retryCallback, recoveryCallback);
-				return recovered;
-			}
-			finally {
-				RetryContext context = RetrySynchronizationManager.getContext();
-				if (context != null) {
-					context.removeAttribute("__proxy__");
-				}
+		RecoveryCallback<Object> recoveryCallback = (this.recoverer != null)
+				? new ItemRecovererCallback(invocation.getArguments(), this.recoverer) : null;
+		try {
+			return this.retryOperations.execute(retryCallback, recoveryCallback);
+		}
+		finally {
+			RetryContext context = RetrySynchronizationManager.getContext();
+			if (context != null) {
+				context.removeAttribute("__proxy__");
 			}
 		}
-
-		return this.retryOperations.execute(retryCallback);
-
 	}
 
-	/**
-	 * @author Dave Syer
-	 *
-	 */
-	private static final class ItemRecovererCallback implements RecoveryCallback<Object> {
-
-		private final Object[] args;
-
-		private final MethodInvocationRecoverer<?> recoverer;
-
-		/**
-		 * @param args the item that failed.
-		 */
-		private ItemRecovererCallback(Object[] args, MethodInvocationRecoverer<?> recoverer) {
-			this.args = Arrays.asList(args).toArray();
-			this.recoverer = recoverer;
-		}
+	private record ItemRecovererCallback(Object[] args,
+			MethodInvocationRecoverer<?> recoverer) implements RecoveryCallback<Object> {
 
 		@Override
 		public Object recover(RetryContext context) {
