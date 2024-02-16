@@ -23,7 +23,7 @@ public class Application {
 
 @Service
 class Service {
-    @Retryable(RemoteAccessException.class)
+    @Retryable(retryFor = RemoteAccessException.class)
     public void service() {
         // ... do something
     }
@@ -496,7 +496,7 @@ them as long as none are omitted up to the last one needed). The following examp
 ```java
 @Service
 class Service {
-    @Retryable(RemoteAccessException.class)
+    @Retryable(retryFor = RemoteAccessException.class)
     public void service(String str1, String str2) {
         // ... do something
     }
@@ -513,12 +513,12 @@ The following example shows how to do so:
 ```java
 @Service
 class Service {
-    @Retryable(recover = "service1Recover", value = RemoteAccessException.class)
+    @Retryable(recover = "service1Recover", retryFor = RemoteAccessException.class)
     public void service1(String str1, String str2) {
         // ... do something
     }
 
-    @Retryable(recover = "service2Recover", value = RemoteAccessException.class)
+    @Retryable(recover = "service2Recover", retryFor = RemoteAccessException.class)
     public void service2(String str1, String str2) {
         // ... do something
     }
@@ -541,12 +541,12 @@ Version 1.3.2 and later supports matching a parameterized (generic) return type 
 @Service
 class Service {
 
-    @Retryable(RemoteAccessException.class)
+    @Retryable(retryFor = RemoteAccessException.class)
     public List<Thing1> service1(String str1, String str2) {
         // ... do something
     }
 
-    @Retryable(RemoteAccessException.class)
+    @Retryable(retryFor = RemoteAccessException.class)
     public List<Thing2> service2(String str1, String str2) {
         // ... do something
     }
@@ -653,7 +653,7 @@ is best resolved by using the Spring Boot starter for AOP. For example, for Grad
 the following line to your `build.gradle` file:
 
 ```
-    runtime('org.springframework.boot:spring-boot-starter-aop')
+    runtimeOnly 'org.springframework.boot:spring-boot-starter-aop'
 ```
 
 For non-Boot apps, you need to declare a runtime dependency on the latest version of
@@ -661,7 +661,7 @@ AspectJ's `aspectjweaver` module. For example, for Gradle, you should add the fo
 line  to your `build.gradle` file:
 
 ```
-    runtime('org.aspectj:aspectjweaver:1.9.20.1')
+    runtimeOnly 'org.aspectj:aspectjweaver:1.9.20.1'
 ```
 ### Further customizations
 
