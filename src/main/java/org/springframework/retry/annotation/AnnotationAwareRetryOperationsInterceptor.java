@@ -76,6 +76,7 @@ import org.springframework.util.StringUtils;
  * @author Artem Bilan
  * @author Gary Russell
  * @author Roman Akentev
+ * @author Aftab Shaikh
  * @since 1.1
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
@@ -451,7 +452,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		boolean isRandom = false;
 		String randomExpression = (String) attrs.get("randomExpression");
 		Expression parsedRandomExp = null;
-		if (multiplier > 0) {
+
+		if (getMultiplier(multiplier, parsedMultExp, stateless) > 0) {
 			isRandom = backoff.random();
 			if (StringUtils.hasText(randomExpression)) {
 				parsedRandomExp = parse(randomExpression);
@@ -463,6 +465,11 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 		return buildBackOff(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp, isRandom, parsedRandomExp,
 				stateless);
+	}
+
+	private Double getMultiplier(Double multiplier, Expression parsedMultiplierExpression, Boolean stateless) {
+		return parsedMultiplierExpression != null ? evaluate(parsedMultiplierExpression, Double.class, stateless)
+				: multiplier;
 	}
 
 	private BackOffPolicy buildBackOff(long min, Expression minExp, long max, Expression maxExp, double multiplier,
