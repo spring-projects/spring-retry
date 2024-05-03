@@ -172,12 +172,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 */
 	public void multiplierSupplier(Supplier<Double> multiplierSupplier) {
 		Assert.notNull(multiplierSupplier, "'multiplierSupplier' cannot be null");
-		if (multiplierSupplier.get() > 1.0) {
-			this.multiplierSupplier = multiplierSupplier;
-			return;
-		}
-
-		this.multiplierSupplier = () -> 1.0;
+		this.multiplierSupplier = multiplierSupplier;
 	}
 
 	/**

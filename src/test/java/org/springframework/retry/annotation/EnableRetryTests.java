@@ -302,7 +302,7 @@ public class EnableRetryTests {
 		verify(runtime, times(6)).getMaxAttempts();
 		verify(runtime, times(1)).getInitial();
 		verify(runtime, times(2)).getMax();
-		verify(runtime, times(4)).getMult();
+		verify(runtime, times(2)).getMult();
 
 		RetryConfiguration config = context.getBean(RetryConfiguration.class);
 		AnnotationAwareRetryOperationsInterceptor advice = (AnnotationAwareRetryOperationsInterceptor) new DirectFieldAccessor(
