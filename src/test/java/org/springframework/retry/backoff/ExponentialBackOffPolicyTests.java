@@ -125,4 +125,13 @@ public class ExponentialBackOffPolicyTests {
 		assertThat(Thread.interrupted()).isTrue();
 	}
 
+	@Test
+	public void testSetMultiplierSupplier() {
+		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
+		strategy.multiplierSupplier(() -> 3.);
+		assertThat(strategy.toString()).contains("multiplier=3.");
+		strategy.multiplierSupplier(() -> .5);
+		assertThat(strategy.toString()).contains("multiplier=1.");
+	}
+
 }
