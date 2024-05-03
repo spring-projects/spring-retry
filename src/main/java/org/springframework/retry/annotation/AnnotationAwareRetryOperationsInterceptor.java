@@ -453,7 +453,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		String randomExpression = (String) attrs.get("randomExpression");
 		Expression parsedRandomExp = null;
 
-		if (getMultiplier(multiplier, parsedMultExp, stateless) > 0) {
+		if (multiplier > 0 || multiplierExpression != null) {
 			isRandom = backoff.random();
 			if (StringUtils.hasText(randomExpression)) {
 				parsedRandomExp = parse(randomExpression);
@@ -465,11 +465,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		}
 		return buildBackOff(min, parsedMinExp, max, parsedMaxExp, multiplier, parsedMultExp, isRandom, parsedRandomExp,
 				stateless);
-	}
-
-	private Double getMultiplier(Double multiplier, Expression parsedMultiplierExpression, Boolean stateless) {
-		return parsedMultiplierExpression != null ? evaluate(parsedMultiplierExpression, Double.class, stateless)
-				: multiplier;
 	}
 
 	private BackOffPolicy buildBackOff(long min, Expression minExp, long max, Expression maxExp, double multiplier,
