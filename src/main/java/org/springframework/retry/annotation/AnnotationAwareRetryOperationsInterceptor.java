@@ -453,7 +453,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		String randomExpression = (String) attrs.get("randomExpression");
 		Expression parsedRandomExp = null;
 
-		if (multiplier > 0 || multiplierExpression != null) {
+		if (multiplier > 0 || parsedMultExp != null) {
 			isRandom = backoff.random();
 			if (StringUtils.hasText(randomExpression)) {
 				parsedRandomExp = parse(randomExpression);
