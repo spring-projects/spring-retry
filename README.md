@@ -1,9 +1,17 @@
 [![ci.spring.io](https://ci.spring.io/api/v2/teams/spring-retry/pipelines/spring-retry-2.0.x/jobs/build/badge)](https://ci.spring.io/teams/spring-retry/pipelines/spring-retry-2.0.x) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
 
-This project provides declarative retry support for Spring
-applications. It is used in Spring Batch, Spring Integration, and
-others.
+This project provides declarative retry support for Spring applications. 
+It is used in Spring Batch, Spring Integration, and others.
 Imperative retry is also supported for explicit usage.
+
+The Maven artifact for this library is:
+
+```xml
+<dependency>
+    <groupId>org.springframework.retry</groupId>
+    <artifactId>spring-retry</artifactId>
+</dependency>
+```
 
 ## Quick Start
 
