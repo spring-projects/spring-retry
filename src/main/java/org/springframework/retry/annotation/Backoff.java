@@ -130,9 +130,10 @@ public @interface Backoff {
 	 * Evaluates to a value. In the exponential case ({@link #multiplier()} &gt; 1.0) set
 	 * this to true to have the backoff delays randomized, so that the maximum delay is
 	 * multiplier times the previous delay and the distribution is uniform between the two
-	 * values. This expression is always evaluated during initialization. If the expression
-	 * returns true then {@link org.springframework.retry.backoff.ExponentialRandomBackOffPolicy}
-	 * is used else {@link org.springframework.retry.backoff.ExponentialBackOffPolicy} is used.
+	 * values. This expression is always evaluated during initialization. If the
+	 * expression returns true then
+	 * {@link org.springframework.retry.backoff.ExponentialRandomBackOffPolicy} is used
+	 * else {@link org.springframework.retry.backoff.ExponentialBackOffPolicy} is used.
 	 * @return the flag to signal randomization is required (default false)
 	 */
 	String randomExpression() default "";
