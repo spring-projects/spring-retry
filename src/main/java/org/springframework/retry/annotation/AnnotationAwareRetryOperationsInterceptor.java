@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,6 +252,7 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 			resetTimeout(breaker, circuit);
 			template.setRetryPolicy(breaker);
 			template.setBackOffPolicy(new NoBackOffPolicy());
+			template.setThrowLastExceptionOnExhausted(circuit.throwLastExceptionOnExhausted());
 			String label = circuit.label();
 			if (!StringUtils.hasText(label)) {
 				label = method.toGenericString();

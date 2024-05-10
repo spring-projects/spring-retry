@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.CircuitBreakerRetryPolicy;
 import org.springframework.retry.support.RetrySynchronizationManager;
@@ -106,15 +107,21 @@ public class CircuitBreakerTests {
 		assertThat(maxAttempts.get()).isEqualTo(10);
 		CircuitBreakerRetryPolicy policy = TestUtils.getPropertyValue(interceptor, "retryOperations.retryPolicy",
 				CircuitBreakerRetryPolicy.class);
-		Supplier openTO = TestUtils.getPropertyValue(policy, "openTimeoutSupplier", Supplier.class);
+		Supplier<?> openTO = TestUtils.getPropertyValue(policy, "openTimeoutSupplier", Supplier.class);
 		assertThat(openTO).isNotNull();
 		assertThat(openTO.get()).isEqualTo(10000L);
-		Supplier resetTO = TestUtils.getPropertyValue(policy, "resetTimeoutSupplier", Supplier.class);
+		Supplier<?> resetTO = TestUtils.getPropertyValue(policy, "resetTimeoutSupplier", Supplier.class);
 		assertThat(resetTO).isNotNull();
 		assertThat(resetTO.get()).isEqualTo(20000L);
 		RetryContext ctx = service.getContext();
 		assertThat(TestUtils.getPropertyValue(ctx, "openWindow")).isEqualTo(10000L);
 		assertThat(TestUtils.getPropertyValue(ctx, "timeout")).isEqualTo(20000L);
+
+		assertThatExceptionOfType(ExhaustedRetryException.class).isThrownBy(service::exhaustedRetryService);
+
+		assertThatExceptionOfType(RuntimeException.class).isThrownBy(service::noWrapExhaustedRetryService)
+			.withMessage("Planned");
+
 		context.close();
 	}
 
@@ -153,6 +160,10 @@ public class CircuitBreakerTests {
 		void expressionService2();
 
 		void expressionService3();
+
+		void exhaustedRetryService();
+
+		void noWrapExhaustedRetryService();
 
 		int getCount();
 
@@ -195,6 +206,18 @@ public class CircuitBreakerTests {
 		public void expressionService3() {
 			this.context = RetrySynchronizationManager.getContext();
 			this.count++;
+		}
+
+		@Override
+		@CircuitBreaker
+		public void exhaustedRetryService() {
+			throw new RuntimeException("Planned");
+		}
+
+		@Override
+		@CircuitBreaker(throwLastExceptionOnExhausted = true)
+		public void noWrapExhaustedRetryService() {
+			throw new RuntimeException("Planned");
 		}
 
 		@Override

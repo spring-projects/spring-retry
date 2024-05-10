@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 the original author or authors.
+ * Copyright 2016-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,5 +180,14 @@ public @interface CircuitBreaker {
 	 */
 	@AliasFor(annotation = Retryable.class)
 	String exceptionExpression() default "";
+
+	/**
+	 * Set to {@code true} to not wrap last exception to the
+	 * {@link org.springframework.retry.ExhaustedRetryException} when retry is exhausted.
+	 * @return the boolean flag to whether wrap the last exception to the
+	 * {@link org.springframework.retry.ExhaustedRetryException}
+	 * @since 2.0.6
+	 */
+	boolean throwLastExceptionOnExhausted() default false;
 
 }

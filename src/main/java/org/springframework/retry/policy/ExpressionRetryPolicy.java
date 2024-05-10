@@ -115,8 +115,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 			return super.canRetry(context);
 		}
 		else {
-			return super.canRetry(context)
-					&& Boolean.TRUE.equals(this.expression.getValue(this.evaluationContext, lastThrowable, Boolean.class));
+			return super.canRetry(context) && Boolean.TRUE
+				.equals(this.expression.getValue(this.evaluationContext, lastThrowable, Boolean.class));
 		}
 	}
 
