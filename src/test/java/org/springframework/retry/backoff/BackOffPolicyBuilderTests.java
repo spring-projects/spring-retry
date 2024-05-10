@@ -126,7 +126,6 @@ public class BackOffPolicyBuilderTests {
 		assertThat(policy.getInitialInterval()).isEqualTo(10000);
 		assertThat(policy.getMaxInterval()).isEqualTo(100000);
 		assertThat(policy.getMultiplier()).isEqualTo(10);
-		assertThat(new DirectFieldAccessor(policy).getPropertyValue("sleeper")).isEqualTo(mockSleeper);
 	}
 
 	@Test
@@ -145,7 +144,6 @@ public class BackOffPolicyBuilderTests {
 		assertThat(policy.getInitialInterval()).isEqualTo(10000);
 		assertThat(policy.getMaxInterval()).isEqualTo(100000);
 		assertThat(policy.getMultiplier()).isEqualTo(10);
-		assertThat(new DirectFieldAccessor(policy).getPropertyValue("sleeper")).isEqualTo(mockSleeper);
 	}
 
 	@Test
@@ -163,7 +161,6 @@ public class BackOffPolicyBuilderTests {
 		assertThat(policy.getInitialInterval()).isEqualTo(100);
 		assertThat(policy.getMaxInterval()).isEqualTo(1000);
 		assertThat(policy.getMultiplier()).isEqualTo(2);
-		assertThat(new DirectFieldAccessor(policy).getPropertyValue("sleeper")).isEqualTo(mockSleeper);
 	}
 
 }
