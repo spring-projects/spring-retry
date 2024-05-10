@@ -76,6 +76,7 @@ import org.springframework.util.StringUtils;
  * @author Artem Bilan
  * @author Gary Russell
  * @author Roman Akentev
+ * @author Aftab Shaikh
  * @since 1.1
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
@@ -451,7 +452,8 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		boolean isRandom = false;
 		String randomExpression = (String) attrs.get("randomExpression");
 		Expression parsedRandomExp = null;
-		if (multiplier > 0) {
+
+		if (multiplier > 0 || parsedMultExp != null) {
 			isRandom = backoff.random();
 			if (StringUtils.hasText(randomExpression)) {
 				parsedRandomExp = parse(randomExpression);

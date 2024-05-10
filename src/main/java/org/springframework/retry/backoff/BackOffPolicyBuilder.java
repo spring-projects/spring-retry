@@ -68,6 +68,7 @@ import java.util.function.Supplier;
  * load concurrent access.
  *
  * @author Tomaz Fernandes
+ * @author Aftab Shaikh
  * @since 1.3.3
  */
 public class BackOffPolicyBuilder {
@@ -217,7 +218,7 @@ public class BackOffPolicyBuilder {
 	public BackOffPolicy build() {
 		if (this.multiplier != null && this.multiplier > 0 || this.multiplierSupplier != null) {
 			ExponentialBackOffPolicy policy;
-			if (Boolean.TRUE.equals(this.random)) {
+			if (isRandom()) {
 				policy = new ExponentialRandomBackOffPolicy();
 			}
 			else {
@@ -277,6 +278,11 @@ public class BackOffPolicyBuilder {
 			policy.setSleeper(this.sleeper);
 		}
 		return policy;
+	}
+
+	private boolean isRandom() {
+		return (this.randomSupplier != null && Boolean.TRUE.equals(this.randomSupplier.get()))
+				|| Boolean.TRUE.equals(this.random);
 	}
 
 }
