@@ -41,6 +41,7 @@ import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.RetryContextCache;
 import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.util.Assert;
 
 /**
  * Template class that simplifies the execution of operations with retry semantics.
@@ -120,6 +121,10 @@ public class RetryTemplate implements RetryOperations {
 	}
 
 	/**
+	 * Whether to re-throw last exception or wrap into {@link ExhaustedRetryException}
+	 * when all retry attempts are exhausted. Defaults to {@code false}; applied only in
+	 * case of supplied state, e.g.
+	 * {@link org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor}.
 	 * @param throwLastExceptionOnExhausted the throwLastExceptionOnExhausted to set
 	 */
 	public void setThrowLastExceptionOnExhausted(boolean throwLastExceptionOnExhausted) {
@@ -141,7 +146,8 @@ public class RetryTemplate implements RetryOperations {
 	 * @see RetryListener
 	 */
 	public void setListeners(RetryListener[] listeners) {
-		this.listeners = Arrays.asList(listeners).toArray(new RetryListener[listeners.length]);
+		Assert.notNull(listeners, "'listeners' must not be null");
+		this.listeners = Arrays.copyOf(listeners, listeners.length);
 	}
 
 	/**
@@ -168,7 +174,7 @@ public class RetryTemplate implements RetryOperations {
 		else {
 			list.add(index, listener);
 		}
-		this.listeners = list.toArray(new RetryListener[list.size()]);
+		this.listeners = list.toArray(new RetryListener[0]);
 	}
 
 	/**
