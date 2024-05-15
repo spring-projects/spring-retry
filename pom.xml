@@ -32,7 +32,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<aspectj.version>1.9.20.1</aspectj.version>
+		<aspectj.version>1.9.22</aspectj.version>
 		<assertj.version>3.24.2</assertj.version>
 		<junit-jupiter.version>5.10.1</junit-jupiter.version>
 		<log4j.version>2.21.1</log4j.version>
