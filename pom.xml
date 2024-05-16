@@ -37,7 +37,7 @@
 		<junit-jupiter.version>5.10.2</junit-jupiter.version>
 		<log4j.version>2.23.1</log4j.version>
 		<mockito.version>5.11.0</mockito.version>
-		<spring.framework.version>6.0.20-SNAPSHOT</spring.framework.version>
+		<spring.framework.version>6.0.20</spring.framework.version>
 	</properties>
 
 	<scm>
@@ -219,7 +219,6 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<release>${java.version}</release>
-					<parameters>true</parameters>
 				</configuration>
 			</plugin>
 			<plugin>
