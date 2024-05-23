@@ -45,7 +45,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 	 */
 	private Supplier<Long> backOffPeriod = () -> DEFAULT_BACK_OFF_PERIOD;
 
-	private Sleeper sleeper = new ThreadWaitSleeper();
+	private Sleeper sleeper = new NonBlockingSleeper();
 
 	public FixedBackOffPolicy withSleeper(Sleeper sleeper) {
 		FixedBackOffPolicy res = new FixedBackOffPolicy();
@@ -56,7 +56,7 @@ public class FixedBackOffPolicy extends StatelessBackOffPolicy implements Sleepi
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
-	 * @param sleeper the sleeper to set defaults to {@link ThreadWaitSleeper}.
+	 * @param sleeper the sleeper to set defaults to {@link NonBlockingSleeper}.
 	 */
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;

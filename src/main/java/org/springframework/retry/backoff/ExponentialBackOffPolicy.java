@@ -95,7 +95,7 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 */
 	private Supplier<Double> multiplierSupplier;
 
-	private Sleeper sleeper = new ThreadWaitSleeper();
+	private Sleeper sleeper = new NonBlockingSleeper();
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.

@@ -158,7 +158,7 @@ public class BackOffPolicyBuilder {
 
 	/**
 	 * The {@link Sleeper} instance to be used to back off. Policies default to
-	 * {@link ThreadWaitSleeper}.
+	 * {@link NonBlockingSleeper}.
 	 * @param sleeper the {@link Sleeper} instance
 	 * @return this
 	 */

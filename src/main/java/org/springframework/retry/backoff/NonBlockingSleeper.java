@@ -16,21 +16,30 @@
 
 package org.springframework.retry.backoff;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 /**
- * Simple {@link Sleeper} implementation that just blocks the current Thread with sleep
- * period.
+ * Non-blocking {@link Sleeper} implementation that just sleep with specified
+ * backOffPeriod.
  *
- * @deprecated in favor of {@link NonBlockingSleeper}
- * @author Artem Bilan
- * @since 1.1
+ * @author Alireza Hakimrabet
  */
-@Deprecated
 @SuppressWarnings("serial")
-public class ThreadWaitSleeper implements Sleeper {
+public class NonBlockingSleeper implements Sleeper {
 
 	@Override
 	public void sleep(long backOffPeriod) throws InterruptedException {
-		Thread.sleep(backOffPeriod);
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			try {
+				TimeUnit.MILLISECONDS.sleep(backOffPeriod);
+			}
+			catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("Unexpected exception", e);
+			}
+		});
+		future.join();
 	}
 
 }

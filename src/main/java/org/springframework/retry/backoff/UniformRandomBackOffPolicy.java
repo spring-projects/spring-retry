@@ -53,7 +53,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 
 	private final Random random = new Random(System.currentTimeMillis());
 
-	private Sleeper sleeper = new ThreadWaitSleeper();
+	private Sleeper sleeper = new NonBlockingSleeper();
 
 	public UniformRandomBackOffPolicy withSleeper(Sleeper sleeper) {
 		UniformRandomBackOffPolicy res = new UniformRandomBackOffPolicy();
@@ -65,7 +65,7 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 
 	/**
 	 * Public setter for the {@link Sleeper} strategy.
-	 * @param sleeper the sleeper to set defaults to {@link ThreadWaitSleeper}.
+	 * @param sleeper the sleeper to set defaults to {@link NonBlockingSleeper}.
 	 */
 	public void setSleeper(Sleeper sleeper) {
 		this.sleeper = sleeper;
