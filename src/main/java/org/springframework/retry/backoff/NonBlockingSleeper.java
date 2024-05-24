@@ -34,7 +34,7 @@ public class NonBlockingSleeper implements Sleeper {
 			try {
 				TimeUnit.MILLISECONDS.sleep(backOffPeriod);
 			}
-			catch (Exception e) {
+			catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				throw new BackOffInterruptedException("Thread interrupted while sleeping", e);
 			}
