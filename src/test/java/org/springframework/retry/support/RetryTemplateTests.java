@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import static org.mockito.Mockito.verify;
  * @author Gary Russell
  * @author Henning Pöttker
  * @author Emanuele Ivaldi
+ * @author Morulai Planinski
  */
 public class RetryTemplateTests {
 
@@ -90,6 +91,38 @@ public class RetryTemplateTests {
 			retryTemplate.execute(callback);
 			assertThat(attempts.get()).isEqualTo(x);
 		}
+	}
+
+	@Test
+	public void testRetryOnPredicateWithRetry() throws Throwable {
+		for (int x = 1; x <= 10; x++) {
+			MockRetryCallback callback = new MockRetryCallback();
+			callback.setAttemptsBeforeSuccess(x);
+			callback.setExceptionToThrow(new IllegalStateException("retry"));
+			RetryTemplate retryTemplate = RetryTemplate.builder()
+				.maxAttempts(x)
+				.retryOn(classifiable -> classifiable instanceof IllegalStateException
+						&& classifiable.getMessage().equals("retry"))
+				.build();
+
+			retryTemplate.execute(callback);
+			assertThat(callback.attempts).isEqualTo(x);
+		}
+	}
+
+	@Test
+	public void testRetryOnPredicateWithoutRetry() throws Throwable {
+		MockRetryCallback callback = new MockRetryCallback();
+		callback.setAttemptsBeforeSuccess(0);
+		callback.setExceptionToThrow(new IllegalStateException("no retry"));
+		RetryTemplate retryTemplate = RetryTemplate.builder()
+			.maxAttempts(3)
+			.retryOn(classifiable -> classifiable instanceof IllegalStateException
+					&& classifiable.getMessage().equals("retry"))
+			.build();
+
+		retryTemplate.execute(callback);
+		assertThat(callback.attempts).isEqualTo(1);
 	}
 
 	@Test

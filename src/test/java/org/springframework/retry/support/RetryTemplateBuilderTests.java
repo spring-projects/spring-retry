@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
@@ -38,6 +38,7 @@ import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
+import org.springframework.retry.policy.PredicateRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.util.test.TestUtils;
 
@@ -56,6 +57,7 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
  * @author Kim In Hoi
  * @author Gary Russell
  * @author Andreas Ahlenstorf
+ * @author Morulai Planinski
  */
 public class RetryTemplateBuilderTests {
 
@@ -93,8 +95,9 @@ public class RetryTemplateBuilderTests {
 			.build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
-
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(BinaryExceptionClassifierRetryPolicy.class);
+		BinaryExceptionClassifierRetryPolicy retryPolicy = (BinaryExceptionClassifierRetryPolicy) policyTuple.exceptionClassifierRetryPolicy;
+		BinaryExceptionClassifier classifier = retryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new FileNotFoundException())).isTrue();
 		assertThat(classifier.classify(new IllegalArgumentException())).isTrue();
 		assertThat(classifier.classify(new RuntimeException())).isFalse();
@@ -176,7 +179,9 @@ public class RetryTemplateBuilderTests {
 	}
 
 	private void assertDefaultClassifier(PolicyTuple policyTuple) {
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(BinaryExceptionClassifierRetryPolicy.class);
+		BinaryExceptionClassifierRetryPolicy retryPolicy = (BinaryExceptionClassifierRetryPolicy) policyTuple.exceptionClassifierRetryPolicy;
+		BinaryExceptionClassifier classifier = retryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new Exception())).isTrue();
 		assertThat(classifier.classify(new Exception(new Error()))).isTrue();
 		assertThat(classifier.classify(new Error())).isFalse();
@@ -201,6 +206,28 @@ public class RetryTemplateBuilderTests {
 		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
 			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
 			.notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class)));
+	}
+
+	@Test
+	public void testFailOnPredicateWithOtherMix() {
+		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
+			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
+			.retryOn(classifiable -> true));
+	}
+
+	@Test
+	public void testRetryOnPredicate() {
+		Predicate<Throwable> predicate = classifiable -> classifiable instanceof IllegalAccessError;
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).retryOn(predicate).build();
+
+		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(PredicateRetryPolicy.class);
+		RetryPolicy retryPolicy = policyTuple.exceptionClassifierRetryPolicy;
+		assertThat(retryPolicy).isInstanceOf(PredicateRetryPolicy.class);
+		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(MaxAttemptsRetryPolicy.class);
+		assertThat(policyTuple.baseRetryPolicy.getMaxAttempts()).isEqualTo(10);
+		assertThat(getPropertyValue(template, "listeners", RetryListener[].class)).isEmpty();
+		assertThat(getPropertyValue(template, "backOffPolicy")).isInstanceOf(NoBackOffPolicy.class);
 	}
 
 	/* ---------------- BackOff -------------- */
@@ -325,7 +352,7 @@ public class RetryTemplateBuilderTests {
 
 		RetryPolicy baseRetryPolicy;
 
-		BinaryExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy;
+		RetryPolicy exceptionClassifierRetryPolicy;
 
 		static PolicyTuple extractWithAsserts(RetryTemplate template) {
 			CompositeRetryPolicy compositeRetryPolicy = getPropertyValue(template, "retryPolicy",
@@ -335,8 +362,8 @@ public class RetryTemplateBuilderTests {
 			assertThat(getPropertyValue(compositeRetryPolicy, "optimistic", Boolean.class)).isFalse();
 
 			for (final RetryPolicy policy : getPropertyValue(compositeRetryPolicy, "policies", RetryPolicy[].class)) {
-				if (policy instanceof BinaryExceptionClassifierRetryPolicy) {
-					res.exceptionClassifierRetryPolicy = (BinaryExceptionClassifierRetryPolicy) policy;
+				if (policy instanceof BinaryExceptionClassifierRetryPolicy || policy instanceof PredicateRetryPolicy) {
+					res.exceptionClassifierRetryPolicy = policy;
 				}
 				else {
 					res.baseRetryPolicy = policy;

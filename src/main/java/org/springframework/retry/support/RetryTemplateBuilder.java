@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.retry.support;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
@@ -33,6 +35,7 @@ import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
+import org.springframework.retry.policy.PredicateRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.util.Assert;
 
@@ -75,6 +78,7 @@ import org.springframework.util.Assert;
  * @author Artem Bilan
  * @author Kim In Hoi
  * @author Andreas Ahlenstorf
+ * @author Morulai Planinski
  * @since 1.3
  */
 public class RetryTemplateBuilder {
@@ -86,6 +90,8 @@ public class RetryTemplateBuilder {
 	private List<RetryListener> listeners;
 
 	private BinaryExceptionClassifierBuilder classifierBuilder;
+
+	private Predicate<Throwable> retryOnPredicate;
 
 	/* ---------------- Configure retry policy -------------- */
 
@@ -463,6 +469,27 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
+	 * Set a {@link Predicate<Throwable>} that decides if the exception causes a retry.
+	 * <p>
+	 * {@code retryOn(Predicate<Throwable>)} cannot be mixed with other {@code retryOn()}
+	 * or {@code noRetryOn()}. Attempting to do so will result in a
+	 * {@link IllegalArgumentException}.
+	 * @param predicate if the exception causes a retry.
+	 * @return this
+	 * @throws IllegalArgumentException if {@link #retryOn} or {@link #notRetryOn} has
+	 * already been used.
+	 * @since 2.0.7
+	 * @see BinaryExceptionClassifierRetryPolicy
+	 */
+	public RetryTemplateBuilder retryOn(Predicate<Throwable> predicate) {
+		Assert.isTrue(this.classifierBuilder == null && this.retryOnPredicate == null,
+				"retryOn(Predicate<Throwable>) cannot be mixed with other retryOn() or noRetryOn()");
+		Assert.notNull(predicate, "Predicate can not be null");
+		this.retryOnPredicate = predicate;
+		return this;
+	}
+
+	/**
 	 * Enable examining exception causes for {@link Throwable} instances that cause a
 	 * retry.
 	 * <p>
@@ -537,20 +564,24 @@ public class RetryTemplateBuilder {
 	public RetryTemplate build() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 
-		// Exception classifier
-
-		BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null ? this.classifierBuilder.build()
-				: BinaryExceptionClassifier.defaultClassifier();
-
 		// Retry policy
 
 		if (this.baseRetryPolicy == null) {
 			this.baseRetryPolicy = new MaxAttemptsRetryPolicy();
 		}
 
+		RetryPolicy exceptionRetryPolicy;
+		if (this.retryOnPredicate == null) {
+			BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null
+					? this.classifierBuilder.build() : BinaryExceptionClassifier.defaultClassifier();
+			exceptionRetryPolicy = new BinaryExceptionClassifierRetryPolicy(exceptionClassifier);
+		}
+		else {
+			exceptionRetryPolicy = new PredicateRetryPolicy(this.retryOnPredicate);
+		}
+
 		CompositeRetryPolicy finalPolicy = new CompositeRetryPolicy();
-		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy,
-				new BinaryExceptionClassifierRetryPolicy(exceptionClassifier) });
+		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy, exceptionRetryPolicy });
 		retryTemplate.setRetryPolicy(finalPolicy);
 
 		// Backoff policy
