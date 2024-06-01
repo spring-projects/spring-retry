@@ -17,6 +17,7 @@
 package org.springframework.retry.policy;
 
 import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
@@ -28,16 +29,15 @@ import org.springframework.retry.context.RetryContextSupport;
  *
  * @author Aleksandr Shamukov
  */
-@SuppressWarnings("serial")
 public class BinaryExceptionClassifierRetryPolicy implements RetryPolicy {
 
-	private final BinaryExceptionClassifier exceptionClassifier;
+	private final Classifier<Throwable, Boolean> exceptionClassifier;
 
-	public BinaryExceptionClassifierRetryPolicy(BinaryExceptionClassifier exceptionClassifier) {
+	public BinaryExceptionClassifierRetryPolicy(Classifier<Throwable, Boolean> exceptionClassifier) {
 		this.exceptionClassifier = exceptionClassifier;
 	}
 
-	public BinaryExceptionClassifier getExceptionClassifier() {
+	public Classifier<Throwable, Boolean> getExceptionClassifier() {
 		return exceptionClassifier;
 	}
 

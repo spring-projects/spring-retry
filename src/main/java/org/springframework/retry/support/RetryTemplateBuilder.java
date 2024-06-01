@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
+import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -86,6 +87,8 @@ public class RetryTemplateBuilder {
 	private List<RetryListener> listeners;
 
 	private BinaryExceptionClassifierBuilder classifierBuilder;
+
+	private Classifier<Throwable, Boolean> classifier;
 
 	/* ---------------- Configure retry policy -------------- */
 
@@ -463,6 +466,22 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
+	 * Use the provided {@link Classifier<Throwable, Boolean>} to decide
+	 * if an exceptions cause a retry.
+	 * @param classifier {@link Classifier<Throwable, Boolean>} to use
+	 * @return this
+	 * @throws IllegalArgumentException if {@code classifier} is {@code null}, or if
+	 * {@link #retryOn} or {@code #notRetryOn} has already been used.
+	 * @see BinaryExceptionClassifier
+	 */
+	public RetryTemplateBuilder customClassifier(Classifier<Throwable, Boolean> classifier) {
+		Assert.isNull(this.classifierBuilder, "You have already selected backoff policy");
+		Assert.notNull(classifier, "You should provide non null custom classifier");
+		this.classifier = classifier;
+		return this;
+	}
+
+	/**
 	 * Enable examining exception causes for {@link Throwable} instances that cause a
 	 * retry.
 	 * <p>
@@ -539,8 +558,11 @@ public class RetryTemplateBuilder {
 
 		// Exception classifier
 
-		BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null ? this.classifierBuilder.build()
-				: BinaryExceptionClassifier.defaultClassifier();
+		Classifier<Throwable, Boolean> exceptionClassifier = this.classifier;
+		if (exceptionClassifier == null) {
+			exceptionClassifier = this.classifierBuilder != null ? this.classifierBuilder.build()
+					: BinaryExceptionClassifier.defaultClassifier();
+		}
 
 		// Retry policy
 

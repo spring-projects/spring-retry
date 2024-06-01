@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import org.springframework.classify.BinaryExceptionClassifier;
+import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -94,7 +94,7 @@ public class RetryTemplateBuilderTests {
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
 
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new FileNotFoundException())).isTrue();
 		assertThat(classifier.classify(new IllegalArgumentException())).isTrue();
 		assertThat(classifier.classify(new RuntimeException())).isFalse();
@@ -176,7 +176,7 @@ public class RetryTemplateBuilderTests {
 	}
 
 	private void assertDefaultClassifier(PolicyTuple policyTuple) {
-		BinaryExceptionClassifier classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new Exception())).isTrue();
 		assertThat(classifier.classify(new Exception(new Error()))).isTrue();
 		assertThat(classifier.classify(new Error())).isFalse();
@@ -201,6 +201,26 @@ public class RetryTemplateBuilderTests {
 		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
 			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
 			.notRetryOn(Collections.<Class<? extends Throwable>>singletonList(OutOfMemoryError.class)));
+	}
+
+	@Test
+	public void testFailOnCustomClassifierAndExceptionClassifierRulesMix() {
+		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
+			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
+			.customClassifier(classifiable -> true));
+	}
+
+	@Test
+	public void testCustomClassifier() {
+		Classifier<Throwable, Boolean> classifier = classifiable -> true;
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).customClassifier(classifier).build();
+
+		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
+		assertThat(policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier()).isEqualTo(classifier);
+		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(MaxAttemptsRetryPolicy.class);
+		assertThat(((MaxAttemptsRetryPolicy) policyTuple.baseRetryPolicy).getMaxAttempts()).isEqualTo(10);
+		assertThat(getPropertyValue(template, "listeners", RetryListener[].class).length).isEqualTo(0);
+		assertThat(getPropertyValue(template, "backOffPolicy")).isInstanceOf(NoBackOffPolicy.class);
 	}
 
 	/* ---------------- BackOff -------------- */
