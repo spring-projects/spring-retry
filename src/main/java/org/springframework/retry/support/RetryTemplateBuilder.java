@@ -466,8 +466,8 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
-	 * Use the provided {@link Classifier<Throwable, Boolean>} to decide
-	 * if an exceptions cause a retry.
+	 * Use the provided {@link Classifier<Throwable, Boolean>} to decide if an exceptions
+	 * cause a retry.
 	 * @param classifier {@link Classifier<Throwable, Boolean>} to use
 	 * @return this
 	 * @throws IllegalArgumentException if {@code classifier} is {@code null}, or if
