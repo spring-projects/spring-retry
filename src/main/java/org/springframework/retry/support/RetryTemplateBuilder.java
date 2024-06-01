@@ -18,6 +18,7 @@ package org.springframework.retry.support;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
@@ -466,18 +467,22 @@ public class RetryTemplateBuilder {
 	}
 
 	/**
-	 * Use the provided {@link Classifier<Throwable, Boolean>} to decide if an exceptions
-	 * cause a retry.
-	 * @param classifier {@link Classifier<Throwable, Boolean>} to use
+	 * Sets {@link Predicate<Throwable>} that decides if the exception causes a retry.
+	 * <p>
+	 * {@code retryOn(Predicate<Throwable>)} cannot be mixed with other {@code retryOn()}
+	 * or {@code noRetryOn()}. Attempting to do so will result in a
+	 * {@link IllegalArgumentException}.
+	 * @param predicate if the exception causes a retry.
 	 * @return this
-	 * @throws IllegalArgumentException if {@code classifier} is {@code null}, or if
-	 * {@link #retryOn} or {@code #notRetryOn} has already been used.
-	 * @see BinaryExceptionClassifier
+	 * @throws IllegalArgumentException if {@link #retryOn} or {@link #notRetryOn} has
+	 * already been used.
+	 * @see BinaryExceptionClassifierRetryPolicy
 	 */
-	public RetryTemplateBuilder customClassifier(Classifier<Throwable, Boolean> classifier) {
-		Assert.isNull(this.classifierBuilder, "You have already selected backoff policy");
-		Assert.notNull(classifier, "You should provide non null custom classifier");
-		this.classifier = classifier;
+	public RetryTemplateBuilder retryOn(Predicate<Throwable> predicate) {
+		Assert.isTrue(this.classifierBuilder == null && this.classifier == null,
+				"retryOn(Predicate<Throwable>) cannot be mixed with other retryOn() or noRetryOn()");
+		Assert.notNull(predicate, "Predicate can not be null");
+		this.classifier = predicate::test;
 		return this;
 	}
 

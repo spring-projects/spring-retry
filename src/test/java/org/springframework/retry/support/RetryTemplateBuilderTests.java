@@ -22,9 +22,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
@@ -204,22 +204,23 @@ public class RetryTemplateBuilderTests {
 	}
 
 	@Test
-	public void testFailOnCustomClassifierAndExceptionClassifierRulesMix() {
+	public void testFailOnPredicateWithOtherMix() {
 		assertThatIllegalArgumentException().isThrownBy(() -> RetryTemplate.builder()
 			.retryOn(Collections.<Class<? extends Throwable>>singletonList(IOException.class))
-			.customClassifier(classifiable -> true));
+			.retryOn(classifiable -> true));
 	}
 
 	@Test
-	public void testCustomClassifier() {
-		Classifier<Throwable, Boolean> classifier = classifiable -> true;
-		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).customClassifier(classifier).build();
+	public void testRetryOnPredicate() {
+		Predicate<Throwable> predicate = classifiable -> classifiable instanceof IllegalAccessError;
+		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).retryOn(predicate).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
-		assertThat(policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier()).isEqualTo(classifier);
+		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		assertThat(classifier.classify(new IllegalAccessError())).isTrue();
 		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(MaxAttemptsRetryPolicy.class);
 		assertThat(((MaxAttemptsRetryPolicy) policyTuple.baseRetryPolicy).getMaxAttempts()).isEqualTo(10);
-		assertThat(getPropertyValue(template, "listeners", RetryListener[].class).length).isEqualTo(0);
+		assertThat(getPropertyValue(template, "listeners", RetryListener[].class)).isEmpty();
 		assertThat(getPropertyValue(template, "backOffPolicy")).isInstanceOf(NoBackOffPolicy.class);
 	}
 

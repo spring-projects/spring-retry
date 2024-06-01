@@ -93,20 +93,35 @@ public class RetryTemplateTests {
 	}
 
 	@Test
-	public void testCustomClassifierRetry() throws Throwable {
+	public void testRetryOnPredicateWithRetry() throws Throwable {
 		for (int x = 1; x <= 10; x++) {
 			MockRetryCallback callback = new MockRetryCallback();
 			callback.setAttemptsBeforeSuccess(x);
-			callback.setExceptionToThrow(new IllegalStateException("test"));
+			callback.setExceptionToThrow(new IllegalStateException("retry"));
 			RetryTemplate retryTemplate = RetryTemplate.builder()
 				.maxAttempts(x)
-				.customClassifier(classifiable -> classifiable instanceof IllegalStateException
-						&& ((IllegalStateException) classifiable).getMessage().equals("test"))
+				.retryOn(classifiable -> classifiable instanceof IllegalStateException
+						&& ((IllegalStateException) classifiable).getMessage().equals("retry"))
 				.build();
 
 			retryTemplate.execute(callback);
 			assertThat(callback.attempts).isEqualTo(x);
 		}
+	}
+
+	@Test
+	public void testRetryOnPredicateWithoutRetry() throws Throwable {
+		MockRetryCallback callback = new MockRetryCallback();
+		callback.setAttemptsBeforeSuccess(0);
+		callback.setExceptionToThrow(new IllegalStateException("no retry"));
+		RetryTemplate retryTemplate = RetryTemplate.builder()
+			.maxAttempts(3)
+			.retryOn(classifiable -> classifiable instanceof IllegalStateException
+					&& ((IllegalStateException) classifiable).getMessage().equals("retry"))
+			.build();
+
+		retryTemplate.execute(callback);
+		assertThat(callback.attempts).isEqualTo(1);
 	}
 
 	@Test
