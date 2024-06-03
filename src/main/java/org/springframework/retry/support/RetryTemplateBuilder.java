@@ -22,7 +22,6 @@ import java.util.function.Predicate;
 
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
-import org.springframework.classify.Classifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.BackOffPolicy;
@@ -35,6 +34,7 @@ import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
+import org.springframework.retry.policy.PredicateRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.util.Assert;
 
@@ -89,7 +89,7 @@ public class RetryTemplateBuilder {
 
 	private BinaryExceptionClassifierBuilder classifierBuilder;
 
-	private Classifier<Throwable, Boolean> classifier;
+	private Predicate<Throwable> retryOnPredicate;
 
 	/* ---------------- Configure retry policy -------------- */
 
@@ -479,10 +479,10 @@ public class RetryTemplateBuilder {
 	 * @see BinaryExceptionClassifierRetryPolicy
 	 */
 	public RetryTemplateBuilder retryOn(Predicate<Throwable> predicate) {
-		Assert.isTrue(this.classifierBuilder == null && this.classifier == null,
+		Assert.isTrue(this.classifierBuilder == null && this.retryOnPredicate == null,
 				"retryOn(Predicate<Throwable>) cannot be mixed with other retryOn() or noRetryOn()");
 		Assert.notNull(predicate, "Predicate can not be null");
-		this.classifier = predicate::test;
+		this.retryOnPredicate = predicate;
 		return this;
 	}
 
@@ -561,23 +561,26 @@ public class RetryTemplateBuilder {
 	public RetryTemplate build() {
 		RetryTemplate retryTemplate = new RetryTemplate();
 
-		// Exception classifier
-
-		Classifier<Throwable, Boolean> exceptionClassifier = this.classifier;
-		if (exceptionClassifier == null) {
-			exceptionClassifier = this.classifierBuilder != null ? this.classifierBuilder.build()
-					: BinaryExceptionClassifier.defaultClassifier();
-		}
-
 		// Retry policy
 
 		if (this.baseRetryPolicy == null) {
 			this.baseRetryPolicy = new MaxAttemptsRetryPolicy();
 		}
 
+		RetryPolicy exceptionRetryPolicy;
+		if (retryOnPredicate == null) {
+			BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null 
+				? this.classifierBuilder.build()
+				: BinaryExceptionClassifier.defaultClassifier();
+			exceptionRetryPolicy = new BinaryExceptionClassifierRetryPolicy(exceptionClassifier);
+		} else {
+			exceptionRetryPolicy = new PredicateRetryPolicy(retryOnPredicate);
+		}
+		
+
 		CompositeRetryPolicy finalPolicy = new CompositeRetryPolicy();
 		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy,
-				new BinaryExceptionClassifierRetryPolicy(exceptionClassifier) });
+			exceptionRetryPolicy});
 		retryTemplate.setRetryPolicy(finalPolicy);
 
 		// Backoff policy

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.classify.Classifier;
+import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryListener;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
@@ -38,6 +38,7 @@ import org.springframework.retry.policy.BinaryExceptionClassifierRetryPolicy;
 import org.springframework.retry.policy.CompositeRetryPolicy;
 import org.springframework.retry.policy.MapRetryContextCache;
 import org.springframework.retry.policy.MaxAttemptsRetryPolicy;
+import org.springframework.retry.policy.PredicateRetryPolicy;
 import org.springframework.retry.policy.TimeoutRetryPolicy;
 import org.springframework.retry.util.test.TestUtils;
 
@@ -93,8 +94,9 @@ public class RetryTemplateBuilderTests {
 			.build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
-
-		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(BinaryExceptionClassifierRetryPolicy.class);
+		BinaryExceptionClassifierRetryPolicy retryPolicy = (BinaryExceptionClassifierRetryPolicy) policyTuple.exceptionClassifierRetryPolicy;
+		BinaryExceptionClassifier classifier = retryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new FileNotFoundException())).isTrue();
 		assertThat(classifier.classify(new IllegalArgumentException())).isTrue();
 		assertThat(classifier.classify(new RuntimeException())).isFalse();
@@ -176,7 +178,9 @@ public class RetryTemplateBuilderTests {
 	}
 
 	private void assertDefaultClassifier(PolicyTuple policyTuple) {
-		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(BinaryExceptionClassifierRetryPolicy.class);
+		BinaryExceptionClassifierRetryPolicy retryPolicy = (BinaryExceptionClassifierRetryPolicy) policyTuple.exceptionClassifierRetryPolicy;
+		BinaryExceptionClassifier classifier = retryPolicy.getExceptionClassifier();
 		assertThat(classifier.classify(new Exception())).isTrue();
 		assertThat(classifier.classify(new Exception(new Error()))).isTrue();
 		assertThat(classifier.classify(new Error())).isFalse();
@@ -216,8 +220,9 @@ public class RetryTemplateBuilderTests {
 		RetryTemplate template = RetryTemplate.builder().maxAttempts(10).retryOn(predicate).build();
 
 		PolicyTuple policyTuple = PolicyTuple.extractWithAsserts(template);
-		Classifier<Throwable, Boolean> classifier = policyTuple.exceptionClassifierRetryPolicy.getExceptionClassifier();
-		assertThat(classifier.classify(new IllegalAccessError())).isTrue();
+		assertThat(policyTuple.exceptionClassifierRetryPolicy).isInstanceOf(PredicateRetryPolicy.class);
+		PredicateRetryPolicy retryPolicy = (PredicateRetryPolicy) policyTuple.exceptionClassifierRetryPolicy;
+		assertThat(predicate).isSameAs(retryPolicy.getPredicate());
 		assertThat(policyTuple.baseRetryPolicy).isInstanceOf(MaxAttemptsRetryPolicy.class);
 		assertThat(((MaxAttemptsRetryPolicy) policyTuple.baseRetryPolicy).getMaxAttempts()).isEqualTo(10);
 		assertThat(getPropertyValue(template, "listeners", RetryListener[].class)).isEmpty();
@@ -346,7 +351,7 @@ public class RetryTemplateBuilderTests {
 
 		RetryPolicy baseRetryPolicy;
 
-		BinaryExceptionClassifierRetryPolicy exceptionClassifierRetryPolicy;
+		RetryPolicy exceptionClassifierRetryPolicy;
 
 		static PolicyTuple extractWithAsserts(RetryTemplate template) {
 			CompositeRetryPolicy compositeRetryPolicy = getPropertyValue(template, "retryPolicy",
@@ -356,8 +361,8 @@ public class RetryTemplateBuilderTests {
 			assertThat(getPropertyValue(compositeRetryPolicy, "optimistic", Boolean.class)).isFalse();
 
 			for (final RetryPolicy policy : getPropertyValue(compositeRetryPolicy, "policies", RetryPolicy[].class)) {
-				if (policy instanceof BinaryExceptionClassifierRetryPolicy) {
-					res.exceptionClassifierRetryPolicy = (BinaryExceptionClassifierRetryPolicy) policy;
+				if (policy instanceof BinaryExceptionClassifierRetryPolicy || policy instanceof PredicateRetryPolicy) {
+					res.exceptionClassifierRetryPolicy = policy;
 				}
 				else {
 					res.baseRetryPolicy = policy;

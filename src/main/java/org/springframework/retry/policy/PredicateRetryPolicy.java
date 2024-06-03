@@ -16,35 +16,35 @@
 
 package org.springframework.retry.policy;
 
-import org.springframework.classify.BinaryExceptionClassifier;
+import java.util.function.Predicate;
+
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
 
 /**
- * A policy, that is based on {@link BinaryExceptionClassifier}. Usually, binary
+ * A policy, that is based on {@link Predicate<Throwable>}. Usually, binary
  * classification is enough for retry purposes. If you need more flexible classification,
  * use {@link ExceptionClassifierRetryPolicy}.
  *
- * @author Aleksandr Shamukov
+ * @author Morulai Planinski
  */
-@SuppressWarnings("serial")
-public class BinaryExceptionClassifierRetryPolicy implements RetryPolicy {
+public class PredicateRetryPolicy implements RetryPolicy {
 
-	private final BinaryExceptionClassifier exceptionClassifier;
+	private final Predicate<Throwable> predicate;
 
-	public BinaryExceptionClassifierRetryPolicy(BinaryExceptionClassifier exceptionClassifier) {
-		this.exceptionClassifier = exceptionClassifier;
+	public PredicateRetryPolicy(Predicate<Throwable> predicate) {
+		this.predicate = predicate;
 	}
 
-	public BinaryExceptionClassifier getExceptionClassifier() {
-		return exceptionClassifier;
+	public Predicate<Throwable> getPredicate() {
+		return predicate;
 	}
 
 	@Override
 	public boolean canRetry(RetryContext context) {
 		Throwable t = context.getLastThrowable();
-		return t == null || exceptionClassifier.classify(t);
+		return t == null || predicate.test(t);
 	}
 
 	@Override
