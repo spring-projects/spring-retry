@@ -23,9 +23,9 @@ import org.springframework.retry.RetryPolicy;
 import org.springframework.retry.context.RetryContextSupport;
 
 /**
- * A policy, that is based on {@link Predicate<Throwable>}. Usually, binary
- * classification is enough for retry purposes. If you need more flexible classification,
- * use {@link ExceptionClassifierRetryPolicy}.
+ * A policy, that is based on {@link Predicate<Throwable>}. Usually, binary classification
+ * is enough for retry purposes. If you need more flexible classification, use
+ * {@link ExceptionClassifierRetryPolicy}.
  *
  * @author Morulai Planinski
  */

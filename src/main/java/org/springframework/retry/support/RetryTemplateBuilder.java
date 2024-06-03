@@ -569,18 +569,16 @@ public class RetryTemplateBuilder {
 
 		RetryPolicy exceptionRetryPolicy;
 		if (retryOnPredicate == null) {
-			BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null 
-				? this.classifierBuilder.build()
-				: BinaryExceptionClassifier.defaultClassifier();
+			BinaryExceptionClassifier exceptionClassifier = this.classifierBuilder != null
+					? this.classifierBuilder.build() : BinaryExceptionClassifier.defaultClassifier();
 			exceptionRetryPolicy = new BinaryExceptionClassifierRetryPolicy(exceptionClassifier);
-		} else {
+		}
+		else {
 			exceptionRetryPolicy = new PredicateRetryPolicy(retryOnPredicate);
 		}
-		
 
 		CompositeRetryPolicy finalPolicy = new CompositeRetryPolicy();
-		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy,
-			exceptionRetryPolicy});
+		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy, exceptionRetryPolicy });
 		retryTemplate.setRetryPolicy(finalPolicy);
 
 		// Backoff policy
