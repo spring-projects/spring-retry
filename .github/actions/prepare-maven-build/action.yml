@@ -1,0 +1,21 @@
+name: 'Prepare Gradle Build'
+description: 'Prepares a Maven build. Sets up Java'
+inputs:
+  java-version:
+    required: false
+    default: '17'
+    description: 'The Java version to use for the build'
+  java-distribution:
+    required: false
+    default: 'liberica'
+    description: 'The Java distribution to use for the build'
+runs:
+  using: composite
+  steps:
+    - name: Set Up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: ${{ inputs.java-distribution }}
+        java-version: |
+          ${{ inputs.java-version }}
+          ${{ inputs.java-toolchain == 'true' && '17' || '' }}
