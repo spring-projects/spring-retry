@@ -1,0 +1,44 @@
+name: 'Build'
+description: 'Builds the project, optionally publishing it to a local deployment repository'
+inputs:
+  java-version:
+    required: false
+    default: '17'
+    description: 'The Java version to compile and test with'
+  java-distribution:
+    required: false
+    default: 'liberica'
+    description: 'The Java distribution to use for the build'
+  publish:
+    required: false
+    default: 'false'
+    description: 'Whether to publish artifacts ready for deployment to Artifactory'
+outputs:
+  version:
+    description: 'The version that was built'
+    value: ${{ steps.read-version.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - name: Prepare Maven Build
+      uses: ./.github/actions/prepare-maven-build
+      with:
+        java-version: ${{ inputs.java-version }}
+        java-distribution: ${{ inputs.java-distribution }}
+    - name: Build
+      id: build
+      if: ${{ inputs.publish == 'false' }}
+      shell: bash
+      run: ./mvnw --no-transfer-progress --batch-mode --update-snapshots verify
+    - name: Publish
+      id: publish
+      if: ${{ inputs.publish == 'true' }}
+      shell: bash
+      run: ./mvnw --no-transfer-progress --batch-mode --update-snapshots -DaltDeploymentRepository=local::file:./maven-repo/ clean deploy -Pspring
+    - name: Read version from pom.xml
+      id: read-version
+      shell: bash
+      run: |
+        version=$(sed -n 's/^.*<revision>\(.*\)<\/revision>.*$/\1/p' pom.xml)
+        echo "Version is $version"
+        echo "version=$version" >> $GITHUB_OUTPUT
