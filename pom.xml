@@ -33,7 +33,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<aspectj.version>1.9.22</aspectj.version>
-		<assertj.version>3.25.3</assertj.version>
+		<assertj.version>3.26.3</assertj.version>
 		<junit-jupiter.version>5.10.3</junit-jupiter.version>
 		<log4j.version>2.23.1</log4j.version>
 		<mockito.version>5.11.0</mockito.version>
