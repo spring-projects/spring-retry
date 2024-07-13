@@ -34,7 +34,7 @@ runs:
       id: publish
       if: ${{ inputs.publish == 'true' }}
       shell: bash
-      run: ./mvnw --no-transfer-progress --batch-mode --update-snapshots -DaltDeploymentRepository=local::file:./maven-repo/ clean deploy -Pspring
+      run: ./mvnw --no-transfer-progress --batch-mode --update-snapshots -DaltDeploymentRepository=local::file:deployment-repository/ clean deploy -Pspring
     - name: Read version from pom.xml
       id: read-version
       shell: bash
