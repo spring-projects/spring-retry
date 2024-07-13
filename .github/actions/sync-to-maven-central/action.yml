@@ -40,7 +40,7 @@ runs:
     - name: Await
       shell: bash
       run: |
-        url=${{ format('https://repo.maven.apache.org/maven2/org/springframework/retry/spring-retry/{0}/spring-retry-{0}.jar', inputs.spring-framework-version) }}
+        url=${{ format('https://repo.maven.apache.org/maven2/org/springframework/retry/spring-retry/{0}/spring-retry-{0}.jar', inputs.spring-retry-version) }}
         echo "Waiting for $url"
         until curl --fail --head --silent $url > /dev/null
         do
