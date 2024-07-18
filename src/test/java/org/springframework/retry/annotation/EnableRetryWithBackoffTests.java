@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dave Syer
+ * @author Artem Bilan
  *
  */
 public class EnableRetryWithBackoffTests {
@@ -74,9 +75,10 @@ public class EnableRetryWithBackoffTests {
 		assertThat(service.getCount()).isEqualTo(3);
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
 		assertThat(context.getBean(PeriodSleeper.class).getPeriods().toString()).isNotEqualTo("[1000, 1100]");
-		assertThat(periods.get(0) > 1000).describedAs("Wrong periods: %s" + periods.toString()).isTrue();
-		assertThat(periods.get(1) > 1100 && periods.get(1) < 1210).describedAs("Wrong periods: %s" + periods.toString())
-			.isTrue();
+		assertThat(periods.get(0)).describedAs("Wrong periods: %s" + periods).isGreaterThanOrEqualTo(1000);
+		assertThat(periods.get(1)).describedAs("Wrong periods: %s" + periods)
+			.isGreaterThanOrEqualTo(1100)
+			.isLessThanOrEqualTo(1210);
 		context.close();
 	}
 
