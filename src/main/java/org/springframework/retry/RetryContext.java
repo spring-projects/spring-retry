@@ -99,8 +99,8 @@ public interface RetryContext extends AttributeAccessor {
 	/**
 	 * Accessor for the exception object that caused the current retry.
 	 * @return the last exception that caused a retry, or possibly null. It will be null
-	 * if this is the first attempt, but also if the enclosing policy decides not to
-	 * provide it (e.g. because of concerns about memory usage).
+	 * if this is the first attempt and it finishes successfully, but also if the enclosing
+	 * policy decides not to provide it (e.g. because of concerns about memory usage).
 	 */
 	@Nullable
 	Throwable getLastThrowable();
