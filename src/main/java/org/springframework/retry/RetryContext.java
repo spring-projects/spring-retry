@@ -17,6 +17,7 @@
 package org.springframework.retry;
 
 import org.springframework.core.AttributeAccessor;
+import org.springframework.lang.Nullable;
 
 /**
  * Low-level access to ongoing retry operation. Normally not needed by clients, but can be
@@ -85,6 +86,7 @@ public interface RetryContext extends AttributeAccessor {
 	 * Accessor for the parent context if retry blocks are nested.
 	 * @return the parent or null if there is none.
 	 */
+	@Nullable
 	RetryContext getParent();
 
 	/**
@@ -100,6 +102,7 @@ public interface RetryContext extends AttributeAccessor {
 	 * if this is the first attempt, but also if the enclosing policy decides not to
 	 * provide it (e.g. because of concerns about memory usage).
 	 */
+	@Nullable
 	Throwable getLastThrowable();
 
 }
