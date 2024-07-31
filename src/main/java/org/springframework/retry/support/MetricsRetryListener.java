@@ -43,12 +43,14 @@ import org.springframework.util.Assert;
  * The registered {@value #TIMER_NAME} {@link Timer} has these tags by default:
  * <ul>
  * <li>{@code name} - {@link RetryCallback#getLabel()}</li>
- * <li>{@code retry.count} - the number of attempts - 1; essentially the successful first call means no counts</li>
- * <li>{@code exception} - the thrown back to the caller (after all the retry attempts) exception class name</li>
+ * <li>{@code retry.count} - the number of attempts - 1; essentially the successful first
+ * call means no counts</li>
+ * <li>{@code exception} - the thrown back to the caller (after all the retry attempts)
+ * exception class name</li>
  * </ul>
  * <p>
- * The {@link #setCustomTags(Map)} and {@link #setCustomTagsProvider(Function)} can be used to further customize
- * tags on the timers.
+ * The {@link #setCustomTags(Map)} and {@link #setCustomTagsProvider(Function)} can be
+ * used to further customize tags on the timers.
  *
  * @author Artem Bilan
  * @since 2.0.8
