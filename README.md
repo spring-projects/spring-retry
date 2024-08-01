@@ -783,6 +783,14 @@ The preceding example uses a default `RetryTemplate` inside the interceptor. To 
 policies or listeners, you need only inject an instance of `RetryTemplate` into the
 interceptor.
 
+## Micrometer Support
+
+Starting with version 2.0.8, the `MetricsRetryListener` implementation is provided to be injected into a `RetryTemplate` or referenced via `@Retryable(listeners)` attribute.
+This `MetricsRetryListener` is based on the [Micrometer](https://docs.micrometer.io/micrometer/reference/index.html) `MeterRegistry` and exposes a `spring.retry` timer from `open()` till `close()` listener callbacks.
+Such a timer, essentially, covers the whole retry operation and, in addition to the `name` tag based on `RetryCallback.getLabel()` value, it adds tags like `retry.count` (`0` if no any retries entered - first call is successful) and `exception` (if all the retry attempts have been exhausted, so the last exception is thrown back to the caller).
+The `MetricsRetryListener` can be customized with static tags, or via `Function<RetryContext, Iterable<Tag>>`.
+See `MetricsRetryListener` Javadocs for more information.
+
 ## Contributing
 
 Spring Retry is released under the non-restrictive Apache 2.0 license
