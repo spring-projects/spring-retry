@@ -16,7 +16,7 @@
 
 package org.springframework.retry.support;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -26,6 +26,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 
+import org.springframework.lang.Nullable;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
@@ -37,7 +38,7 @@ import org.springframework.util.Assert;
  * <p>
  * The {@link Timer#start} is called from the {@link #open(RetryContext, RetryCallback)}
  * and stopped in the {@link #close(RetryContext, RetryCallback, Throwable)}. This
- * {@link Timer.Sample} is associated with the provided {@link RetryCallback} to make this
+ * {@link Timer.Sample} is associated with the provided {@link RetryContext} to make this
  * {@link MetricsRetryListener} instance reusable for many retry operation.
  * <p>
  * The registered {@value #TIMER_NAME} {@link Timer} has these tags by default:
@@ -49,8 +50,8 @@ import org.springframework.util.Assert;
  * exception class name</li>
  * </ul>
  * <p>
- * The {@link #setCustomTags(Map)} and {@link #setCustomTagsProvider(Function)} can be
- * used to further customize tags on the timers.
+ * The {@link #setCustomTags(Iterable)} and {@link #setCustomTagsProvider(Function)} can
+ * be used to further customize tags on the timers.
  *
  * @author Artem Bilan
  * @since 2.0.8
@@ -61,11 +62,11 @@ public class MetricsRetryListener implements RetryListener {
 
 	private final MeterRegistry meterRegistry;
 
-	private final Map<RetryCallback<?, ?>, Timer.Sample> retryContextToSample = new HashMap<>();
-
-	private final Map<String, String> customTags = new HashMap<>();
+	private final Map<RetryContext, Timer.Sample> retryContextToSample = new IdentityHashMap<>();
 
 	private final Meter.MeterProvider<Timer> retryMeterProvider;
+
+	private Tags customTags = Tags.empty();
 
 	private Function<RetryContext, Iterable<Tag>> customTagsProvider = retryContext -> Tags.empty();
 
@@ -82,13 +83,11 @@ public class MetricsRetryListener implements RetryListener {
 	}
 
 	/**
-	 * Supply a map of tags which are going to be used for all the timers managed by this
-	 * listener.
-	 * @param customTags the map of additional tags for all the timers.
+	 * Supply tags which are going to be used for all the timers managed by this listener.
+	 * @param customTags the list of additional tags for all the timers.
 	 */
-	public void setCustomTags(Map<String, String> customTags) {
-		Assert.notNull(customTags, "'customTags' must not be null");
-		this.customTags.putAll(customTags);
+	public void setCustomTags(@Nullable Iterable<Tag> customTags) {
+		this.customTags = this.customTags.and(customTags);
 	}
 
 	/**
@@ -104,27 +103,24 @@ public class MetricsRetryListener implements RetryListener {
 
 	@Override
 	public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {
-		this.retryContextToSample.put(callback, Timer.start(this.meterRegistry));
+		this.retryContextToSample.put(context, Timer.start(this.meterRegistry));
 		return true;
 	}
 
 	@Override
 	public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback,
-			Throwable throwable) {
+			@Nullable Throwable throwable) {
 
-		Timer.Sample sample = this.retryContextToSample.remove(callback);
+		Timer.Sample sample = this.retryContextToSample.remove(context);
 
 		Assert.state(sample != null,
 				() -> String.format("No 'Timer.Sample' registered for '%s'. Was the 'open()' called?", context));
 
 		Tags retryTags = Tags.of("name", callback.getLabel())
 			.and("retry.count", "" + context.getRetryCount())
-			.and(this.customTags.entrySet().stream().map((entry) -> Tag.of(entry.getKey(), entry.getValue())).toList())
-			.and(this.customTagsProvider.apply(context));
-
-		if (throwable != null) {
-			retryTags = retryTags.and("exception", throwable.getClass().getSimpleName());
-		}
+			.and(this.customTags)
+			.and(this.customTagsProvider.apply(context))
+			.and("exception", throwable != null ? throwable.getClass().getSimpleName() : "none");
 
 		sample.stop(this.retryMeterProvider.withTags(retryTags));
 	}

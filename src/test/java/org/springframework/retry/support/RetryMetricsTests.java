@@ -55,13 +55,13 @@ public class RetryMetricsTests {
 
 		assertThat(this.meterRegistry.get(MetricsRetryListener.TIMER_NAME)
 			.tags(Tags.of("name", "org.springframework.retry.support.RetryMetricsTests$Service.service1", "retry.count",
-					"0"))
+					"0", "exception", "none"))
 			.timer()
 			.count()).isEqualTo(2);
 
 		assertThat(this.meterRegistry.get(MetricsRetryListener.TIMER_NAME)
 			.tags(Tags.of("name", "org.springframework.retry.support.RetryMetricsTests$Service.service2", "retry.count",
-					"2"))
+					"2", "exception", "none"))
 			.timer()
 			.count()).isEqualTo(1);
 
