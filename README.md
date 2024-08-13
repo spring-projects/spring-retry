@@ -72,7 +72,7 @@ see the examples in the [RetryTemplate](#using-retrytemplate) section.
 
 ## Building
 
-Spring Retry requires Java 1.7 and Maven 3.0.5 (or greater).
+Spring Retry requires Java 17 and Maven 3.0.5 (or greater).
 To build, run the following Maven command:
 
 ```
