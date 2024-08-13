@@ -38,6 +38,7 @@
 		<log4j.version>2.23.1</log4j.version>
 		<mockito.version>5.11.0</mockito.version>
 		<spring.framework.version>6.0.22</spring.framework.version>
+		<micrometer.version>1.13.2</micrometer.version>
 	</properties>
 
 	<scm>
@@ -64,6 +65,12 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<version>${micrometer.version}</version>
 			<optional>true</optional>
 		</dependency>
 
