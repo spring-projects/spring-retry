@@ -38,7 +38,7 @@
 		<log4j.version>2.23.1</log4j.version>
 		<mockito.version>5.11.0</mockito.version>
 		<spring.framework.version>6.0.23</spring.framework.version>
-		<micrometer.version>1.13.2</micrometer.version>
+		<micrometer.version>1.10.13</micrometer.version>
 	</properties>
 
 	<scm>

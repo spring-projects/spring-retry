@@ -20,7 +20,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
@@ -64,7 +63,7 @@ public class MetricsRetryListener implements RetryListener {
 
 	private final Map<RetryContext, Timer.Sample> retryContextToSample = new IdentityHashMap<>();
 
-	private final Meter.MeterProvider<Timer> retryMeterProvider;
+	private final Timer.Builder retryMeterProvider;
 
 	private Tags customTags = Tags.empty();
 
@@ -77,9 +76,7 @@ public class MetricsRetryListener implements RetryListener {
 	public MetricsRetryListener(MeterRegistry meterRegistry) {
 		Assert.notNull(meterRegistry, "'meterRegistry' must not be null");
 		this.meterRegistry = meterRegistry;
-		this.retryMeterProvider = Timer.builder(TIMER_NAME)
-			.description("Metrics for Spring RetryTemplate")
-			.withRegistry(this.meterRegistry);
+		this.retryMeterProvider = Timer.builder(TIMER_NAME).description("Metrics for Spring RetryTemplate");
 	}
 
 	/**
@@ -122,7 +119,7 @@ public class MetricsRetryListener implements RetryListener {
 			.and(this.customTagsProvider.apply(context))
 			.and("exception", throwable != null ? throwable.getClass().getSimpleName() : "none");
 
-		sample.stop(this.retryMeterProvider.withTags(retryTags));
+		sample.stop(this.retryMeterProvider.tags(retryTags).register(this.meterRegistry));
 	}
 
 }
