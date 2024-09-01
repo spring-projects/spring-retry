@@ -18,9 +18,6 @@ package org.springframework.retry.backoff;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -70,16 +67,12 @@ public class UniformRandomBackOffPolicyTests {
 		int maxBackOff = 10;
 		backOffPolicy.setMinBackOffPeriod(minBackOff);
 		backOffPolicy.setMaxBackOffPeriod(maxBackOff);
-		CountDownLatch stopLatch = new CountDownLatch(1);
 
-		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(new Sleeper() {
-			@Override
-			public void sleep(long backOffPeriod) throws InterruptedException {
-				stopLatch.countDown();
-			}
-		});
+		DummySleeper dummySleeper = new DummySleeper();
+		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(dummySleeper);
+		assertThat(dummySleeper.getBackOffs()).isEmpty();
 		withSleeper.backOff(null);
-		assertThat(stopLatch.await(10, TimeUnit.SECONDS)).isTrue();
+		assertThat(dummySleeper.getBackOffs()).isNotEmpty();
 	}
 
 }
