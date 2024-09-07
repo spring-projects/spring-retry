@@ -134,8 +134,8 @@ public class UniformRandomBackOffPolicy extends StatelessBackOffPolicy
 	protected void doBackOff() throws BackOffInterruptedException {
 		try {
 			Long min = this.minBackOffPeriod.get();
-			long delta = this.maxBackOffPeriod.get() <= this.minBackOffPeriod.get() ? 0
-					: this.random.nextInt((int) (this.maxBackOffPeriod.get() - min));
+			Long max = this.minBackOffPeriod.get();
+			long delta = max <= min ? 0 : this.random.nextInt((int) (max - min));
 			this.sleeper.sleep(min + delta);
 		}
 		catch (InterruptedException e) {
