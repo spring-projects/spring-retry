@@ -36,10 +36,18 @@ public class UniformRandomBackOffPolicyTests {
 		int maxBackOff = 10000;
 		backOffPolicy.setMinBackOffPeriod(minBackOff);
 		backOffPolicy.setMaxBackOffPeriod(maxBackOff);
-		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(new DummySleeper());
+
+		DummySleeper dummySleeper = new DummySleeper();
+		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(dummySleeper);
 
 		assertThat(withSleeper.getMinBackOffPeriod()).isEqualTo(minBackOff);
 		assertThat(withSleeper.getMaxBackOffPeriod()).isEqualTo(maxBackOff);
+
+		assertThat(dummySleeper.getBackOffs()).isEmpty();
+		withSleeper.backOff(null);
+
+		assertThat(dummySleeper.getBackOffs()).hasSize(1);
+		assertThat(dummySleeper.getBackOffs()[0]).isLessThan(maxBackOff);
 	}
 
 	@Test
@@ -58,6 +66,22 @@ public class UniformRandomBackOffPolicyTests {
 
 		assertThatExceptionOfType(BackOffInterruptedException.class).isThrownBy(() -> withSleeper.backOff(null));
 		assertThat(Thread.interrupted()).isTrue();
+	}
+
+	@Test
+	public void testMaxBackOffLessThanMinBackOff() {
+		UniformRandomBackOffPolicy backOffPolicy = new UniformRandomBackOffPolicy();
+		int minBackOff = 1000;
+		int maxBackOff = 10;
+		backOffPolicy.setMinBackOffPeriod(minBackOff);
+		backOffPolicy.setMaxBackOffPeriod(maxBackOff);
+
+		DummySleeper dummySleeper = new DummySleeper();
+		UniformRandomBackOffPolicy withSleeper = backOffPolicy.withSleeper(dummySleeper);
+		assertThat(dummySleeper.getBackOffs()).isEmpty();
+		withSleeper.backOff(null);
+		assertThat(dummySleeper.getBackOffs()).hasSize(1);
+		assertThat(dummySleeper.getBackOffs()[0]).isEqualTo(minBackOff);
 	}
 
 }
