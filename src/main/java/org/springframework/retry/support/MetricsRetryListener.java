@@ -16,6 +16,7 @@
 
 package org.springframework.retry.support;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -53,6 +54,7 @@ import org.springframework.util.Assert;
  * be used to further customize tags on the timers.
  *
  * @author Artem Bilan
+ * @author Huijin Hong
  * @since 2.0.8
  */
 public class MetricsRetryListener implements RetryListener {
@@ -61,7 +63,8 @@ public class MetricsRetryListener implements RetryListener {
 
 	private final MeterRegistry meterRegistry;
 
-	private final Map<RetryContext, Timer.Sample> retryContextToSample = new IdentityHashMap<>();
+	private final Map<RetryContext, Timer.Sample> retryContextToSample = Collections
+		.synchronizedMap(new IdentityHashMap<>());
 
 	private final Timer.Builder retryMeterProvider;
 
