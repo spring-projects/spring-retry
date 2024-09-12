@@ -190,4 +190,13 @@ public @interface CircuitBreaker {
 	 */
 	boolean throwLastExceptionOnExhausted() default false;
 
+	/**
+	 * Name of method in this class to use for recover. Method had to be marked with
+	 * {@link Recover} annotation.
+	 * @return the name of recover method
+	 * @since 2.0.9
+	 */
+	@AliasFor(annotation = Retryable.class)
+	String recover() default "";
+
 }
