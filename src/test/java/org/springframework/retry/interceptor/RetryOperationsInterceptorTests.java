@@ -40,6 +40,7 @@ import org.springframework.retry.listener.MethodInvocationRetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
@@ -53,6 +54,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Gary Russell
  * @author Stéphane Nicoll
  * @author Henning Pöttker
+ * @author Artem Bilan
  */
 public class RetryOperationsInterceptorTests {
 
@@ -121,6 +123,12 @@ public class RetryOperationsInterceptorTests {
 		this.service.service();
 		assertThat(count).isEqualTo(2);
 		assertThat(this.context.getAttribute(RetryContext.NAME)).isEqualTo("FOO");
+		assertThat(this.context.getAttribute(RetryOperationsInterceptor.METHOD)).isNotNull()
+			.extracting("name")
+			.isEqualTo("service");
+		assertThat(this.context.getAttribute(RetryOperationsInterceptor.METHOD_ARGS)).isNotNull()
+			.extracting("args")
+			.isEqualTo(new Object[0]);
 	}
 
 	@Test
@@ -206,13 +214,13 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testOutsideTransaction() throws Exception {
+	public void testOutsideTransaction() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				ClassUtils.addResourcePathToPackagePath(getClass(), "retry-transaction-test.xml"));
 		Object object = context.getBean("bean");
 		assertThat(object).isInstanceOf(Service.class);
 		Service bean = (Service) object;
-		bean.doTansactional();
+		bean.doTransactional();
 		assertThat(count).isEqualTo(2);
 		// Expect 2 separate transactions...
 		assertThat(transactionCount).isEqualTo(2);
@@ -220,7 +228,7 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testIllegalMethodInvocationType() throws Throwable {
+	public void testIllegalMethodInvocationType() {
 		assertThatIllegalStateException().isThrownBy(() -> this.interceptor.invoke(new MethodInvocation() {
 			@Override
 			public Method getMethod() {
@@ -253,7 +261,7 @@ public class RetryOperationsInterceptorTests {
 
 		void service() throws Exception;
 
-		void doTansactional();
+		void doTransactional();
 
 	}
 
@@ -269,18 +277,18 @@ public class RetryOperationsInterceptorTests {
 			}
 		}
 
-		@SuppressWarnings("deprecation")
 		@Override
-		public void doTansactional() {
+		public void doTransactional() {
 			if (TransactionSynchronizationManager.isActualTransactionActive() && !this.enteredTransaction) {
 				transactionCount++;
-				TransactionSynchronizationManager.registerSynchronization(
-						new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
-							@Override
-							public void beforeCompletion() {
-								ServiceImpl.this.enteredTransaction = false;
-							}
-						});
+				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+
+					@Override
+					public void beforeCompletion() {
+						ServiceImpl.this.enteredTransaction = false;
+					}
+
+				});
 				this.enteredTransaction = true;
 			}
 			count++;

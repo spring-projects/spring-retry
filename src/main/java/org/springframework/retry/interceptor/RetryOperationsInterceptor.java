@@ -29,7 +29,6 @@ import org.springframework.retry.support.Args;
 import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * A {@link MethodInterceptor} that can be used to automatically retry calls to a method
@@ -43,12 +42,31 @@ import org.springframework.util.StringUtils;
  * intercepted is also transactional, then use the ordering hints in the advice
  * declarations to ensure that this one is before the transaction interceptor in the
  * advice chain.
+ * <p>
+ * An internal {@link MethodInvocationRetryCallback} implementation exposes a
+ * {@value RetryOperationsInterceptor#METHOD} attribute into the provided
+ * {@link RetryContext} with a value from {@link MethodInvocation#getMethod()}. In
+ * addition, the arguments of this method are exposed into a
+ * {@value RetryOperationsInterceptor#METHOD_ARGS} attribute as an {@link Args} instance
+ * wrapper.
  *
  * @author Rob Harrop
  * @author Dave Syer
  * @author Artem Bilan
  */
 public class RetryOperationsInterceptor implements MethodInterceptor {
+
+	/**
+	 * The {@link RetryContext} attribute name for the
+	 * {@link MethodInvocation#getMethod()}.
+	 */
+	public static final String METHOD = "method";
+
+	/**
+	 * The {@link RetryContext} attribute name for the
+	 * {@code new Args(invocation.getArguments())}.
+	 */
+	public static final String METHOD_ARGS = "methodArgs";
 
 	private RetryOperations retryOperations = new RetryTemplate();
 
@@ -78,7 +96,11 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 			public Object doWithRetry(RetryContext context) throws Exception {
 
 				context.setAttribute(RetryContext.NAME, this.label);
-				context.setAttribute("ARGS", new Args(invocation.getArguments()));
+				Args args = new Args(invocation.getArguments());
+				context.setAttribute(METHOD, invocation.getMethod());
+				context.setAttribute(METHOD_ARGS, args);
+				// TODO remove this attribute in the next major/minor version
+				context.setAttribute("ARGS", args);
 
 				/*
 				 * If we don't copy the invocation carefully it won't keep a reference to

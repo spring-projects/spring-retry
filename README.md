@@ -184,6 +184,8 @@ By default, the context is stored in a `ThreadLocal`.
 JEP 444 recommends that `ThreadLocal` should be avoided when using virtual threads, available in Java 21 and beyond.
 To store the contexts in a `Map` instead of a `ThreadLocal`, call `RetrySynchronizationManager.setUseThreadLocal(false)`.
 
+Also, the `RetryOperationsInterceptor` exposes `RetryOperationsInterceptor.METHOD` and `RetryOperationsInterceptor.METHOD_ARGS` attributes with `MethodInvocation.getMethod()` and `new Args(invocation.getArguments())` values, respectively, into the `RetryContext`.
+
 ### Using `RecoveryCallback`
 
 When a retry is exhausted, the `RetryOperations` can pass control to a different
@@ -572,8 +574,8 @@ class Service {
 }
 ```
 
-Version 1.2 introduced the ability to use expressions for certain properties. The
-following example show how to use expressions this way:
+Version 1.2 introduced the ability to use expressions for certain properties. 
+The following example show how to use expressions this way:
 
 ```java
 
@@ -595,17 +597,12 @@ public void service3() {
 }
 ```
 
-Since Spring Retry 1.2.5, for `exceptionExpression`, templated expressions (`#{...}`) are
-deprecated in favor of simple expression strings
-(`message.contains('this can be retried')`).
+Since Spring Retry 1.2.5, for `exceptionExpression`, templated expressions (`#{...}`) are deprecated in favor of simple expression strings (`message.contains('this can be retried')`).
 
-Expressions can contain property placeholders, such as `#{${max.delay}}` or
-`#{@exceptionChecker.${retry.method}(#root)}`. The following rules apply:
+Expressions can contain property placeholders, such as `#{${max.delay}}` or `#{@exceptionChecker.${retry.method}(#root)}`. The following rules apply:
 
 - `exceptionExpression` is evaluated against the thrown exception as the `#root` object.
-- `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once,
-during initialization. There is no root object for the evaluation but they can reference
-other beans in the context
+- `maxAttemptsExpression` and the `@BackOff` expression attributes are evaluated once, during initialization. There is no root object for the evaluation, but they can reference other beans in the context
 
 Starting with version 2.0, expressions in `@Retryable`, `@CircuitBreaker`, and `BackOff` can be evaluated once, during application initialization, or at runtime.
 With earlier versions, evaluation was always performed during initialization (except for `Retryable.exceptionExpression` which is always evaluated at runtime).
