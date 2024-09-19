@@ -78,6 +78,7 @@ import org.springframework.util.Assert;
  * @author Josh Long
  * @author Aleksandr Shamukov
  * @author Emanuele Ivaldi
+ * @author Tobias Soloschenko
  */
 public class RetryTemplate implements RetryOperations {
 
@@ -87,7 +88,7 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	private static final String GLOBAL_STATE = "state.global";
 
-	protected final Log logger = LogFactory.getLog(getClass());
+	protected Log logger = LogFactory.getLog(getClass());
 
 	private volatile BackOffPolicy backOffPolicy = new NoBackOffPolicy();
 
@@ -184,6 +185,18 @@ public class RetryTemplate implements RetryOperations {
 	 */
 	public boolean hasListeners() {
 		return this.listeners.length > 0;
+	}
+
+	/**
+	 * Setter for {@link Log}. If not applied the following is used:
+	 * <p>
+	 * {@code LogFactory.getLog(getClass())}
+	 * </p>
+	 * @param logger the logger the retry template uses for logging
+	 * @since 2.0.10
+	 */
+	public void setLogger(Log logger) {
+		this.logger = logger;
 	}
 
 	/**

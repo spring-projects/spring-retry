@@ -20,8 +20,10 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -45,6 +47,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Rob Harrop
@@ -53,6 +56,7 @@ import static org.mockito.Mockito.verify;
  * @author Henning Pöttker
  * @author Emanuele Ivaldi
  * @author Morulai Planinski
+ * @author Tobias Soloschenko
  */
 public class RetryTemplateTests {
 
@@ -286,7 +290,6 @@ public class RetryTemplateTests {
 		}
 	}
 
-	@SuppressWarnings("serial")
 	@Test
 	public void testFailedPolicy() {
 		RetryTemplate retryTemplate = new RetryTemplate();
@@ -325,7 +328,6 @@ public class RetryTemplateTests {
 		tested.setRetryPolicy(new SimpleRetryPolicy(1));
 
 		BackOffPolicy bop = mock(BackOffPolicy.class);
-		@SuppressWarnings("serial")
 		BackOffContext backOffContext = new BackOffContext() {
 		};
 		tested.setBackOffPolicy(bop);
@@ -437,6 +439,19 @@ public class RetryTemplateTests {
 			this.backOffCalls++;
 		}
 
+	}
+
+	@Test
+	public void testLoggingAppliedCorrectly() throws Exception {
+		ArgumentCaptor<String> logOutputCaptor = ArgumentCaptor.forClass(String.class);
+		RetryTemplate retryTemplate = new RetryTemplate();
+		Log logMock = mock(Log.class);
+		when(logMock.isTraceEnabled()).thenReturn(false);
+		when(logMock.isDebugEnabled()).thenReturn(true);
+		retryTemplate.setLogger(logMock);
+		retryTemplate.execute(new MockRetryCallback());
+		verify(logMock).debug(logOutputCaptor.capture());
+		assertThat(logOutputCaptor.getValue()).contains("Retry: count=0");
 	}
 
 }
