@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.retry.RetryListener;
@@ -58,6 +59,7 @@ import static org.springframework.retry.util.test.TestUtils.getPropertyValue;
  * @author Gary Russell
  * @author Andreas Ahlenstorf
  * @author Morulai Planinski
+ * @author Tobias Soloschenko
  */
 public class RetryTemplateBuilderTests {
 
@@ -344,6 +346,21 @@ public class RetryTemplateBuilderTests {
 	public void testValidateZeroInitInterval() {
 		assertThatIllegalArgumentException()
 			.isThrownBy(() -> RetryTemplate.builder().exponentialBackoff(0, 2, 200).build());
+	}
+
+	@Test
+	public void testBuilderWithLogger() {
+		Log logMock = mock(Log.class);
+		RetryTemplate retryTemplate = RetryTemplate.builder().withLogger(logMock).build();
+		Log logger = getPropertyValue(retryTemplate, "logger", Log.class);
+		assertThat(logger).isEqualTo(logMock);
+	}
+
+	@Test
+	public void testBuilderWithDefaultLogger() {
+		RetryTemplate retryTemplate = RetryTemplate.builder().build();
+		Log logger = getPropertyValue(retryTemplate, "logger", Log.class);
+		assertThat(logger).isNotNull();
 	}
 
 	/* ---------------- Utils -------------- */

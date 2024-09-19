@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.commons.logging.Log;
 import org.springframework.classify.BinaryExceptionClassifier;
 import org.springframework.classify.BinaryExceptionClassifierBuilder;
 import org.springframework.retry.RetryListener;
@@ -79,11 +80,14 @@ import org.springframework.util.Assert;
  * @author Kim In Hoi
  * @author Andreas Ahlenstorf
  * @author Morulai Planinski
+ * @author Tobias Soloschenko
  * @since 1.3
  */
 public class RetryTemplateBuilder {
 
 	private RetryPolicy baseRetryPolicy;
+
+	private Log logger;
 
 	private BackOffPolicy backOffPolicy;
 
@@ -286,6 +290,23 @@ public class RetryTemplateBuilder {
 		Assert.notNull(initialInterval, "initialInterval most not be null");
 		Assert.notNull(maxInterval, "maxInterval must not be null");
 		return this.exponentialBackoff(initialInterval.toMillis(), multiplier, maxInterval.toMillis(), withRandom);
+	}
+
+	/**
+	 * Applies a dedicated logger to the {@link RetryTemplate}. If not applied the
+	 * following is used:
+	 * <p>
+	 * {@code LogFactory.getLog(getClass())}
+	 * </p>
+	 * @param logger the logger which should be used for logging
+	 * @return this
+	 * @since 2.0.10
+	 */
+	public RetryTemplateBuilder withLogger(Log logger) {
+		Assert.isNull(this.logger, "You have already applied a logger");
+		Assert.notNull(logger, "The given logger should not be null");
+		this.logger = logger;
+		return this;
 	}
 
 	/**
@@ -583,6 +604,12 @@ public class RetryTemplateBuilder {
 		CompositeRetryPolicy finalPolicy = new CompositeRetryPolicy();
 		finalPolicy.setPolicies(new RetryPolicy[] { this.baseRetryPolicy, exceptionRetryPolicy });
 		retryTemplate.setRetryPolicy(finalPolicy);
+
+		// Logger
+
+		if (this.logger != null) {
+			retryTemplate.setLogger(this.logger);
+		}
 
 		// Backoff policy
 
