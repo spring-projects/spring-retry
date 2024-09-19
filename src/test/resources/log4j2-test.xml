@@ -6,10 +6,9 @@
 		</Console>
 	</Appenders>
 	<Loggers>
-		<Logger name="org.springframework.context" level="warn"/>
-		<Logger name="org.springframework.retry" level="info"/>
-		<Logger name="org.springframework.transaction" level="info"/>
-		<Root level="info">
+		<Logger name="org.springframework" level="warn"/>
+		<Logger name="org.springframework.retry" level="warn"/>
+		<Root level="warn">
 			<AppenderRef ref="STDOUT" />
 		</Root>
 	</Loggers>

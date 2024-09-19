@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package org.springframework.retry.policy;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -42,13 +45,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Dave Syer
  * @author Gary Russell
+ * @author Artem Bilan
  *
  */
 public class RetryContextSerializationTests {
 
 	private static final Log logger = LogFactory.getLog(RetryContextSerializationTests.class);
 
-	@SuppressWarnings("deprecation")
 	public static List<Object[]> policies() {
 		List<Object[]> result = new ArrayList<>();
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
@@ -58,11 +61,11 @@ public class RetryContextSerializationTests {
 		Set<BeanDefinition> candidates = scanner.findCandidateComponents("org.springframework.retry.policy");
 		for (BeanDefinition beanDefinition : candidates) {
 			try {
-				result.add(new Object[] {
-						BeanUtils.instantiate(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
+				result.add(new Object[] { BeanUtils
+					.instantiateClass(ClassUtils.resolveClassName(beanDefinition.getBeanClassName(), null)) });
 			}
 			catch (Exception e) {
-				logger.warn("Cannot create instance of " + beanDefinition.getBeanClassName(), e);
+				logger.info("Cannot create instance of " + beanDefinition.getBeanClassName(), e);
 			}
 		}
 		ExceptionClassifierRetryPolicy extra = new ExceptionClassifierRetryPolicy();
@@ -71,7 +74,6 @@ public class RetryContextSerializationTests {
 		return result;
 	}
 
-	@SuppressWarnings("deprecation")
 	@ParameterizedTest
 	@MethodSource("policies")
 	public void testSerializationCycleForContext(RetryPolicy policy) {
@@ -79,17 +81,28 @@ public class RetryContextSerializationTests {
 		assertThat(context.getRetryCount()).isEqualTo(0);
 		policy.registerThrowable(context, new RuntimeException());
 		assertThat(context.getRetryCount()).isEqualTo(1);
-		assertThat(
-				((RetryContext) SerializationUtils.deserialize(SerializationUtils.serialize(context))).getRetryCount())
-			.isEqualTo(1);
+		assertThat(deserialize(SerializationUtils.serialize(context))).extracting("retryCount").isEqualTo(1);
 	}
 
 	@ParameterizedTest
 	@MethodSource("policies")
-	@SuppressWarnings("deprecation")
 	public void testSerializationCycleForPolicy(RetryPolicy policy) {
-		assertThat(SerializationUtils.deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy)
-			.isTrue();
+		assertThat(deserialize(SerializationUtils.serialize(policy)) instanceof RetryPolicy).isTrue();
+	}
+
+	private static Object deserialize(byte[] bytes) {
+		if (bytes == null) {
+			return null;
+		}
+		try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+			return ois.readObject();
+		}
+		catch (IOException ex) {
+			throw new IllegalArgumentException("Failed to deserialize object", ex);
+		}
+		catch (ClassNotFoundException ex) {
+			throw new IllegalStateException("Failed to deserialize object type", ex);
+		}
 	}
 
 }
