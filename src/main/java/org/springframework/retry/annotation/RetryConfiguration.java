@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,6 +69,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Markus Heiden
  * @author Gary Russell
  * @author Yanming Zhou
+ * @author Evgeny Lazarev
  * @since 1.1
  *
  */
@@ -240,6 +242,11 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 			}
 			AnnotationClassOrMethodPointcut otherAdvisor = (AnnotationClassOrMethodPointcut) other;
 			return ObjectUtils.nullSafeEquals(this.methodResolver, otherAdvisor.methodResolver);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.methodResolver);
 		}
 
 	}
