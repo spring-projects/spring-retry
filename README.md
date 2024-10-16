@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml/badge.svg?branch=main)](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml?query=branch%3Amain) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
+[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.spring.io/scans?search.rootProjectNames=Spring%20Retry)
 
 This project provides declarative retry support for Spring applications. 
 It is used in Spring Batch, Spring Integration, and others.
