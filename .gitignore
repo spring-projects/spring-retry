@@ -14,3 +14,4 @@ target
 credentials.yml
 .DS_Store
 .vscode
+/.mvn/.develocity
