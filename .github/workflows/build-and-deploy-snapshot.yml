@@ -7,6 +7,10 @@ permissions:
   actions: write
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
 jobs:
   build-and-deploy-snapshot:
     if: ${{ github.repository == 'spring-projects/spring-retry' }}

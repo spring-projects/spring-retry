@@ -203,6 +203,10 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>3.3.0</version>
 				</plugin>
+				<plugin>
+					<groupId>com.gradle</groupId>
+					<artifactId>develocity-maven-extension</artifactId>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>

@@ -5,6 +5,10 @@ on:
       - v2.0.[0-9]+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
 jobs:
   build-and-stage-release:
     if: ${{ github.repository == 'spring-projects/spring-retry' }}
