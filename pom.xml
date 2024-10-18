@@ -34,9 +34,9 @@
 
 		<aspectj.version>1.9.22.1</aspectj.version>
 		<assertj.version>3.26.3</assertj.version>
-		<junit-jupiter.version>5.11.0</junit-jupiter.version>
-		<log4j.version>2.24.0</log4j.version>
-		<mockito.version>5.13.0</mockito.version>
+		<junit-jupiter.version>5.11.2</junit-jupiter.version>
+		<log4j.version>2.24.1</log4j.version>
+		<mockito.version>5.14.2</mockito.version>
 		<spring.framework.version>6.0.23</spring.framework.version>
 		<micrometer.version>1.10.13</micrometer.version>
 	</properties>
@@ -52,7 +52,17 @@
 		<developer>
 			<id>dsyer</id>
 			<name>Dave Syer</name>
-			<email>dsyer@vmware.com</email>
+			<email>david.syer@broadcom.com</email>
+		</developer>
+		<developer>
+			<id>garyrussell</id>
+			<name>Gary Russell</name>
+			<email>github@gprussell.net</email>
+		</developer>
+		<developer>
+			<id>artembilan</id>
+			<name>Artem Bilan</name>
+			<email>artem.bilan@broadcom.com</email>
 		</developer>
 	</developers>
 
@@ -176,7 +186,7 @@
 				<plugin>
 					<groupId>io.spring.javaformat</groupId>
 					<artifactId>spring-javaformat-maven-plugin</artifactId>
-					<version>0.0.41</version>
+					<version>0.0.43</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -186,7 +196,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.7.0</version>
+					<version>3.10.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -201,7 +211,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.5.1</version>
 				</plugin>
 				<plugin>
 					<groupId>com.gradle</groupId>
