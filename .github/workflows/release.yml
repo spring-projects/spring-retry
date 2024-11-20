@@ -33,6 +33,9 @@ jobs:
           folder: 'deployment-repository'
           signing-key: ${{ secrets.GPG_PRIVATE_KEY }}
           signing-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          artifact-properties: |
+            /**/*.zip::zip.name=${{ github.event.repository.name }},zip.deployed=false
+            /**/*docs.zip::zip.type=docs
     outputs:
       version: ${{ steps.build-and-publish.outputs.version }}
   sync-to-maven-central:

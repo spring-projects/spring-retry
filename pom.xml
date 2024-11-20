@@ -271,6 +271,36 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.7.1</version>
+				<configuration>
+					<inlineDescriptors>
+						<inlineDescriptor>
+							<id>docs</id>
+							<formats>
+								<format>zip</format>
+							</formats>
+							<includeBaseDirectory>false</includeBaseDirectory>
+							<fileSets>
+								<fileSet>
+									<directory>${project.build.directory}/reports/apidocs</directory>
+									<outputDirectory>/apidocs</outputDirectory>
+								</fileSet>
+							</fileSets>
+						</inlineDescriptor>
+					</inlineDescriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docs-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
