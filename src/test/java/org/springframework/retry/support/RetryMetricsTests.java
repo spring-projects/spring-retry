@@ -16,6 +16,8 @@
 
 package org.springframework.retry.support;
 
+import java.util.concurrent.CompletableFuture;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,10 +51,20 @@ public class RetryMetricsTests {
 
 	@Test
 	void metricsAreCollectedForRetryable() {
-		assertThatNoException().isThrownBy(this.service::service1);
-		assertThatNoException().isThrownBy(this.service::service1);
-		assertThatNoException().isThrownBy(this.service::service2);
-		assertThatExceptionOfType(RetryException.class).isThrownBy(this.service::service3);
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(4);
+		executor.afterPropertiesSet();
+
+		CompletableFuture<?> future1 = executor
+			.submitCompletable(() -> assertThatNoException().isThrownBy(this.service::service1));
+		CompletableFuture<?> future2 = executor
+			.submitCompletable(() -> assertThatNoException().isThrownBy(this.service::service1));
+		CompletableFuture<?> future3 = executor
+			.submitCompletable(() -> assertThatNoException().isThrownBy(this.service::service2));
+		CompletableFuture<?> future4 = executor.submitCompletable(
+				() -> assertThatExceptionOfType(RetryException.class).isThrownBy(this.service::service3));
+
+		CompletableFuture.allOf(future1, future2, future3, future4).join();
 
 		assertThat(this.meterRegistry.get(MetricsRetryListener.TIMER_NAME)
 			.tags(Tags.of("name", "org.springframework.retry.support.RetryMetricsTests$Service.service1", "retry.count",
@@ -70,6 +83,8 @@ public class RetryMetricsTests {
 					"3", "exception", "RetryException"))
 			.timer()
 			.count()).isEqualTo(1);
+
+		executor.destroy();
 	}
 
 	@Configuration(proxyBeanMethods = false)

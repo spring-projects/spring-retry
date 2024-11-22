@@ -66,8 +66,6 @@ public class MetricsRetryListener implements RetryListener {
 	private final Map<RetryContext, Timer.Sample> retryContextToSample = Collections
 		.synchronizedMap(new IdentityHashMap<>());
 
-	private final Timer.Builder retryMeterProvider;
-
 	private Tags customTags = Tags.empty();
 
 	private Function<RetryContext, Iterable<Tag>> customTagsProvider = retryContext -> Tags.empty();
@@ -79,7 +77,6 @@ public class MetricsRetryListener implements RetryListener {
 	public MetricsRetryListener(MeterRegistry meterRegistry) {
 		Assert.notNull(meterRegistry, "'meterRegistry' must not be null");
 		this.meterRegistry = meterRegistry;
-		this.retryMeterProvider = Timer.builder(TIMER_NAME).description("Metrics for Spring RetryTemplate");
 	}
 
 	/**
@@ -122,7 +119,11 @@ public class MetricsRetryListener implements RetryListener {
 			.and(this.customTagsProvider.apply(context))
 			.and("exception", throwable != null ? throwable.getClass().getSimpleName() : "none");
 
-		sample.stop(this.retryMeterProvider.tags(retryTags).register(this.meterRegistry));
+		Timer.Builder timeBuilder = Timer.builder(TIMER_NAME)
+			.description("Metrics for Spring RetryTemplate")
+			.tags(retryTags);
+
+		sample.stop(timeBuilder.register(this.meterRegistry));
 	}
 
 }
