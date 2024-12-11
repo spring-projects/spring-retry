@@ -14,10 +14,10 @@
 		operation to retry if it fails, based on the type of exception, and with a fixed
 		or exponential backoff.]]>
 	</description>
-	<url>https://www.springsource.org</url>
+	<url>https://github.com/spring-projects/spring-retry</url>
 	<organization>
-		<name>SpringSource</name>
-		<url>https://www.springsource.com</url>
+		<name>Spring IO</name>
+		<url>https://spring.io</url>
 	</organization>
 	<licenses>
 		<license>
