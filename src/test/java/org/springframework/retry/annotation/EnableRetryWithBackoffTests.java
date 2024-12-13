@@ -52,7 +52,7 @@ public class EnableRetryWithBackoffTests {
 		RandomService service = context.getBean(RandomService.class);
 		service.service();
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
-		assertThat(periods.get(0) > 1000).describedAs("Wrong periods: %s" + periods.toString()).isTrue();
+		assertThat(periods.get(0)).describedAs("Wrong periods: %s" + periods).isGreaterThan(1000);
 		assertThat(service.getCount()).isEqualTo(3);
 		context.close();
 	}
@@ -76,9 +76,7 @@ public class EnableRetryWithBackoffTests {
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
 		assertThat(context.getBean(PeriodSleeper.class).getPeriods().toString()).isNotEqualTo("[1000, 1100]");
 		assertThat(periods.get(0)).describedAs("Wrong periods: %s" + periods).isGreaterThanOrEqualTo(1000);
-		assertThat(periods.get(1)).describedAs("Wrong periods: %s" + periods)
-			.isGreaterThanOrEqualTo(1100)
-			.isLessThanOrEqualTo(1210);
+		assertThat(periods.get(1)).describedAs("Wrong periods: %s" + periods).isBetween(1100L, 1210L);
 		context.close();
 	}
 
@@ -90,9 +88,8 @@ public class EnableRetryWithBackoffTests {
 		assertThat(service.getCount()).isEqualTo(3);
 		List<Long> periods = context.getBean(PeriodSleeper.class).getPeriods();
 		assertThat(context.getBean(PeriodSleeper.class).getPeriods().toString()).isNotEqualTo("[1000, 1100]");
-		assertThat(periods.get(0) > 1000).describedAs("Wrong periods: %s" + periods.toString()).isTrue();
-		assertThat(periods.get(1) > 1100 && periods.get(1) < 1210).describedAs("Wrong periods: %s" + periods.toString())
-			.isTrue();
+		assertThat(periods.get(0)).describedAs("Wrong periods: %s" + periods).isGreaterThanOrEqualTo(1000);
+		assertThat(periods.get(1)).describedAs("Wrong periods: %s" + periods).isBetween(1100L, 1210L);
 		context.close();
 	}
 
@@ -102,7 +99,7 @@ public class EnableRetryWithBackoffTests {
 	protected static class TestConfiguration {
 
 		@Bean
-		public PeriodSleeper sleper() {
+		public PeriodSleeper sleeper() {
 			return new PeriodSleeper();
 		}
 
