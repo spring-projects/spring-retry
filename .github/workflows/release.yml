@@ -81,3 +81,16 @@ jobs:
         with:
           milestone: ${{ needs.build-and-stage-release.outputs.version }}
           token: ${{ secrets.GH_ACTIONS_REPO_TOKEN }}
+  announce-release-in-chat:
+    name: Announce Release in Chat
+    needs:
+      - build-and-stage-release
+      - create-github-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Announce Release in Chat
+        if: env.CHAT_WEBHOOK_URL
+        run: |
+          curl -X POST '${{ env.CHAT_WEBHOOK_URL }}' -H 'Content-Type: application/json' -d '{ text: "${{ github.event.repository.name }}-announcing `${{ needs.build-and-stage-release.outputs.version }}`"}'
+        env:
+          CHAT_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_GCHAT_WEBHOOK_URL }}
