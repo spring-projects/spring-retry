@@ -33,8 +33,8 @@
 
 		<aspectj.version>1.9.22.1</aspectj.version>
 		<assertj.version>3.26.3</assertj.version>
-		<junit-jupiter.version>5.11.2</junit-jupiter.version>
-		<log4j.version>2.24.1</log4j.version>
+		<junit-jupiter.version>5.11.3</junit-jupiter.version>
+		<log4j.version>2.24.2</log4j.version>
 		<mockito.version>5.14.2</mockito.version>
 		<spring.framework.version>6.0.23</spring.framework.version>
 		<micrometer.version>1.10.13</micrometer.version>
@@ -72,14 +72,15 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-core</artifactId>
 			<version>${micrometer.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-annotations</artifactId>
+			<version>4.8.6</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -195,7 +196,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.10.1</version>
+					<version>3.11.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -210,7 +211,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.1</version>
+					<version>3.5.2</version>
 				</plugin>
 				<plugin>
 					<groupId>com.gradle</groupId>
@@ -239,6 +240,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<release>${java.version}</release>
+					<proc>none</proc>
 				</configuration>
 			</plugin>
 			<plugin>
