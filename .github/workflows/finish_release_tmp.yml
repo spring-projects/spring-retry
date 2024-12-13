@@ -1,0 +1,29 @@
+name: Finish Release Tmp
+on:
+  workflow_dispatch:
+
+jobs:
+  finish-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JFrog CLI
+        uses: jfrog/setup-jfrog-cli@7c95feb32008765e1b4e626b078dfd897c4340ad # v4.1.2
+        env:
+          JF_ENV_SPRING: ${{ secrets.JF_ARTIFACTORY_SPRING }}
+      - name: Promote build
+        run: jfrog rt build-promote spring-retry- 5 libs-release-local
+
+      - name: Check Out Code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Create GitHub Release
+        uses: ./.github/actions/create-github-release
+        with:
+          milestone: 2.0.11
+          token: ${{ secrets.GH_ACTIONS_REPO_TOKEN }}
+
+      - name: Announce Release in Chat
+        if: env.CHAT_WEBHOOK_URL
+        run: |
+          curl -X POST '${{ env.CHAT_WEBHOOK_URL }}' -H 'Content-Type: application/json' -d '{ text: "${{ github.event.repository.name }}-announcing `2.0.11`"}'
+        env:
+          CHAT_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_GCHAT_WEBHOOK_URL }}
