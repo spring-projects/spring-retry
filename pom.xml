@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.springframework.retry</groupId>
 	<artifactId>spring-retry</artifactId>
-	<version>2.0.12-SNAPSHOT</version>
+	<version>${revision}</version>
 	<name>Spring Retry</name>
 	<description><![CDATA[
 		Spring Retry provides an abstraction around retrying failed operations, with an
@@ -26,6 +26,7 @@
 		</license>
 	</licenses>
 	<properties>
+		<revision>2.0.12-SNAPSHOT</revision>
 		<disable.checks>false</disable.checks>
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -298,6 +299,31 @@
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<configuration>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+					<flattenMode>oss</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
 						</goals>
 					</execution>
 				</executions>
