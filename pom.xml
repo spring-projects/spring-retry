@@ -310,6 +310,9 @@
 				<configuration>
 					<outputDirectory>${project.build.directory}</outputDirectory>
 					<flattenMode>oss</flattenMode>
+					<pomElements>
+						<profiles>remove</profiles>
+					</pomElements>
 				</configuration>
 				<executions>
 					<execution>
@@ -317,13 +320,6 @@
 						<phase>process-resources</phase>
 						<goals>
 							<goal>flatten</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>flatten.clean</id>
-						<phase>clean</phase>
-						<goals>
-							<goal>clean</goal>
 						</goals>
 					</execution>
 				</executions>
