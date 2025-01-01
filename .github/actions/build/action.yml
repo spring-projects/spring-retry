@@ -39,6 +39,6 @@ runs:
       id: read-version
       shell: bash
       run: |
-        version=$(mvn help:evaluate -Dexpression="project.version" -q -DforceStdout)
+        version=$(sed -n 's/^.*<revision>\(.*\)<\/revision>.*$/\1/p' pom.xml)
         echo "Version is $version"
         echo "version=$version" >> $GITHUB_OUTPUT
