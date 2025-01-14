@@ -797,13 +797,8 @@ tracker for issues and merging pull requests into the main branch. If you want
 to contribute even something trivial, please do not hesitate, but do please
 follow the guidelines in the next paragraph.
 
-Before we can accept a non-trivial patch or pull request, we need you
-to sign the [contributor's agreement](https://cla.pivotal.io/). Signing
-the contributor's agreement does not grant anyone commit rights to the
-main repository, but it does mean that we can accept your
-contributions, and you will get an author credit if we do.  Active
-contributors might be asked to join the core team and be given the
-ability to merge pull requests.
+All commits must include a __Signed-off-by__ trailer at the end of each commit message to indicate that the contributor agrees to the Developer Certificate of Origin.
+For additional details, please refer to the blog post [Hello DCO, Goodbye CLA: Simplifying Contributions to Spring](https://spring.io/blog/2025/01/06/hello-dco-goodbye-cla-simplifying-contributions-to-spring).
 
 ## Getting Support
 Check out the [Spring Retry tags on Stack Overflow](https://stackoverflow.com/questions/tagged/spring-retry). [Commercial support](https://spring.io/support) is available too.
