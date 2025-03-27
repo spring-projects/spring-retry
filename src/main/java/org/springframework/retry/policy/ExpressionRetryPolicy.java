@@ -130,8 +130,8 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	private static Expression getExpression(String expression) {
 		if (isTemplate(expression)) {
 			logger.warn("#{...} syntax is not required for run-time expression in this policy "
-					+ "and is deprecated in favor of a simple expression string." +
-					"Consider to remove SpEL template tokens around expression: '" + expression + "'");
+					+ "and is deprecated in favor of a simple expression string."
+					+ "Consider to remove SpEL template tokens around expression: '" + expression + "'");
 			return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
 		}
 		return new SpelExpressionParser().parseExpression(expression);
