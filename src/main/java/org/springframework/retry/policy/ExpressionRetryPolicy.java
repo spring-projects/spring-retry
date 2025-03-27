@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2019 the original author or authors.
+ * Copyright 2015-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.springframework.util.Assert;
  *
  * @author Gary Russell
  * @author Aldo Sinanaj
+ * @author Artem Bilan
  * @since 1.2
  *
  */
@@ -128,8 +129,9 @@ public class ExpressionRetryPolicy extends SimpleRetryPolicy implements BeanFact
 	 */
 	private static Expression getExpression(String expression) {
 		if (isTemplate(expression)) {
-			logger.warn("#{...} syntax is not required for this run-time expression "
-					+ "and is deprecated in favor of a simple expression string");
+			logger.warn("#{...} syntax is not required for run-time expression in this policy "
+					+ "and is deprecated in favor of a simple expression string." +
+					"Consider to remove SpEL template tokens around expression: '" + expression + "'");
 			return new SpelExpressionParser().parseExpression(expression, PARSER_CONTEXT);
 		}
 		return new SpelExpressionParser().parseExpression(expression);
