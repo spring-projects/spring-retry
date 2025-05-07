@@ -58,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  * @author Stéphane Nicoll
  * @author Henning Pöttker
  * @author Artem Bilan
+ * @author Kim Jun Hyeong
  */
 public class RetryOperationsInterceptorTests {
 
