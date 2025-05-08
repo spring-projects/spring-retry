@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,8 @@ import org.springframework.util.ClassUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Dave Syer
@@ -287,39 +289,17 @@ public class RetryOperationsInterceptorTests {
 	}
 
 	@Test
-	public void testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown() {
+	public void testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown() throws NoSuchMethodException {
 		RetryContext context = new RetryContextSupport(null);
 		Object mockProxy = new Object();
 		RetrySynchronizationManager.register(context);
 		context.setAttribute("___proxy___", mockProxy);
 		assertThat(context.getAttribute("___proxy___")).isNotNull();
-		assertThatIllegalStateException().isThrownBy(() -> this.interceptor.invoke(new MethodInvocation() {
-			@Override
-			public Method getMethod() {
-				return ClassUtils.getMethod(RetryOperationsInterceptorTests.class,
-						"testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown");
-			}
-
-			@Override
-			public Object[] getArguments() {
-				return new Object[0];
-			}
-
-			@Override
-			public Object proceed() {
-				return null;
-			}
-
-			@Override
-			public Object getThis() {
-				return new Object();
-			}
-
-			@Override
-			public AccessibleObject getStaticPart() {
-				return null;
-			}
-		})).withMessageContaining("MethodInvocation");
+		MethodInvocation mockInvocation = mock(MethodInvocation.class);
+		Method testMethod = this.getClass().getMethod("testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown");
+		when(mockInvocation.getMethod()).thenReturn(testMethod);
+		assertThatIllegalStateException().isThrownBy(() -> this.interceptor.invoke(mockInvocation))
+			.withMessageContaining("MethodInvocation");
 		assertThat(context.getAttribute("___proxy___")).isNull();
 		RetrySynchronizationManager.clear();
 	}
