@@ -137,7 +137,7 @@ public class RetryOperationsInterceptor implements MethodInterceptor {
 		finally {
 			RetryContext context = RetrySynchronizationManager.getContext();
 			if (context != null) {
-				context.removeAttribute("__proxy__");
+				context.removeAttribute("___proxy___");
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2023 the original author or authors.
+ * Copyright 2006-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
+import org.springframework.retry.context.RetryContextSupport;
 import org.springframework.retry.listener.MethodInvocationRetryListenerSupport;
 import org.springframework.retry.policy.NeverRetryPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.support.RetrySynchronizationManager;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -47,6 +49,8 @@ import org.springframework.util.ClassUtils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Dave Syer
@@ -55,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
  * @author Stéphane Nicoll
  * @author Henning Pöttker
  * @author Artem Bilan
+ * @author Kim Jun Hyeong
  */
 public class RetryOperationsInterceptorTests {
 
@@ -255,6 +260,48 @@ public class RetryOperationsInterceptorTests {
 				return null;
 			}
 		})).withMessageContaining("MethodInvocation");
+	}
+
+	@Test
+	public void testProxyAttributeCleanupWithCorrectKey() {
+		RetryContext directContext = new RetryContextSupport(null);
+		Object mockProxy = new Object();
+		RetrySynchronizationManager.register(directContext);
+		directContext.setAttribute("___proxy___", mockProxy);
+		RetryContext retrievedContext = RetrySynchronizationManager.getContext();
+		retrievedContext.removeAttribute("___proxy___");
+		assertThat(RetrySynchronizationManager.getContext().getAttribute("___proxy___")).isNull();
+		RetrySynchronizationManager.clear();
+	}
+
+	@Test
+	public void testProxyAttributeRemainWithWrongKey() {
+		RetryContext directContext = new RetryContextSupport(null);
+		Object mockProxy = new Object();
+		RetrySynchronizationManager.register(directContext);
+		directContext.setAttribute("___proxy___", mockProxy);
+		RetryContext retrievedContext = RetrySynchronizationManager.getContext();
+		retrievedContext.removeAttribute("__proxy__");
+		Object remainingProxy = RetrySynchronizationManager.getContext().getAttribute("___proxy___");
+		assertThat(remainingProxy).isNotNull();
+		assertThat(remainingProxy).isSameAs(mockProxy);
+		RetrySynchronizationManager.clear();
+	}
+
+	@Test
+	public void testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown() throws NoSuchMethodException {
+		RetryContext context = new RetryContextSupport(null);
+		Object mockProxy = new Object();
+		RetrySynchronizationManager.register(context);
+		context.setAttribute("___proxy___", mockProxy);
+		assertThat(context.getAttribute("___proxy___")).isNotNull();
+		MethodInvocation mockInvocation = mock(MethodInvocation.class);
+		Method testMethod = this.getClass().getMethod("testProxyAttributeCleanupEvenWhenIllegalStateExceptionThrown");
+		when(mockInvocation.getMethod()).thenReturn(testMethod);
+		assertThatIllegalStateException().isThrownBy(() -> this.interceptor.invoke(mockInvocation))
+			.withMessageContaining("MethodInvocation");
+		assertThat(context.getAttribute("___proxy___")).isNull();
+		RetrySynchronizationManager.clear();
 	}
 
 	public static interface Service {
