@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2024-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.springframework.retry.support;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -43,7 +44,8 @@ import org.springframework.util.Assert;
  * <p>
  * The registered {@value #TIMER_NAME} {@link Timer} has these tags by default:
  * <ul>
- * <li>{@code name} - {@link RetryCallback#getLabel()}</li>
+ * <li>{@code name} - {@link RetryCallback#getLabel()} if not null, otherwise
+ * {@code RetryCallback#getClass().getName()}</li>
  * <li>{@code retry.count} - the number of attempts - 1; essentially the successful first
  * call means no counts</li>
  * <li>{@code exception} - the thrown back to the caller (after all the retry attempts)
@@ -113,7 +115,8 @@ public class MetricsRetryListener implements RetryListener {
 		Assert.state(sample != null,
 				() -> String.format("No 'Timer.Sample' registered for '%s'. Was the 'open()' called?", context));
 
-		Tags retryTags = Tags.of("name", callback.getLabel())
+		String label = Objects.requireNonNullElse(callback.getLabel(), callback.getClass().getName());
+		Tags retryTags = Tags.of("name", label)
 			.and("retry.count", "" + context.getRetryCount())
 			.and(this.customTags)
 			.and(this.customTagsProvider.apply(context))

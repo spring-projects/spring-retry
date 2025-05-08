@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 the original author or authors.
+ * Copyright 2024-2025 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -48,6 +51,9 @@ public class RetryMetricsTests {
 
 	@Autowired
 	Service service;
+
+	@Autowired
+	MetricsRetryListener metricsRetryListener;
 
 	@Test
 	void metricsAreCollectedForRetryable() {
@@ -85,6 +91,21 @@ public class RetryMetricsTests {
 			.count()).isEqualTo(1);
 
 		executor.destroy();
+	}
+
+	@Test
+	void labelFallbackToClassName() {
+		SimpleRetryPolicy simpleRetryPolicy = new SimpleRetryPolicy();
+		RetryContext retryContext = simpleRetryPolicy.open(null);
+		RetryCallback<Object, Throwable> retryCallback = context -> null;
+		this.metricsRetryListener.open(retryContext, retryCallback);
+		this.metricsRetryListener.close(retryContext, retryCallback, null);
+
+		assertThat(this.meterRegistry.get(MetricsRetryListener.TIMER_NAME)
+			.tags(Tags.of("name", retryCallback.getClass().getName(), "retry.count", "0", "exception", "none"))
+			.timer()
+			.count()).isEqualTo(1);
+
 	}
 
 	@Configuration(proxyBeanMethods = false)
