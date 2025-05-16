@@ -16,10 +16,15 @@
 
 package org.springframework.retry.backoff;
 
+import org.apache.commons.logging.Log;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.DirectFieldAccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * @author Rob Harrop
@@ -27,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
  * @author Gary Russell
  * @author Marius Lichtblau
  * @author Anton Aharkau
+ * @author Kim Sumin
  */
 public class ExponentialBackOffPolicyTests {
 
@@ -123,6 +129,52 @@ public class ExponentialBackOffPolicyTests {
 		BackOffContext context = strategy.start(null);
 		assertThatExceptionOfType(BackOffInterruptedException.class).isThrownBy(() -> strategy.backOff(context));
 		assertThat(Thread.interrupted()).isTrue();
+	}
+
+	@Test
+	public void testSetMultiplierWithWarning() {
+		Log logMock = mock(Log.class);
+		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
+
+		DirectFieldAccessor accessor = new DirectFieldAccessor(strategy);
+		accessor.setPropertyValue("logger", logMock);
+
+		strategy.setMultiplier(1.0);
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logMock).warn(captor.capture());
+		assertThat(captor.getValue())
+			.isEqualTo("Multiplier must be > 1.0 for effective exponential backoff, but was 1.0");
+	}
+
+	@Test
+	public void testSetInitialIntervalWithWarning() {
+		Log logMock = mock(Log.class);
+		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
+
+		DirectFieldAccessor accessor = new DirectFieldAccessor(strategy);
+		accessor.setPropertyValue("logger", logMock);
+
+		strategy.setInitialInterval(0);
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logMock).warn(captor.capture());
+		assertThat(captor.getValue()).isEqualTo("Initial interval must be at least 1, but was 0");
+	}
+
+	@Test
+	public void testSetMaxIntervalWithWarning() {
+		Log logMock = mock(Log.class);
+		ExponentialBackOffPolicy strategy = new ExponentialBackOffPolicy();
+
+		DirectFieldAccessor accessor = new DirectFieldAccessor(strategy);
+		accessor.setPropertyValue("logger", logMock);
+
+		strategy.setMaxInterval(0);
+
+		ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+		verify(logMock).warn(captor.capture());
+		assertThat(captor.getValue()).isEqualTo("Max interval must be positive, but was 0");
 	}
 
 }
