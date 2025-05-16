@@ -43,6 +43,7 @@ import org.springframework.util.ClassUtils;
  * @author Artem Bilan
  * @author Marius Lichtblau
  * @author Anton Aharkau
+ * @author Kim Sumin
  */
 @SuppressWarnings("serial")
 public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<ExponentialBackOffPolicy> {
@@ -130,6 +131,9 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param initialInterval the initial interval
 	 */
 	public void setInitialInterval(long initialInterval) {
+		if (initialInterval < 1) {
+			logger.warn("Initial interval must be at least 1, but was " + initialInterval);
+		}
 		this.initialInterval = initialInterval > 1 ? initialInterval : 1;
 	}
 
@@ -139,6 +143,9 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param multiplier the multiplier
 	 */
 	public void setMultiplier(double multiplier) {
+		if (multiplier <= 1.0) {
+			logger.warn("Multiplier must be > 1.0 for effective exponential backoff, but was " + multiplier);
+		}
 		this.multiplier = multiplier > 1.0 ? multiplier : 1.0;
 	}
 
@@ -150,6 +157,9 @@ public class ExponentialBackOffPolicy implements SleepingBackOffPolicy<Exponenti
 	 * @param maxInterval in milliseconds.
 	 */
 	public void setMaxInterval(long maxInterval) {
+		if (maxInterval < 1) {
+			logger.warn("Max interval must be positive, but was " + maxInterval);
+		}
 		this.maxInterval = maxInterval > 0 ? maxInterval : 1;
 	}
 
