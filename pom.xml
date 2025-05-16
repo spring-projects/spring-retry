@@ -32,11 +32,11 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<aspectj.version>1.9.22.1</aspectj.version>
-		<assertj.version>3.26.3</assertj.version>
-		<junit-jupiter.version>5.11.3</junit-jupiter.version>
-		<log4j.version>2.24.2</log4j.version>
-		<mockito.version>5.14.2</mockito.version>
+		<aspectj.version>1.9.24</aspectj.version>
+		<assertj.version>3.27.3</assertj.version>
+		<junit-jupiter.version>5.12.2</junit-jupiter.version>
+		<log4j.version>2.24.3</log4j.version>
+		<mockito.version>5.17.0</mockito.version>
 		<spring.framework.version>6.0.23</spring.framework.version>
 		<micrometer.version>1.10.13</micrometer.version>
 	</properties>
@@ -187,12 +187,12 @@
 				<plugin>
 					<groupId>io.spring.javaformat</groupId>
 					<artifactId>spring-javaformat-maven-plugin</artifactId>
-					<version>0.0.43</version>
+					<version>0.0.44</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.13.0</version>
+					<version>3.14.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -212,7 +212,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.2</version>
+					<version>3.5.3</version>
 				</plugin>
 				<plugin>
 					<groupId>com.gradle</groupId>
@@ -306,7 +306,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>flatten-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<version>1.7.0</version>
 				<configuration>
 					<outputDirectory>${project.build.directory}</outputDirectory>
 					<flattenMode>oss</flattenMode>

@@ -87,8 +87,7 @@ public interface RetryContext extends AttributeAccessor {
 	 * Accessor for the parent context if retry blocks are nested.
 	 * @return the parent or null if there is none.
 	 */
-	@Nullable
-	RetryContext getParent();
+	@Nullable RetryContext getParent();
 
 	/**
 	 * Counts the number of retry attempts. Before the first attempt this counter is zero,
@@ -104,7 +103,6 @@ public interface RetryContext extends AttributeAccessor {
 	 * enclosing policy decides not to provide it (e.g. because of concerns about memory
 	 * usage).
 	 */
-	@Nullable
-	Throwable getLastThrowable();
+	@Nullable Throwable getLastThrowable();
 
 }

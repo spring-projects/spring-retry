@@ -71,8 +71,7 @@ public final class RetrySynchronizationManager {
 	 * Public accessor for the locally enclosing {@link RetryContext}.
 	 * @return the current retry context, or null if there isn't one
 	 */
-	@Nullable
-	public static RetryContext getContext() {
+	@Nullable public static RetryContext getContext() {
 		if (useThreadLocal) {
 			return context.get();
 		}
@@ -88,8 +87,7 @@ public final class RetrySynchronizationManager {
 	 * @param context the new context to register
 	 * @return the old context if there was one
 	 */
-	@Nullable
-	public static RetryContext register(RetryContext context) {
+	@Nullable public static RetryContext register(RetryContext context) {
 		if (useThreadLocal) {
 			RetryContext oldContext = getContext();
 			RetrySynchronizationManager.context.set(context);
@@ -107,8 +105,7 @@ public final class RetrySynchronizationManager {
 	 * {@link RetryOperations} implementations.
 	 * @return the old value if there was one.
 	 */
-	@Nullable
-	public static RetryContext clear() {
+	@Nullable public static RetryContext clear() {
 		RetryContext value = getContext();
 		RetryContext parent = value == null ? null : value.getParent();
 		if (useThreadLocal) {
