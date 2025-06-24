@@ -133,19 +133,19 @@ public class RetryMetricsTests {
 
 		private int count = 0;
 
-		@Retryable
+		@Retryable(listeners = "metricsRetryListener")
 		public void service1() {
 
 		}
 
-		@Retryable
+		@Retryable(listeners = "metricsRetryListener")
 		public void service2() {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");
 			}
 		}
 
-		@Retryable
+		@Retryable(listeners = "metricsRetryListener")
 		public void service3() {
 			throw new RetryException("Planned");
 		}

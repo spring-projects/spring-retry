@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Dave Syer
  * @author Artem Bilan
+ * @author Jiandong Ma
  *
  */
 public class CircuitBreakerInterceptorStatisticsTests {
@@ -107,7 +108,7 @@ public class CircuitBreakerInterceptorStatisticsTests {
 
 		private RetryContext status;
 
-		@CircuitBreaker(label = "test", maxAttempts = 1, recover = "recover")
+		@CircuitBreaker(label = "test", maxAttempts = 1, recover = "recover", listeners = "listener")
 		public Object service(String input) throws Exception {
 			this.status = RetrySynchronizationManager.getContext();
 			Integer attempts = (Integer) status.getAttribute("attempts");

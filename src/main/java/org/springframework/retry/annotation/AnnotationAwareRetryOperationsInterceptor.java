@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -77,6 +78,7 @@ import org.springframework.util.StringUtils;
  * @author Gary Russell
  * @author Roman Akentev
  * @author Aftab Shaikh
+ * @author Jiandong Ma
  * @since 1.1
  */
 public class AnnotationAwareRetryOperationsInterceptor implements IntroductionInterceptor, BeanFactoryAware {
@@ -132,16 +134,6 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 	 */
 	public void setNewItemIdentifier(NewMethodArgumentsIdentifier newMethodArgumentsIdentifier) {
 		this.newMethodArgumentsIdentifier = newMethodArgumentsIdentifier;
-	}
-
-	/**
-	 * Default retry listeners to apply to all operations.
-	 * @param globalListeners the default listeners
-	 */
-	public void setListeners(Collection<RetryListener> globalListeners) {
-		ArrayList<RetryListener> retryListeners = new ArrayList<>(globalListeners);
-		AnnotationAwareOrderComparator.sort(retryListeners);
-		this.globalListeners = retryListeners.toArray(new RetryListener[0]);
 	}
 
 	@Override
@@ -319,21 +311,17 @@ public class AnnotationAwareRetryOperationsInterceptor implements IntroductionIn
 		if (listenersBeanNames.length > 0) {
 			template.setListeners(getListenersBeans(listenersBeanNames));
 		}
-		else if (this.globalListeners != null) {
-			template.setListeners(this.globalListeners);
-		}
 		return template;
 	}
 
 	private RetryListener[] getListenersBeans(String[] listenersBeanNames) {
-		if (listenersBeanNames.length == 1 && "".equals(listenersBeanNames[0].trim())) {
-			return new RetryListener[0];
+		List<RetryListener> retryListeners = new ArrayList<>(listenersBeanNames.length);
+		for (String beanName : listenersBeanNames) {
+			if (StringUtils.hasText(beanName)) {
+				retryListeners.add(this.beanFactory.getBean(beanName, RetryListener.class));
+			}
 		}
-		RetryListener[] listeners = new RetryListener[listenersBeanNames.length];
-		for (int i = 0; i < listeners.length; i++) {
-			listeners[i] = this.beanFactory.getBean(listenersBeanNames[i], RetryListener.class);
-		}
-		return listeners;
+		return retryListeners.toArray(new RetryListener[0]);
 	}
 
 	private MethodInvocationRecoverer<?> getRecoverer(Object target, Method method) {

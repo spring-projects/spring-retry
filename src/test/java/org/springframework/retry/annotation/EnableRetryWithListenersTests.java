@@ -166,7 +166,7 @@ public class EnableRetryWithListenersTests {
 
 		private int count = 0;
 
-		@Retryable(backoff = @Backoff(delay = 1000))
+		@Retryable(backoff = @Backoff(delay = 1000), listeners = "listener")
 		public void service() {
 			if (count++ < 2) {
 				throw new RuntimeException("Planned");

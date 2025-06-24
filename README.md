@@ -464,12 +464,15 @@ public class Application {
 
 @Service
 class Service {
-    @Retryable(RemoteAccessException.class)
+    @Retryable(retryFor = RemoteAccessException.class, listeners = { "retryListener1", "retryListener2" })
     public service() {
         // ... do something
     }
 }
 ```
+
+Starting with version 2.0.13, any bean instance of `RetryListener` are not considered as global listeners.  
+You always have to explicitly specify the `listeners` attribute in `@Retryable` if needed.
 
 You can use the attributes of `@Retryable` to control the `RetryPolicy` and `BackoffPolicy`, as follows:
 

@@ -61,6 +61,7 @@ import static org.mockito.Mockito.verify;
  * @author Yanming Zhou
  * @author Anton Aharkau
  * @author Emanuele Ivaldi
+ * @author Jiandong Ma
  * @since 1.1
  */
 public class EnableRetryTests {
@@ -77,7 +78,7 @@ public class EnableRetryTests {
 		TestConfiguration config = context.getBean(TestConfiguration.class);
 		assertThat(config.listener1).isTrue();
 		assertThat(config.listener2).isTrue();
-		assertThat(config.twoFirst).isTrue();
+		assertThat(config.twoFirst).isFalse();
 		context.close();
 	}
 
@@ -590,7 +591,7 @@ public class EnableRetryTests {
 
 		private int count = 0;
 
-		@Retryable(RuntimeException.class)
+		@Retryable(retryFor = RuntimeException.class, listeners = { "listener1", "listener2" })
 		public void service() {
 			if (this.count++ < 2) {
 				throw new RuntimeException("Planned");

@@ -70,6 +70,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Gary Russell
  * @author Yanming Zhou
  * @author Evgeny Lazarev
+ * @author Jiandong Ma
  * @since 1.1
  *
  */
@@ -77,7 +78,7 @@ import org.springframework.util.ReflectionUtils;
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Component
 public class RetryConfiguration extends AbstractPointcutAdvisor
-		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean, SmartInitializingSingleton, ImportAware {
+		implements IntroductionAdvisor, BeanFactoryAware, InitializingBean, ImportAware {
 
 	@Nullable
 	protected AnnotationAttributes enableRetry;
@@ -87,8 +88,6 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	private Pointcut pointcut;
 
 	private RetryContextCache retryContextCache;
-
-	private List<RetryListener> retryListeners;
 
 	private MethodArgumentsKeyGenerator methodArgumentsKeyGenerator;
 
@@ -120,17 +119,8 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 		}
 	}
 
-	@Override
-	public void afterSingletonsInstantiated() {
-		this.retryListeners = findBeans(RetryListener.class);
-		if (this.retryListeners != null) {
-			this.advice.setListeners(this.retryListeners);
-		}
-	}
-
 	private <T> List<T> findBeans(Class<? extends T> type) {
-		if (this.beanFactory instanceof ListableBeanFactory) {
-			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
+		if (this.beanFactory instanceof ListableBeanFactory listable) {
 			if (listable.getBeanNamesForType(type).length > 0) {
 				ArrayList<T> list = new ArrayList<>(listable.getBeansOfType(type, false, false).values());
 				OrderComparator.sort(list);
@@ -141,8 +131,7 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 	}
 
 	private <T> T findBean(Class<? extends T> type) {
-		if (this.beanFactory instanceof ListableBeanFactory) {
-			ListableBeanFactory listable = (ListableBeanFactory) this.beanFactory;
+		if (this.beanFactory instanceof ListableBeanFactory listable) {
 			if (listable.getBeanNamesForType(type, false, false).length == 1) {
 				return listable.getBean(type);
 			}
@@ -237,10 +226,9 @@ public class RetryConfiguration extends AbstractPointcutAdvisor
 			if (this == other) {
 				return true;
 			}
-			if (!(other instanceof AnnotationClassOrMethodPointcut)) {
+			if (!(other instanceof AnnotationClassOrMethodPointcut otherAdvisor)) {
 				return false;
 			}
-			AnnotationClassOrMethodPointcut otherAdvisor = (AnnotationClassOrMethodPointcut) other;
 			return ObjectUtils.nullSafeEquals(this.methodResolver, otherAdvisor.methodResolver);
 		}
 

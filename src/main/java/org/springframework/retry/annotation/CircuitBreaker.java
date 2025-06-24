@@ -30,6 +30,7 @@ import org.springframework.core.annotation.AliasFor;
  * @author Dave Syer
  * @author Artem Bilan
  * @author Gary Russell
+ * @author Jiandong Ma
  * @since 1.2
  *
  */
@@ -198,5 +199,13 @@ public @interface CircuitBreaker {
 	 */
 	@AliasFor(annotation = Retryable.class)
 	String recover() default "";
+
+	/**
+	 * Bean names of retry listeners.
+	 * @return retry listeners bean names
+	 * @since 2.0.13
+	 */
+	@AliasFor(annotation = Retryable.class)
+	String[] listeners() default {};
 
 }

@@ -32,6 +32,7 @@ import org.springframework.core.annotation.AliasFor;
  * @author Gary Russell
  * @author Maksim Kita
  * @author Roman Akentev
+ * @author Jiandong Ma
  * @since 1.1
  *
  */
@@ -165,10 +166,7 @@ public @interface Retryable {
 	String exceptionExpression() default "";
 
 	/**
-	 * Bean names of retry listeners to use instead of default ones defined in Spring
-	 * context. If this attribute is set to an empty string {@code ""}, it will
-	 * effectively exclude all retry listeners, including with the default listener beans,
-	 * from being used.
+	 * Bean names of retry listeners.
 	 * @return retry listeners bean names
 	 */
 	String[] listeners() default {};
