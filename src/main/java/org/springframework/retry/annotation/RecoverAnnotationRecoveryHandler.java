@@ -142,7 +142,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return result;
 	}
 
-	private Method findMethodWithNoThrowable(Object[] args, List<Method> methods) {
+	private static Method findMethodWithNoThrowable(Object[] args, List<Method> methods) {
 		Method result = null;
 		for (Method method : methods) {
 			if (compareParameters(args, method.getParameterTypes(), false)) {
@@ -203,7 +203,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return null;
 	}
 
-	private int calculateDistance(Class<?> cause, Class<?> type) {
+	private static int calculateDistance(Class<?> cause, Class<?> type) {
 		int result = 0;
 		Class<?> current = cause;
 		while (current != type && current != Throwable.class) {
@@ -213,7 +213,7 @@ public class RecoverAnnotationRecoveryHandler<T> implements MethodInvocationReco
 		return result;
 	}
 
-	private boolean compareParameters(Object[] args, Class<?>[] parameterTypes, boolean hasThrowable) {
+	private static boolean compareParameters(Object[] args, Class<?>[] parameterTypes, boolean hasThrowable) {
 		int argCount = args.length;
 		int paramCount = parameterTypes.length;
 		int argIndex = 0;
