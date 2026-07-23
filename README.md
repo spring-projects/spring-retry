@@ -1,6 +1,6 @@
 > ⚠️ **Project Status: Maintenance Only**  
 > This project has been superseded by **Spring Framework 7** and is no longer accepting enhancements.  
-> Please migrate to Spring Framework's [resilience features](https://spring.io/projects/spring-framework).
+> Please migrate to Spring Framework's [resilience features](https://docs.spring.io/spring-framework/reference/core/resilience.html).
 
 [![Build Status](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml/badge.svg?branch=main)](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml?query=branch%3Amain) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
 [![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.spring.io/scans?search.rootProjectNames=Spring%20Retry)
