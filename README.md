@@ -1,10 +1,12 @@
-> ⚠️ **Project Status: Maintenance Only**  
-> This project has been superseded by **Spring Framework 7** and is no longer accepting enhancements.  
+# Spring Retry is no longer maintained as an open-source project. 
+## See resilence features [blog post](https://spring.io/blog/2025/09/09/core-spring-resilience-features) and [reference documentation](https://docs.spring.io/spring-framework/reference/core/resilience.html) for more information.
+
+----
+> ⚠️ **Project Status: Archived**  
+> This project has been superseded by **Spring Framework 7** and is now archived.  
 > Please migrate to Spring Framework's [resilience features](https://spring.io/projects/spring-framework).
 
-[![Build Status](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml/badge.svg?branch=main)](https://github.com/spring-projects/spring-retry/actions/workflows/build-and-deploy-snapshot.yml?query=branch%3Amain) [![Javadocs](https://www.javadoc.io/badge/org.springframework.retry/spring-retry.svg)](https://www.javadoc.io/doc/org.springframework.retry/spring-retry)
-[![Revved up by Develocity](https://img.shields.io/badge/Revved%20up%20by-Develocity-06A0CE?logo=Gradle&labelColor=02303A)](https://ge.spring.io/scans?search.rootProjectNames=Spring%20Retry)
-
+----
 This project provides declarative retry support for Spring applications. 
 It is used in Spring Batch, Spring Integration, and others.
 Imperative retry is also supported for explicit usage.
